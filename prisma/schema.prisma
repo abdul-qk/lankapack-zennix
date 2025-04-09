@@ -1,0 +1,417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model hps_bag_type {
+  bag_id      Int    @id @default(autoincrement())
+  bags_select Int
+  bag_type    String @db.VarChar(120)
+  bag_price   String @default(dbgenerated("(0)")) @db.VarChar(5)
+
+  jobcard                hps_jobcard[]
+}
+
+model hps_bill_info {
+  bill_info_id  Int      @id @default(autoincrement())
+  customer_name Int
+  bill_do       String   @db.VarChar(11)
+  bill_total    String   @db.VarChar(12)
+  add_date      DateTime @db.Date
+  user_id       Int
+  del_ind       Int
+}
+
+model hps_bill_item {
+  bill_item_id Int    @id @default(autoincrement())
+  bill_info_id Int
+  de_number    Int
+  bundel_type  Int
+  bundel_qty   String @db.VarChar(255)
+  item_price   String @db.VarChar(12)
+  item_total   String @db.VarChar(12)
+  user_id      Int
+  del_ind      Int
+}
+
+model hps_bundle_info {
+  bundle_info_id             Int       @id @default(autoincrement())
+  bundle_barcode             Int       // Changed from String @db.VarChar(120) to Int
+  bundle_type                String    @db.VarChar(120)
+  bundle_info_weight         String    @db.VarChar(120)
+  bundle_info_bags           String    @db.VarChar(120)
+  bundle_info_average        String    @db.VarChar(120)
+  bundle_info_wastage_weight String    @db.VarChar(120)
+  bundle_info_wastage_bags   String    @db.VarChar(120)
+  bundle_qty                 Int
+  bundle_slitt_wastage       String    @db.VarChar(120)
+  bundle_print_wastage       String    @db.VarChar(120)
+  bundle_cutting_wastage     String    @db.VarChar(120)
+  bundle_date                DateTime? @db.Date
+  user_id                    Int
+  bundle_info_status         Int
+  
+  cutting_roll               hps_cutting_roll? @relation(fields: [bundle_barcode], references: [cutting_roll_id])
+}
+
+model hps_colour {
+  colour_id   Int    @id @default(autoincrement())
+  colour_name String @db.VarChar(255)
+}
+
+model hps_complete_item {
+  complete_item_id      Int       @id @default(autoincrement())
+  complete_item_info    Int
+  bundle_type           String    @db.VarChar(120)
+  complete_item_weight  String    @db.VarChar(120)
+  complete_item_bags    String    @db.VarChar(120)
+  complete_item_barcode String    @db.VarChar(120)
+  complete_item_date    DateTime? @db.Date
+  user_id               Int
+  del_ind               Int
+}
+
+model hps_customer {
+  customer_id            Int      @id @default(autoincrement())
+  customer_full_name     String   @db.VarChar(220)
+  contact_person         String   @db.VarChar(240)
+  customer_address       String   @db.VarChar(300)
+  customer_tel           String   @db.VarChar(15)
+  customer_mobile        String?  @db.VarChar(15)
+  customer_email_address String?  @db.VarChar(300)
+  customer_add_date      DateTime @db.Date
+  hps_user_id            Int
+  del_ind                Int
+
+  jobcard                hps_jobcard[]
+}
+
+model hps_cutting {
+  cutting_id      Int      @id @default(autoincrement())
+  job_card_id     Int
+  roll_barcode_no String   @db.VarChar(120)
+  cutting_weight  String   @db.VarChar(120)
+  number_of_roll  Int
+  wastage         String   @db.VarChar(12)
+  added_date      DateTime @db.Date
+  update_date     DateTime? @db.Date
+  user_id         Int
+  del_ind         Int
+}
+
+model hps_cutting_roll {
+  cutting_roll_id     Int      @id @default(autoincrement())
+  job_card_id         Int
+  cutting_id          Int
+  cutting_roll_weight String   @db.VarChar(12)
+  no_of_bags          Int
+  cutting_wastage     String   @db.VarChar(120)
+  cutting_barcode     String?  @db.VarChar(120)
+  add_date            DateTime @db.Date
+  user_id             Int
+  del_ind             Int
+  
+  bundles             hps_bundle_info[]
+}
+
+model hps_cutting_type {
+  cutting_id   Int    @id @default(autoincrement())
+  cutting_type String @db.VarChar(120)
+
+  jobcard                hps_jobcard[]
+}
+
+model hps_cutting_wastage {
+  cutting_wastage_id Int      @id @default(autoincrement())
+  job_card_id        Int
+  cutting_id         Int
+  cutting_wastage    String   @db.VarChar(120)
+  added_date         DateTime @db.Date
+  user_id            Int
+  del_ind            Int
+}
+
+model hps_jobcard {
+  job_card_id         Int      @id @default(autoincrement())
+  customer_id         Int
+  section_list        String   @db.VarChar(30)
+  unit_price          String   @db.VarChar(120)
+  slitting_roll_type  Int      
+  slitting_paper_gsm  String   @db.VarChar(120)
+  slitting_paper_size Int
+  slitting_size       String?  @db.VarChar(255)
+  slitting_remark     String   @db.VarChar(250)
+  printing_size       Int
+  printing_color_type String?  @db.VarChar(120)
+  printing_color_name String?  @db.VarChar(420)
+  printing_no_of_bag  String?  @db.VarChar(240)
+  printing_remark     String   @db.VarChar(240)
+  block_size          String   @db.VarChar(120)
+  cutting_type        Int
+  cutting_bags_select String?  @db.VarChar(120)
+  cutting_bag_type    Int
+  cutting_print_name  String?  @db.VarChar(255)
+  cuting_no_of_bag    String?  @db.VarChar(240)
+  cuting_remark       String   @db.VarChar(250)
+  cutting_fold        String   @db.VarChar(240)
+  add_date            DateTime @db.Date
+  updated_date        DateTime @db.Date
+  delivery_date       String   @db.VarChar(100)
+  user_id             Int
+  card_slitting       Int
+  card_printting      Int
+  card_cutting        Int
+  del_ind             Int
+
+  customer            hps_customer     @relation(fields: [customer_id], references: [customer_id])
+  particular          hps_particular   @relation(fields: [slitting_roll_type], references: [particular_id])
+  print_size          hps_print_size   @relation(fields: [printing_size], references: [print_size_id])
+  cut_types           hps_cutting_type @relation(fields: [cutting_type], references: [cutting_id])
+  cut_bag_types       hps_bag_type     @relation(fields: [cutting_bag_type], references: [bag_id])
+}
+
+model hps_login {
+  he_user_id      Int      @id @default(autoincrement())
+  he_full_name    String   @db.VarChar(120)
+  he_username    String   @db.VarChar(120)
+  he_password     String   @db.VarChar(120)
+  he_email        String   @db.VarChar(120)
+  user_level      String   @db.VarChar(250)
+  he_created_date DateTime @db.Date
+  he_del_ind      Int
+}
+
+model hps_material_info {
+  material_info_id      Int              @id @default(autoincrement())
+  material_supplier     Int
+  total_reels           Int
+  total_net_weight      Float
+  total_gross_weight    Float
+  add_date              DateTime
+  material_info_status  Int
+  user_id               Int
+
+  supplier              hps_supplier     @relation(fields: [material_supplier], references: [supplier_id])
+  material_items        hps_material_item[]
+
+  @@map("hps_material_info")
+}
+
+model hps_material_item {
+  material_item_id      Int              @id @default(autoincrement())
+  material_info_id      Int
+  material_item_reel_no String
+  material_colour       String
+  material_item_particular Int?
+  material_item_variety String
+  material_item_gsm     String
+  material_item_size    String
+  material_item_net_weight String
+  material_item_gross_weight String
+  material_item_barcode String
+  added_date            DateTime?
+  user_id               Int
+  material_status       Int
+
+  material_info         hps_material_info  @relation(fields: [material_info_id], references: [material_info_id])
+  particular            hps_particular?    @relation(fields: [material_item_particular], references: [particular_id])
+
+  @@map("hps_material_item")
+}
+
+model hps_non_complete_item {
+  non_complete_id      Int    @id @default(autoincrement())
+  non_complete_info    Int
+  non_complete_weight  String @db.VarChar(120)
+  non_complete_bags    String @db.VarChar(120)
+  non_complete_barcode String @db.VarChar(120)
+  user_id              Int
+  del_ind              Int
+}
+
+model hps_particular {
+  particular_id     Int       @id @default(autoincrement())
+  particular_name   String    @db.VarChar(240)
+  added_date        DateTime? @db.Date
+  particular_status Int
+
+  material_items        hps_material_item[]
+  jobcard               hps_jobcard[]
+  stock                 hps_stock[]
+
+  @@map("hps_particular")
+}
+
+model hps_print {
+  print_id         Int      @id @default(autoincrement())
+  job_card_id      Int
+  print_barcode_no String   @db.VarChar(129)
+  number_of_bag    Int
+  balance_weight   String   @db.VarChar(10)
+  balance_width    String   @db.VarChar(10)
+  print_wastage    String   @db.VarChar(120)
+  added_date       DateTime @db.Date
+  update_date      DateTime @db.Date
+  user_id          Int
+  del_ind          Int
+}
+
+model hps_print_pack {
+  pack_id           Int      @id @default(autoincrement())
+  job_card_id       Int
+  print_id          Int
+  print_pack_weight String   @db.VarChar(11)
+  print_barcode     String   @db.VarChar(120)
+  add_date          DateTime @db.Date
+  user_id           Int
+  del_ind           Int
+}
+
+model hps_print_size {
+  print_size_id Int    @id @default(autoincrement())
+  print_size    String @db.VarChar(120)
+
+  jobcard               hps_jobcard[]
+}
+
+model hps_print_wastage {
+  print_wastage_id Int      @id @default(autoincrement())
+  job_card_id      Int
+  print_id         Int
+  print_wastage    String   @db.VarChar(120)
+  add_date         DateTime @db.Date
+  user_id          Int
+  del_ind          Int
+}
+
+model hps_return_info {
+  return_info_id   Int      @id @default(autoincrement())
+  customer_name    Int
+  customer_address String   @db.VarChar(120)
+  customer_contact String   @db.VarChar(120)
+  return_no_bags   String   @db.VarChar(11)
+  add_date         DateTime @db.Date
+  user_id          Int
+  del_ind          Int
+
+  return_items     hps_return_item[]
+}
+
+model hps_return_item {
+  return_item_id   Int    @id @default(autoincrement())
+  return_info_id   Int
+  complete_item_id Int
+  barcode_no       String @db.VarChar(255)
+  bundle_type      String @db.VarChar(30)
+  n_weight         Float  @db.Float
+  no_of_bags       Int
+  item_price       String @db.VarChar(12)
+  item_total       String @db.VarChar(12)
+  user_id          Int
+  return_status    Int
+
+  hps_return_info  hps_return_info @relation(fields: [return_info_id], references: [return_info_id])
+}
+
+model hps_roll_type {
+  roll_id   Int    @id @default(autoincrement())
+  roll_type String @db.VarChar(120)
+}
+
+model hps_sales_info {
+  sales_info_id    Int      @id @default(autoincrement())
+  customer_name    Int
+  customer_address String   @db.VarChar(120)
+  customer_contact String   @db.VarChar(120)
+  sales_no_bags    String   @db.VarChar(11)
+  add_date         DateTime @db.Date
+  user_id          Int
+  del_ind          Int
+}
+
+model hps_sales_item {
+  sales_item_id    Int    @id @default(autoincrement())
+  sales_info_id    Int
+  complete_item_id Int
+  barcode_no       String @db.VarChar(255)
+  bundle_type      String @db.VarChar(30)
+  n_weight         Float  @db.Float
+  no_of_bags       Int
+  item_price       String @db.VarChar(12)
+  item_total       String @db.VarChar(12)
+  user_id          Int
+  sales_status     Int
+}
+
+model hps_slitting {
+  slitting_id     Int      @id @default(autoincrement())
+  job_card_id     Int
+  roll_barcode_no String   @db.VarChar(120)
+  number_of_roll  Int
+  wastage         String   @db.VarChar(12)
+  wastage_width   String   @db.VarChar(120)
+  added_date      DateTime @db.Date
+  update_date     DateTime? @db.Date
+  user_id         Int
+  del_ind         Int
+}
+
+model hps_slitting_roll {
+  roll_id              Int      @id @default(autoincrement())
+  job_card_id          Int
+  slitting_id          Int
+  slitting_roll_weight String   @db.VarChar(12)
+  slitting_roll_width  String   @db.VarChar(120)
+  slitting_barcode     String   @db.VarChar(120)
+  add_date             DateTime @db.Date
+  user_id              Int
+  del_ind              Int
+}
+
+model hps_slitting_wastage {
+  slitting_wastage_id Int      @id @default(autoincrement())
+  job_card_id         Int
+  slitting_id         Int
+  slitting_wastage    String   @db.VarChar(120)
+  add_date            DateTime @db.Date
+  user_id             Int
+  del_ind             Int
+}
+
+model hps_stock {
+  stock_id                 Int      @id @default(autoincrement())
+  material_item_particular Int
+  material_used_buy        Int
+  main_id                  Int
+  material_item_id         Int
+  item_gsm                 String   @db.VarChar(12)
+  stock_barcode            BigInt
+  material_item_size       String   @db.VarChar(12)
+  item_net_weight          String   @db.VarChar(12)
+  stock_date               DateTime @db.Date
+  material_status          Int
+
+  particular               hps_particular     @relation(fields: [material_item_particular], references: [particular_id])
+}
+
+model hps_supplier {
+  supplier_id           Int              @id @default(autoincrement())
+  supplier_name         String
+  supplier_company      String
+  supplier_contact_no   String
+  supplier_email        String
+  supplier_address      String
+
+  material_info         hps_material_info[]
+  
+  @@map("hps_supplier")
+}
+
+model hps_user_level {
+  user_level_id   Int    @id @default(autoincrement())
+  user_level_name String @db.VarChar(120)
+}

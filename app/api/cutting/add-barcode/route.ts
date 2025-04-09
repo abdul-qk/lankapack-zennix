@@ -1,0 +1,58 @@
+// /app/api/cutting/add-barcode/route.ts
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function POST(request: Request) {
+  try {
+    const { jobCardId, barcode, weight, userId } = await request.json();
+
+    // Validate inputs
+    if (!jobCardId || !barcode || !weight || !userId) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Check if the barcode exists in the hps_stock table
+    const stockItem = await prisma.hps_stock.findFirst({
+      where: {
+        stock_barcode: BigInt(barcode),
+      },
+    });
+
+    if (!stockItem) {
+      return NextResponse.json(
+        { error: "Barcode not found in stock or not available" },
+        { status: 404 }
+      );
+    }
+
+    // Create new cutting record
+    const newCutting = await prisma.hps_cutting.create({
+      data: {
+        job_card_id: jobCardId,
+        roll_barcode_no: barcode,
+        cutting_weight: weight,
+        number_of_roll: 1, // Default value, adjust as needed
+        wastage: "0", // Default value, adjust as needed
+        added_date: new Date(),
+        user_id: userId,
+        del_ind: 0,
+      },
+    });
+
+    return NextResponse.json(
+      { success: true, data: newCutting },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("Error adding barcode:", error);
+    return NextResponse.json(
+      { error: "Failed to add barcode", details: error.message },
+      { status: 500 }
+    );
+  }
+}
