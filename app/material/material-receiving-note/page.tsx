@@ -20,13 +20,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Eye, PlusCircle } from "lucide-react";
+import { Pencil, Trash2, Eye, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
 import Link from "next/link";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import Loading from "@/components/layouts/loading";
 
 type SupplierInfo = {
     supplier_id: number;
@@ -176,7 +177,22 @@ export default function MaterialInfoTable() {
         }
     };
 
-    if (loading) return <p>Loading...</p>;
+    const totalPages = table.getPageCount();
+    const currentPage = table.getState().pagination.pageIndex + 1;
+
+    const visiblePageNumbers = React.useMemo(() => {
+        const pageNumbers: number[] = [];
+        const maxVisiblePages = 3;
+        const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+        return pageNumbers;
+    }, [currentPage, totalPages]);
+
+    if (loading) return <Loading />;
 
     return (
         <SidebarProvider>
@@ -246,12 +262,37 @@ export default function MaterialInfoTable() {
                         </TableBody>
                     </Table>
 
-                    <div className="flex items-center justify-end space-x-2 py-4">
-                        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-                            Previous
+                    <div className="flex items-center justify-end space-x-2 pt-8">
+                        {/* First Page */}
+                        <Button variant="outline" size="sm" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
+                            <ChevronsLeft size={16} />
                         </Button>
+
+                        {/* Previous Page */}
+                        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+                            <ChevronLeft size={16} />
+                        </Button>
+
+                        {/* Page Numbers */}
+                        {visiblePageNumbers.map((page) => (
+                            <Button
+                                key={page}
+                                variant={page === currentPage ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => table.setPageIndex(page - 1)}
+                            >
+                                {page}
+                            </Button>
+                        ))}
+
+                        {/* Next Page */}
                         <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                            Next
+                            <ChevronRight size={16} />
+                        </Button>
+
+                        {/* Last Page */}
+                        <Button variant="outline" size="sm" onClick={() => table.setPageIndex(totalPages - 1)} disabled={!table.getCanNextPage()}>
+                            <ChevronsRight size={16} />
                         </Button>
                     </div>
                 </div>

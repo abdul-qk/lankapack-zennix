@@ -30,7 +30,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pencil, PlusCircle, EyeIcon, Trash, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { Pencil, PlusCircle, EyeIcon, Trash, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Eye, Trash2 } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
@@ -172,23 +172,20 @@ export default function DeliveryOrderTable() {
                     <div className="flex items-center space-x-2">
                         <Button variant="ghost" size="icon" asChild>
                             <Link href={`/sales/do/view/${salesInfo.sales_info_id}`}>
-                                <EyeIcon className="h-4 w-4" />
-                                <span className="sr-only">View</span>
+                                <Button variant="outline" size="sm">
+                                    <Eye size={16} />
+                                </Button>
                             </Link>
                         </Button>
                         <Button variant="ghost" size="icon" asChild>
                             <Link href={`/sales/do/edit/${salesInfo.sales_info_id}`}>
-                                <Pencil className="h-4 w-4" />
-                                <span className="sr-only">Edit</span>
+                                <Button variant="outline" size="sm">
+                                    <Pencil size={16} />
+                                </Button>
                             </Link>
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => confirmDelete(salesInfo.sales_info_id)}
-                        >
-                            <Trash color="#ff0000" className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
+                        <Button variant="destructive" size="sm" onClick={() => confirmDelete(salesInfo.sales_info_id)}>
+                            <Trash2 size={16} />
                         </Button>
                     </div>
                 );
@@ -250,12 +247,12 @@ export default function DeliveryOrderTable() {
                             onChange={(e) => setSearch(e.target.value)}
                             className="max-w-sm"
                         />
-                        <Button asChild>
-                            <Link href="/sales/do/new">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add New
-                            </Link>
-                        </Button>
+                        <Link href="/sales/do/new">
+                            <Button variant={'primary'}>
+                                <PlusCircle />
+                                Add New DO
+                            </Button>
+                        </Link>
                     </div>
 
                     <Table>

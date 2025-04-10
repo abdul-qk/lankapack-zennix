@@ -1,6 +1,7 @@
 'use client'
 
 import { AppSidebar } from "@/components/app-sidebar"
+import Loading from "@/components/layouts/loading"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,6 +25,7 @@ export default function Page() {
 
   const [data, setData] = useState<{ jobcardCount: number; cuttingCount: number; slittingCount: number; customerCount: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,8 +36,11 @@ export default function Page() {
         }
         const result = await response.json();
         setData(result);
+        setLoading(false);
       } catch (err: any) {
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -180,6 +185,9 @@ export default function Page() {
     }),
     []
   )
+
+  if (loading) return <Loading />;
+
 
   return (
     <SidebarProvider>

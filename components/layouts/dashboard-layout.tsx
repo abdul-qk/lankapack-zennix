@@ -24,7 +24,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
     return (
         <div className="flex h-screen">
-            <Sidebar isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} />
+            {/* <Sidebar isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} /> */}
             <div className="flex flex-1 flex-col">
                 <Header title={title} user={user} onLogout={handleLogout} />
                 <main className="flex-1 overflow-y-auto p-6">{children}</main>
