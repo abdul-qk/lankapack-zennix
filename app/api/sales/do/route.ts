@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Fetch all sales info records that aren't deleted (del_ind = 0)
     const salesInfo = await prisma.hps_sales_info.findMany({
