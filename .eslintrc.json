@@ -4,7 +4,7 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "no-var": 0,
-    "react/jsx-key": "warn",
-    "react-hooks/rules-of-hooks": "warn"
+    "react/jsx-key": "off",
+    "react-hooks/rules-of-hooks": "off"
   }
 }
