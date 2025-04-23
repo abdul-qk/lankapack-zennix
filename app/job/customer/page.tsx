@@ -53,6 +53,24 @@ export default function CustomerInfoTable() {
     const [new_contact_person, setNewContactPerson] = React.useState("");
     const [new_customer_mobile, setNewCustomerMobile] = React.useState("");
     const [new_customer_tel, setNewCustomerTel] = React.useState("");
+
+    const [form, setForm] = React.useState({
+        customer_full_name: "",
+        customer_email_address: "",
+        customer_tel: "",
+        customer_mobile: "",
+        contact_person: "",
+        customer_address: "",
+    });
+    const [errors, setErrors] = React.useState({
+        customer_full_name: "",
+        customer_email_address: "",
+        customer_tel: "",
+        customer_mobile: "",
+        contact_person: "",
+        customer_address: "",
+    });
+
     const { toast } = useToast();
 
     // Debounce search input to optimize filtering
@@ -210,6 +228,20 @@ export default function CustomerInfoTable() {
         return pageNumbers;
     }, [currentPage, totalPages]);
 
+    const validateForm = () => {
+        const newErrors: typeof errors = {
+            customer_full_name: form.customer_full_name ? "" : "Full name is required",
+            customer_email_address: form.customer_email_address ? "" : "Email is required",
+            customer_tel: form.customer_tel ? "" : "Telephone is required",
+            customer_mobile: form.customer_mobile ? "" : "Mobile is required",
+            contact_person: form.contact_person ? "" : "Contact person is required",
+            customer_address: form.customer_address ? "" : "Address is required",
+        };
+        setErrors(newErrors);
+        // Return true if no errors
+        return Object.values(newErrors).every(err => !err);
+    };
+
     const handleDelete = async (id: number) => {
         if (!confirm("Are you sure you want to delete this entry?")) return;
 
@@ -227,6 +259,7 @@ export default function CustomerInfoTable() {
     };
 
     const handleEdit = async (id: number, customer_full_name: string, customer_email_address: string, customer_tel: string, customer_mobile: string, contact_person: string, customer_address: string) => {
+        if (!validateForm()) return;
         try {
             await fetch(`/api/job/customer/`, {
                 method: "PATCH",
@@ -241,6 +274,7 @@ export default function CustomerInfoTable() {
     };
 
     const handleAdd = async (customer_full_name: string, customer_email_address: string, customer_tel: string, customer_mobile: string, contact_person: string, customer_address: string) => {
+        if (!validateForm()) return;
         try {
             await fetch(`/api/job/customer/`, {
                 method: "POST",
@@ -293,32 +327,87 @@ export default function CustomerInfoTable() {
                                     <DialogTitle>Add Customer</DialogTitle>
                                 </DialogHeader>
                                 <div className="flex flex-col gap-4 py-4">
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-2">
                                         <label >Company Name</label>
-                                        <Input placeholder="Enter Company Name" value={new_customer_name} onChange={(e) => setNewCustomerName(e.target.value)} />
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <Input placeholder="Enter Company Name" value={form.customer_full_name}
+                                                onChange={e => {
+                                                    setForm({ ...form, customer_full_name: e.target.value });
+                                                    if (errors.customer_full_name) setErrors({ ...errors, customer_full_name: "" });
+                                                }}
+                                            />
+                                            {errors.customer_full_name && <span className="error text-sm text-red-700">{errors.customer_full_name}</span>}
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-2">
                                         <label >Email</label>
-                                        <Input placeholder="Enter Email" value={new_customer_email} onChange={(e) => setNewCustomerEmail(e.target.value)} />
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <Input placeholder="Enter Email" value={form.customer_email_address}
+                                                onChange={e => {
+                                                    setForm({ ...form, customer_email_address: e.target.value });
+                                                    if (errors.customer_email_address) setErrors({ ...errors, customer_email_address: "" });
+                                                }}
+                                            />
+                                            {errors.customer_email_address && <span className="error text-sm text-red-700">{errors.customer_email_address}</span>}
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-2">
                                         <label >Tel</label>
-                                        <Input placeholder="Enter Tel" value={new_customer_tel} onChange={(e) => setNewCustomerTel(e.target.value)} />
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <Input placeholder="Enter Tel" value={form.customer_tel}
+                                                onChange={e => {
+                                                    setForm({ ...form, customer_tel: e.target.value });
+                                                    if (errors.customer_tel) setErrors({ ...errors, customer_tel: "" });
+                                                }}
+                                            />
+                                            {errors.customer_tel && <span className="error text-sm text-red-700">{errors.customer_tel}</span>}
+                                        </div>  
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-2">
                                         <label >Mobile</label>
-                                        <Input placeholder="Enter Mobile" value={new_customer_mobile} onChange={(e) => setNewCustomerMobile(e.target.value)} />
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <Input placeholder="Enter Mobile" value={form.customer_mobile}
+                                                onChange={e => {
+                                                    setForm({ ...form, customer_mobile: e.target.value });
+                                                    if (errors.customer_mobile) setErrors({ ...errors, customer_mobile: "" });
+                                                }}
+                                            />
+                                            {errors.customer_mobile && <span className="error text-sm text-red-700">{errors.customer_mobile}</span>}
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-2">
                                         <label >Contact Person</label>
-                                        <Input placeholder="Enter Contact Person" value={new_contact_person} onChange={(e) => setNewContactPerson(e.target.value)} />
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <Input placeholder="Enter Contact Person" value={form.contact_person}
+                                                onChange={e => {
+                                                    setForm({ ...form, contact_person: e.target.value });
+                                                    if (errors.contact_person) setErrors({ ...errors, contact_person: "" });
+                                                }}
+                                            />
+                                            {errors.contact_person && <span className="error text-sm text-red-700">{errors.contact_person}</span>}
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-2">
                                         <label >Address</label>
-                                        <Input placeholder="Enter Address" value={new_customer_address} onChange={(e) => setNewCustomerAddress(e.target.value)} />
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <Input placeholder="Enter Address" value={form.customer_address}
+                                                onChange={e => {
+                                                    setForm({ ...form, customer_address: e.target.value });
+                                                    if (errors.customer_address) setErrors({ ...errors, customer_address: "" });
+                                                }}
+                                            />
+                                            {errors.customer_address && <span className="error text-sm text-red-700">{errors.customer_address}</span>}
+                                        </div>
                                     </div>
                                 </div>
-                                <Button variant="primary" size="sm" onClick={() => handleAdd(new_customer_name, new_customer_email, new_customer_tel, new_customer_mobile, new_contact_person, new_customer_address)}>
+                                <Button variant="primary" size="sm" onClick={() => handleAdd(
+                                    form.customer_full_name,
+                                    form.customer_email_address,
+                                    form.customer_tel,
+                                    form.customer_mobile,
+                                    form.contact_person,
+                                    form.customer_address
+                                )}>
                                     Add
                                 </Button>
                             </DialogContent>

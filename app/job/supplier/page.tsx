@@ -45,11 +45,20 @@ export default function SupplierInfoTable() {
     const [search, setSearch] = React.useState("");            // Immediate search input state
     const [debouncedSearch, setDebouncedSearch] = React.useState("");  // Debounced search state
     const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [new_supplier_name, setNewCustomerName] = React.useState("");
-    const [new_supplier_company, setNewSupplierCompany] = React.useState("");
-    const [new_supplier_email, setNewCustomerEmail] = React.useState("");
-    const [new_supplier_address, setNewCustomerAddress] = React.useState("");
-    const [new_supplier_contact_no, setNewCustomerMobile] = React.useState("");
+    const [form, setForm] = React.useState({
+        supplier_name: "",
+        supplier_company: "",
+        supplier_email: "",
+        supplier_contact_no: "",
+        supplier_address: "",
+    });
+    const [errors, setErrors] = React.useState({
+        supplier_name: "",
+        supplier_company: "",
+        supplier_email: "",
+        supplier_contact_no: "",
+        supplier_address: "",
+    });
     const { toast } = useToast();
 
     // Debounce search input to optimize filtering
@@ -219,19 +228,32 @@ export default function SupplierInfoTable() {
         }
     };
 
-    const handleAdd = async (supplier_name: string, supplier_company: string, supplier_email: string, supplier_contact_no: string, supplier_address: string) => {
+    const validateForm = () => {
+        const newErrors = {
+            supplier_name: form.supplier_name ? "" : "Supplier name is required",
+            supplier_company: form.supplier_company ? "" : "Supplier company is required",
+            supplier_email: form.supplier_email ? "" : "Email is required",
+            supplier_contact_no: form.supplier_contact_no ? "" : "Mobile is required",
+            supplier_address: form.supplier_address ? "" : "Address is required",
+        };
+        setErrors(newErrors);
+        return Object.values(newErrors).every(err => !err);
+    };
+
+    const handleAdd = async () => {
+        if (!validateForm()) return;
         try {
             await fetch(`/api/job/supplier/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ supplier_name, supplier_company, supplier_email, supplier_contact_no, supplier_address }),
+                body: JSON.stringify(form),
             });
             toast({ description: "Entry added successfully!" });
             fetchData(); // Refresh data
         } catch (error) {
             toast({ description: "Failed to add entry", variant: "destructive" });
         }
-    }
+    };
 
     if (loading) { return <Loading /> }
 
@@ -272,28 +294,58 @@ export default function SupplierInfoTable() {
                                     <DialogTitle>Add Supplier</DialogTitle>
                                 </DialogHeader>
                                 <div className="flex flex-col gap-4 py-4">
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-1">
                                         <label >Supplier Name</label>
-                                        <Input placeholder="Enter Supplier Name" value={new_supplier_name} onChange={(e) => setNewCustomerName(e.target.value)} />
+                                        <Input placeholder="Enter Supplier Name" value={form.supplier_name}
+                                            onChange={e => {
+                                                setForm({ ...form, supplier_name: e.target.value });
+                                                if (errors.supplier_name) setErrors({ ...errors, supplier_name: "" });
+                                            }}
+                                        />
+                                        {errors.supplier_name && <span className="error text-sm text-red-700">{errors.supplier_name}</span>}
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-1">
                                         <label >Supplier Company</label>
-                                        <Input placeholder="Enter Supplier Company" value={new_supplier_company} onChange={(e) => setNewSupplierCompany(e.target.value)} />
+                                        <Input placeholder="Enter Supplier Company" value={form.supplier_company}
+                                            onChange={e => {
+                                                setForm({ ...form, supplier_company: e.target.value });
+                                                if (errors.supplier_company) setErrors({ ...errors, supplier_company: "" });
+                                            }}
+                                        />
+                                        {errors.supplier_company && <span className="error text-sm text-red-700">{errors.supplier_company}</span>}
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-1">
                                         <label >Email</label>
-                                        <Input placeholder="Enter Email" value={new_supplier_email} onChange={(e) => setNewCustomerEmail(e.target.value)} />
+                                        <Input placeholder="Enter Email" value={form.supplier_email}
+                                            onChange={e => {
+                                                setForm({ ...form, supplier_email: e.target.value });
+                                                if (errors.supplier_email) setErrors({ ...errors, supplier_email: "" });
+                                            }}
+                                        />
+                                        {errors.supplier_email && <span className="error text-sm text-red-700">{errors.supplier_email}</span>}
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-1">
                                         <label >Mobile</label>
-                                        <Input placeholder="Enter Mobile" value={new_supplier_contact_no} onChange={(e) => setNewCustomerMobile(e.target.value)} />
+                                        <Input placeholder="Enter Mobile" value={form.supplier_contact_no}
+                                            onChange={e => {
+                                                setForm({ ...form, supplier_contact_no: e.target.value });
+                                                if (errors.supplier_contact_no) setErrors({ ...errors, supplier_contact_no: "" });
+                                            }}
+                                        />
+                                        {errors.supplier_contact_no && <span className="error text-sm text-red-700">{errors.supplier_contact_no}</span>}
                                     </div>
-                                    <div className="flex flex-col w-full items-start gap-4">
+                                    <div className="flex flex-col w-full items-start gap-1">
                                         <label >Address</label>
-                                        <Input placeholder="Enter Address" value={new_supplier_address} onChange={(e) => setNewCustomerAddress(e.target.value)} />
+                                        <Input placeholder="Enter Address" value={form.supplier_address}
+                                            onChange={e => {
+                                                setForm({ ...form, supplier_address: e.target.value });
+                                                if (errors.supplier_address) setErrors({ ...errors, supplier_address: "" });
+                                            }}
+                                        />
+                                        {errors.supplier_address && <span className="error text-sm text-red-700">{errors.supplier_address}</span>}
                                     </div>
                                 </div>
-                                <Button variant="primary" size="sm" onClick={() => handleAdd(new_supplier_name, new_supplier_company, new_supplier_email, new_supplier_contact_no, new_supplier_address)}>
+                                <Button variant="primary" size="sm" onClick={handleAdd}>
                                     Add
                                 </Button>
                             </DialogContent>

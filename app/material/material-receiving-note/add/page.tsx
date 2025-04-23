@@ -112,6 +112,7 @@ export default function AddMaterialReceivingNotePage() {
     // Handle supplier change specifically
     const handleSupplierChange = (value: string) => {
         setSelectedSupplier(value);
+        console.log("Selected supplier:", value);
     };
 
     const handleParticularChange = (value: string) => {
@@ -151,7 +152,6 @@ export default function AddMaterialReceivingNotePage() {
             particular: { particular_id: 0, particular_name: "" },
         });
         setSelectedParticularId("");
-        setSelectedSupplier("");
         setSelectedColourId("");
     };
 
