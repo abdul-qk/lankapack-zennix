@@ -78,7 +78,11 @@ export default function SlitingTable() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/slitting/`);
+            const response = await fetch(`/api/slitting/`, {
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
             const result = await response.json();
             setData(result.data);
         } catch (error) {

@@ -15,6 +15,37 @@ interface CustomerInfo {
     customer_full_name: string;
 }
 
+interface PaperRollInfo {
+    particular_id: number;
+    particular_name: string;
+}
+
+interface MaterialItem {
+    item_gsm: string;
+    material_item_size: string;
+}
+
+interface PrintSizeInfo {
+    print_size_id: number;
+    print_size: string;
+}
+
+interface CuttingInfo {
+    cutting_id: number;
+    cutting_type: string;
+}
+
+interface ColorInfo {
+    colour_id: number;
+    colour_name: string;
+}
+
+interface BagTypeInfo {
+    bag_id: number;
+    bag_type: string;
+    bags_select: string;
+}
+
 interface JobCardData {
     job_card_id: number;
     customer_id: number;
@@ -56,10 +87,16 @@ export default function JobCardTable() {
 
     const [loading, setLoading] = React.useState(true);
     const [data, setData] = React.useState<JobCardData>();
+    const [paperRolls, setPaperRolls] = React.useState<PaperRollInfo[]>([]);
+    const [printSizes, setPrintSizes] = React.useState<PrintSizeInfo[]>([]);
+    const [cuttingType, setCuttingType] = React.useState<CuttingInfo[]>([]);
+    const [colours, setColours] = React.useState<ColorInfo[]>([]);
+    const [bagTypes, setBagTypes] = React.useState<BagTypeInfo[]>([]);
     const { toast } = useToast();
 
     React.useEffect(() => {
         if (id) fetchData(Number(id));
+        fetchBagTypeData();
     }, [id]);
 
     const fetchData = async (id: number) => {
@@ -69,11 +106,28 @@ export default function JobCardTable() {
             const data = await response.json();
             if (data) {
                 setData(data);
+                setPrintSizes(data.printSizes);
+                console.log(data.printSizes);
+                setCuttingType(data.cuttingTypes);
             }
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchBagTypeData = async () => {
+        try {
+            const response = await fetch(`/api/job/bagtype/`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setBagTypes(data.data);
+        } catch (error) {
+            console.error("Error fetching bag type data:", error);
+            return [];
         }
     };
 
@@ -171,8 +225,15 @@ export default function JobCardTable() {
                         </CardHeader>
                         {data && (
                             <CardContent>
-                                <InfoRow label="Cylinder Size" value={data.printing_size || "Not specified"} />
-                                <InfoRow label="Color Type" value={data.printing_color_type || "Not specified"} />
+                                <InfoRow
+                                    label="Cylinder Size"
+                                    value={
+                                        printSizes.length > 0 && data.printing_size
+                                            ? printSizes.find((size) => size.print_size_id === Number(data.printing_size))?.print_size || "Not specified"
+                                            : "Not specified"
+                                    }
+                                />
+                                <InfoRow label="Color Type" value={data.printing_color_type + ' Colour' || "Not specified"} />
                                 <InfoRow label="Color Name" value={data.formattedColorNames} />
                                 <InfoRow label="Number of Bags" value={data.printing_no_of_bag || "Not specified"} />
                                 <InfoRow label="Block Size" value={data.block_size || "Not specified"} />
@@ -190,10 +251,21 @@ export default function JobCardTable() {
                         </CardHeader>
                         {data && (
                             <CardContent>
-                                <InfoRow label="Cutting Type" value={data.cutting_type} />
+                                <InfoRow label="Cutting Type" value={
+                                    cuttingType.length > 0 && data.cutting_type ? cuttingType.find((type) => type.cutting_id === Number(data.cutting_type))?.cutting_type || "Not specified" : "Not specified"
+                                } />
                                 {/* <InfoRow label="Bags Select" value={data.cutting_bags_select} /> */}
                                 <InfoRow label="Number of Bags" value={data.cuting_no_of_bag} />
-                                <InfoRow label="Selected Type" value={data.cutting_bag_type} />
+                                <InfoRow
+                                    label="Bag Size"
+                                    value={
+                                        bagTypes.length > 0 && data.cutting_bag_type
+                                            ? bagTypes.find((size) => size.bag_id === Number(data.cutting_bag_type))?.bag_type || "Not specified"
+                                            : "Not specified"
+                                    }
+                                />
+                                {/* If data.cutting_bags_select is 1 then "Printing" else "Non Printing" */}
+                                <InfoRow label="Selected Type" value={Number(data.cutting_bags_select) === 1 ? "Printing" : "Non Printing"} />
                                 <InfoRow label="Print Name" value={data.cutting_print_name} />
                                 <InfoRow label="Fold" value={data.cutting_fold || "Not specified"} />
                                 <InfoRow label="Remark" value={data.cuting_remark} />

@@ -22,6 +22,8 @@ export async function GET(
         customer: true,
       },
     });
+    const printSizes = await prisma.hps_print_size.findMany({});
+    const cuttingTypes = await prisma.hps_cutting_type.findMany({});
 
     if (!jobCardInfo) {
       return new Response(JSON.stringify({ error: "Job card not found" }), {
@@ -59,7 +61,9 @@ export async function GET(
     // Add the formatted color names to the response
     const responseData = {
       ...jobCardInfo,
-      formattedColorNames: colorNames
+      formattedColorNames: colorNames,
+      printSizes,
+      cuttingTypes
     };
 
     return new Response(JSON.stringify(responseData), { status: 200 });
