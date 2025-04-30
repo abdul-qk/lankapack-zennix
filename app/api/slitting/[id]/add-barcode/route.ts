@@ -17,17 +17,17 @@ export async function POST(
     // Convert barcode to BigInt if necessary (since it's BigInt in the schema)
     const barcodeBigInt = BigInt(roll_barcode_no);
 
-    // Check if the barcode exists in stock
+    // Check if the barcode exists in stock AND has status 0 (not being used)
     const stockItem = await prisma.hps_stock.findFirst({
       where: {
         stock_barcode: barcodeBigInt,
-        // material_status: 1, // Assuming 1 means available/active
+        material_status: 0, // Only select items with status 0 (not being used)
       },
     });
 
     if (!stockItem) {
       return Response.json(
-        { error: "Barcode not found in stock or unavailable" },
+        { error: "Barcode not found in stock or already in use" },
         { status: 404 }
       );
     }
@@ -37,41 +37,61 @@ export async function POST(
     const rollSize = stockItem.material_item_size;
     const rollGSM = stockItem.item_gsm;
 
-    // Create a new slitting entry
-    const newSlitting = await prisma.hps_slitting.create({
-      data: {
-        job_card_id: jobCardId,
-        roll_barcode_no: roll_barcode_no.toString(), // Convert to string as per schema
-        number_of_roll: 0, // Initial value, will be updated as rolls are added
-        wastage: "0", // Initial value
-        wastage_width: "0", // Initial value
-        added_date: new Date(),
-        user_id: 1, // Replace with actual user ID from your auth system
-        del_ind: 0, // Not deleted
-      },
-    });
+    // Use transaction to ensure both operations succeed or fail together
+    const result = await prisma.$transaction(async (tx) => {
+      // Create a new slitting entry
+      const newSlitting = await tx.hps_slitting.create({
+        data: {
+          job_card_id: jobCardId,
+          roll_barcode_no: roll_barcode_no.toString(), // Convert to string as per schema
+          number_of_roll: 0, // Initial value, will be updated as rolls are added
+          wastage: "0", // Initial value
+          wastage_width: "0", // Initial value
+          added_date: new Date(),
+          user_id: 1, // Replace with actual user ID from your auth system
+          del_ind: 0, // Not deleted
+        },
+      });
 
-    // Create corresponding wastage record
-    await prisma.hps_slitting_wastage.create({
-      data: {
-        job_card_id: jobCardId,
-        slitting_id: newSlitting.slitting_id, // Use the ID from the newly created slitting record
-        slitting_wastage: "0", // Initial wastage value
-        add_date: new Date(),
-        user_id: 1, // Replace with actual user ID from your auth system
-        del_ind: 0, // Not deleted
-      },
+      // Create corresponding wastage record
+      const newWastage = await tx.hps_slitting_wastage.create({
+        data: {
+          job_card_id: jobCardId,
+          slitting_id: newSlitting.slitting_id, // Use the ID from the newly created slitting record
+          slitting_wastage: "0", // Initial wastage value
+          add_date: new Date(),
+          user_id: 1, // Replace with actual user ID from your auth system
+          del_ind: 0, // Not deleted
+        },
+      });
+
+      // Update the stock status to indicate it has been used (status = 1)
+      const updatedStock = await tx.hps_stock.update({
+        where: {
+          stock_id: stockItem.stock_id,
+        },
+        data: {
+          material_status: 1, // Set status to 1 indicating the roll has been used
+        },
+      });
+
+      return {
+        slitting: newSlitting,
+        wastage: newWastage,
+        stockUpdate: updatedStock,
+      };
     });
 
     return Response.json(
       {
         success: true,
-        message: "Barcode added successfully",
-        data: newSlitting,
+        message: "Barcode added successfully and stock updated",
+        data: result.slitting,
         stockDetails: {
           weight: rollWeight,
           size: rollSize,
           gsm: rollGSM,
+          status: "Used", // Indicate the new status
         },
       },
       { status: 201 }
@@ -157,7 +177,7 @@ export async function DELETE(
         },
       });
 
-      // 4. Find and update the stock record back to available status
+      // 4. Find and update the stock record back to available status (0)
       // Convert barcode to BigInt for searching
       const barcodeBigInt = BigInt(slittingRecord.roll_barcode_no);
 
@@ -173,12 +193,16 @@ export async function DELETE(
             stock_id: stockRecord.stock_id,
           },
           data: {
-            material_status: 1, // Back to available status
+            material_status: 0, // Back to available status (0)
           },
         });
       }
 
-      return { success: true, barcode: slittingRecord.roll_barcode_no };
+      return {
+        success: true,
+        barcode: slittingRecord.roll_barcode_no,
+        stockUpdated: !!stockRecord, // Boolean indicating if stock was found and updated
+      };
     });
 
     return Response.json(
@@ -186,6 +210,9 @@ export async function DELETE(
         success: true,
         message: "Slitting record and related data deleted successfully",
         barcode: result.barcode,
+        stockStatusReset: result.stockUpdated
+          ? "Stock status reset to available"
+          : "Stock record not found",
       },
       { status: 200 }
     );

@@ -62,6 +62,7 @@ export default function CustomerInfoTable() {
         contact_person: "",
         customer_address: "",
     });
+    
     const [errors, setErrors] = React.useState({
         customer_full_name: "",
         customer_email_address: "",
@@ -178,13 +179,31 @@ export default function CustomerInfoTable() {
                                     <DialogTitle>Edit Roll Type {row.original.customer_full_name}</DialogTitle>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Input placeholder="Enter Company Name" value={customer_full_name} onChange={(e) => setCustomerName(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Email" value={customer_email_address} onChange={(e) => setEmail(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Customer Telephone" value={customer_tel} onChange={(e) => setTel(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Customer Mobile" value={customer_mobile} onChange={(e) => setMobile(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Contact Person" value={contact_person} onChange={(e) => setContactPerson(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Address" value={customer_address} onChange={(e) => setAddress(e.target.value)} className="col-span-4" />
+                                    <div className="flex flex-col justify-start items-center gap-4">
+                                        <div className="flex flex-col w-full items-start gap-2">
+                                            <label >Company Name</label>
+                                            <Input placeholder="Enter Company Name" value={customer_full_name} onChange={(e) => setCustomerName(e.target.value)} className="col-span-4" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-2">
+                                            <label >Email</label>
+                                            <Input placeholder="Enter Email" value={customer_email_address} onChange={(e) => setEmail(e.target.value)} className="col-span-4" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-2">
+                                            <label >Telephone</label>
+                                            <Input placeholder="Enter Customer Telephone" value={customer_tel} onChange={(e) => setTel(e.target.value)} className="col-span-4" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-2">
+                                            <label >Mobile</label>
+                                            <Input placeholder="Enter Customer Mobile" value={customer_mobile} onChange={(e) => setMobile(e.target.value)} className="col-span-4" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-2">
+                                            <label >Contact Person</label>
+                                            <Input placeholder="Enter Contact Person" value={contact_person} onChange={(e) => setContactPerson(e.target.value)} className="col-span-4" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-2">
+                                            <label >Address</label>
+                                            <Input placeholder="Enter Address" value={customer_address} onChange={(e) => setAddress(e.target.value)} className="col-span-4" />
+                                        </div>
                                     </div>
                                 </div>
                                 <Button variant="primary" size="sm" onClick={() => handleEdit(item.customer_id, customer_full_name, customer_email_address, customer_tel, customer_mobile, contact_person, customer_address)}>
@@ -361,7 +380,7 @@ export default function CustomerInfoTable() {
                                                 }}
                                             />
                                             {errors.customer_tel && <span className="error text-sm text-red-700">{errors.customer_tel}</span>}
-                                        </div>  
+                                        </div>
                                     </div>
                                     <div className="flex flex-col w-full items-start gap-2">
                                         <label >Mobile</label>

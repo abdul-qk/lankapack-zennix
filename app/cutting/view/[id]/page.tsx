@@ -178,20 +178,6 @@ export default function ViewCuttingInfo() {
                                 <InfoRow label="Delivery Date" value={formatDate(data.delivery_date)} />
                                 <InfoRow label="Paper GSM" value={data.slitting_paper_gsm} />
                                 <InfoRow label="Paper Size" value={data.slitting_paper_size} />
-                                <div className="mt-4 p-2 bg-gray-50 rounded-md">
-                                    <div className="text-sm font-medium text-gray-600 mb-2">Card Status:</div>
-                                    <div className="grid grid-cols-3 gap-2 text-sm">
-                                        <div className={`p-1 rounded ${data.card_slitting ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} text-center`}>
-                                            Slitting: {data.card_slitting ? 'Yes' : 'No'}
-                                        </div>
-                                        <div className={`p-1 rounded ${data.card_printting ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} text-center`}>
-                                            Printing: {data.card_printting ? 'Yes' : 'No'}
-                                        </div>
-                                        <div className={`p-1 rounded ${data.card_cutting ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} text-center`}>
-                                            Cutting: {data.card_cutting ? 'Yes' : 'No'}
-                                        </div>
-                                    </div>
-                                </div>
                             </CardContent>
                         )}
                     </Card>
@@ -216,7 +202,7 @@ export default function ViewCuttingInfo() {
                     </Card>
 
                     {/* Printing Information Card */}
-                    <Card className="shadow-md">
+                    <Card className="shadow-md col-span-2">
                         <CardHeader>
                             <CardTitle className="text-lg font-semibold text-purple-600">
                                 Cutting Data
@@ -235,12 +221,21 @@ export default function ViewCuttingInfo() {
                                     </TableHeader>
                                     <TableBody>
                                         {cuttingData && cuttingData.map((item, index) => (
-                                            <TableRow>
+                                            <TableRow key={index}>
                                                 <TableCell className="font-medium">{index + 1}</TableCell>
                                                 <TableCell>{item.roll_barcode_no}</TableCell>
                                                 <TableCell>{item.cutting_weight}</TableCell>
                                             </TableRow>
                                         ))}
+                                        {/* Total Row */}
+                                        {cuttingData && cuttingData.length > 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={2} className="font-bold text-right">Total</TableCell>
+                                                <TableCell className="font-bold">
+                                                    {cuttingData.reduce((sum, item) => sum + Number(item.cutting_weight || 0), 0)}
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </CardContent>
@@ -248,7 +243,7 @@ export default function ViewCuttingInfo() {
                     </Card>
 
                     {/* Cutting Information Card */}
-                    <Card className="shadow-md">
+                    <Card className="shadow-md col-span-3">
                         <CardHeader>
                             <CardTitle className="text-lg font-semibold text-blue-600">
                                 Cutting Roll Info
@@ -273,7 +268,6 @@ export default function ViewCuttingInfo() {
                                                 <TableCell className="font-medium">{index + 1}</TableCell>
                                                 <TableCell>{item.no_of_bags}</TableCell>
                                                 <TableCell>{item.cutting_roll_weight}</TableCell>
-                                                <TableCell>{item.cutting_wastage}</TableCell>
                                                 <TableCell>{item.cutting_wastage}</TableCell>
                                                 <TableCell>{new Date(item.add_date).toLocaleString('en-UK', { dateStyle: 'short' })}</TableCell>
                                                 <TableCell>
@@ -316,6 +310,22 @@ export default function ViewCuttingInfo() {
                                                 </TableCell>
                                             </TableRow>
                                         ))}
+                                        {/* Totals Row */}
+                                        {cuttingRollData && cuttingRollData.length > 0 && (
+                                            <TableRow>
+                                                <TableCell className="font-bold text-right" colSpan={1}>Total</TableCell>
+                                                <TableCell className="font-bold">
+                                                    {cuttingRollData.reduce((sum, item) => sum + Number(item.no_of_bags || 0), 0).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="font-bold">
+                                                    {cuttingRollData.reduce((sum, item) => sum + Number(item.cutting_roll_weight || 0), 0).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="font-bold">
+                                                    {cuttingRollData.reduce((sum, item) => sum + Number(item.cutting_wastage || 0), 0).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell colSpan={2}></TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </CardContent>

@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
           bundle_type: completeItem.bundle_type,
           weight: parseFloat(completeItem.complete_item_weight),
           bags: parseInt(completeItem.complete_item_bags),
-          price: parseInt(bagType.bag_price),
+          price: parseFloat(bagType.bag_price),
         },
       }),
       { status: 200 }

@@ -69,6 +69,7 @@ interface SlittingInfo {
     number_of_roll: number;
     roll_barcode_no: string;
     wastage: string;
+    net_weight: string;
     wastage_width: string;
 }
 
@@ -562,7 +563,7 @@ export default function EditSlittingInfo() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Barcode</TableHead>
-                                            {/* <TableHead>Weight</TableHead> */}
+                                            <TableHead>Weight</TableHead>
                                             <TableHead>Wastage Weight</TableHead>
                                             <TableHead>Wastage Width</TableHead>
                                             <TableHead>Action</TableHead>
@@ -584,6 +585,7 @@ export default function EditSlittingInfo() {
                                                         {item.roll_barcode_no}
                                                     </div>
                                                 </TableCell>
+                                                <TableCell>{item.net_weight}</TableCell>
                                                 <TableCell>{item.wastage}</TableCell>
                                                 <TableCell>{item.wastage_width}</TableCell>
                                                 <TableCell>

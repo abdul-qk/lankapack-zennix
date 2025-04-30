@@ -92,6 +92,7 @@ export default function SlitingTable() {
         if (!debouncedSearch) return data;
         return data.filter(
             (item) =>
+                item.job_card_id.toString().includes(debouncedSearch) ||
                 item.customer.customer_full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                 item.particular.particular_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                 item.cuting_no_of_bag.toLowerCase().includes(debouncedSearch.toLowerCase())

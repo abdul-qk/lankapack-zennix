@@ -475,6 +475,7 @@ export default function EditBundlePage() {
                             <NonCompleteBundleCard
                                 bundleId={bundleId}
                                 rollData={rollData}
+                                bundleType={bundleData.bundle_type}
                                 nonCompleteItems={nonCompleteItems}
                                 onAddItem={handleAddNonCompleteItem}
                                 onDeleteItem={handleDeleteNonCompleteItem}

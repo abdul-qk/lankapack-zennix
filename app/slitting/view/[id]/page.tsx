@@ -197,6 +197,7 @@ export default function ViewSlittingInfo() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead>ID</TableHead>
                                             <TableHead>Barcode</TableHead>
                                             <TableHead>Wastage Weight</TableHead>
                                             <TableHead>Wastage Width</TableHead>
@@ -208,9 +209,21 @@ export default function ViewSlittingInfo() {
                                                 <TableCell className="font-medium">{item.slitting_id}</TableCell>
                                                 <TableCell>{item.roll_barcode_no}</TableCell>
                                                 <TableCell>{item.wastage}</TableCell>
-                                                <TableCell className="text-right">{item.wastage_width}</TableCell>
+                                                <TableCell>{item.wastage_width}</TableCell>
                                             </TableRow>
                                         ))}
+                                        {/* Total Row */}
+                                        {slittingData && slittingData.length > 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={2} className="font-bold">Total</TableCell>
+                                                <TableCell className="font-bold">
+                                                    {slittingData.reduce((sum, item) => sum + Number(item.wastage || 0), 0)}
+                                                </TableCell>
+                                                <TableCell className="font-bold">
+                                                    {slittingData.reduce((sum, item) => sum + Number(item.wastage_width || 0), 0)}
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </CardContent>

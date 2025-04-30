@@ -24,6 +24,7 @@ export interface CompleteItem {
 
 export interface NonCompleteItem {
   non_complete_id: number;
+  bundle_type: string;
   non_complete_weight: string;
   non_complete_bags: string;
   non_complete_barcode: string;

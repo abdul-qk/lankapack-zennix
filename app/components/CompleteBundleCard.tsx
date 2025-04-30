@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Barcode, Trash2 } from "lucide-react";
+import { Barcode, Printer, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -195,8 +195,75 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                     <div className="flex justify-center my-4">
                                                         <ReactBarcode value={item.complete_item_barcode} />
                                                     </div>
-                                                    <div className="text-center mt-2 text-sm text-gray-600">
-                                                        {item.complete_item_barcode}
+
+                                                    {/* Vertical layout for data */}
+                                                    <div className="w-full">
+                                                        <div className="grid grid-cols-2 gap-2 w-full">
+
+                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">Bundle ID</div>
+                                                            <div className="p-2 border rounded-r">{item.complete_item_id}</div>
+
+                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">Type</div>
+                                                            <div className="p-2 border rounded-r">{item.bundle_type}</div>
+
+                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">Weight</div>
+                                                            <div className="p-2 border rounded-r">{item.complete_item_weight}</div>
+
+                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">Bags</div>
+                                                            <div className="p-2 border rounded-r">{item.complete_item_bags}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-center mt-4">
+                                                        <Button
+                                                            onClick={() => {
+                                                                const printContent = document.createElement('div');
+                                                                printContent.innerHTML = `
+                                                                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                                                                        <div style="text-align: center; margin-bottom: 20px;">
+                                                                            <h2>Bundle Barcode</h2>
+                                                                            <div style="margin: 20px 0;">
+                                                                                ${document.querySelector('[data-testid="react-barcode"]')?.outerHTML || ''}
+                                                                            </div>
+                                                                            <p style="color: #666;">${item.complete_item_barcode}</p>
+                                                                        </div>
+                                                                        <div style="margin-top: 20px;">
+                                                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Bundle ID</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.complete_item_id}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Type</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.bundle_type}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Weight</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.complete_item_weight}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Bags</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.complete_item_bags}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
+
+                                                                const printWindow = window.open('', '_blank');
+                                                                if (printWindow) {
+                                                                    printWindow.document.write(printContent.innerHTML);
+                                                                    printWindow.document.close();
+                                                                    printWindow.onload = () => {
+                                                                        printWindow.print();
+                                                                    };
+                                                                } else {
+                                                                    toast({
+                                                                        title: "Error",
+                                                                        description: "Unable to open print window. Please allow pop-ups.",
+                                                                        variant: "destructive",
+                                                                    });
+                                                                }
+                                                            }}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex gap-2 items-center"
+                                                        >
+                                                            <Printer className="h-4 w-4" />
+                                                            Print
+                                                        </Button>
                                                     </div>
                                                 </DialogContent>
                                             </Dialog>

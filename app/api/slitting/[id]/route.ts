@@ -29,11 +29,33 @@ export async function GET(
       },
     });
 
-    const slittingData = await prisma.hps_slitting.findMany({
+    // Fetch slitting data first
+    const basicSlittingData = await prisma.hps_slitting.findMany({
       where: {
         job_card_id: jobCardId,
       },
     });
+
+    // Now retrieve the weights from hps_stock for each roll_barcode_no
+    const slittingData = await Promise.all(
+      basicSlittingData.map(async (slitting) => {
+        // Converting the barcode string to BigInt for comparison with hps_stock.stock_barcode
+        const stockItem = await prisma.hps_stock.findFirst({
+          where: {
+            stock_barcode: BigInt(slitting.roll_barcode_no),
+          },
+          select: {
+            item_net_weight: true,
+          },
+        });
+
+        // Return the slitting data with the added net_weight field
+        return {
+          ...slitting,
+          net_weight: stockItem?.item_net_weight || null,
+        };
+      })
+    );
 
     const slittingRollData = await prisma.hps_slitting_roll.findMany({
       where: {
@@ -47,9 +69,12 @@ export async function GET(
       });
     }
 
-    return new Response(JSON.stringify({ data: slittingInfo, slittingData, slittingRollData }), {
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ data: slittingInfo, slittingData, slittingRollData }),
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error("Error fetching slitting info:", error);
     return new Response(JSON.stringify({ error: "Failed to fetch data" }), {

@@ -45,6 +45,7 @@ interface JobCardData {
     printing_no_of_bag: string;
     printing_remark: string;
     block_size: string;
+    formattedColorNames: string;
     cutting_type: string;
     cutting_bags_select: string;
     cutting_bag_type: string;
@@ -106,7 +107,7 @@ export default function ViewSlittingInfo() {
             const response = await fetch(`/api/printing/${id}`);
             const data = await response.json();
             if (data) {
-                setData(data.data);
+                setData(data);
                 setPrintingData(data.printingData);
                 setPrintingPackData(data.printingPackData)
             }
@@ -213,8 +214,8 @@ export default function ViewSlittingInfo() {
                                 <InfoRow label="Cylinder Size" value={data.print_size.print_size || "Not specified"} />
                                 <InfoRow label="Numbar Of Bags" value={data.printing_no_of_bag || "Not specified"} />
                                 <InfoRow label="Color type" value={data.printing_color_type + " Colour(s)" || "Not specified"} />
-                                <InfoRow label="Color" value={colorNames.map((color) => color.split(" ")[0]).join(", ") || "Not specified"} />
                                 {/* <InfoRow label="Color" value={colorNames.map((color) => color.split(" ")[0]).join(", ") || "Not specified"} /> */}
+                                <InfoRow label="Color" value={data.formattedColorNames} />
                                 <InfoRow label="Block Size" value={data.block_size || "Not specified"} />
                                 <InfoRow label="Remark" value={data.printing_remark || "Not specified"} />
                             </CardContent>

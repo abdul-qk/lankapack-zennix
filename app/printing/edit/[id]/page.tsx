@@ -116,7 +116,7 @@ export default function EditPrintingInfo() {
             const response = await fetch(`/api/printing/${id}`);
             const data = await response.json();
             if (data) {
-                setData(data.data);
+                setData(data);
                 setPrintingData(data.printingData);
                 setPrintingPackData(data.printingPackData)
             }
