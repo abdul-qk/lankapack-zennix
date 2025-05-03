@@ -94,6 +94,7 @@ export default function JobCardTable() {
     const [data, setData] = React.useState<JobCardData>();
     const [paperRolls, setPaperRolls] = React.useState<PaperRollInfo[]>([]);
     const [printSizes, setPrintSizes] = React.useState<PrintSizeInfo[]>([]);
+    const [printSize, setPrintSize] = React.useState('');
     const [cuttingType, setCuttingType] = React.useState<CuttingInfo[]>([]);
     const [colours, setColours] = React.useState<ColorInfo[]>([]);
     const [bagTypes, setBagTypes] = React.useState<BagTypeInfo[]>([]);
@@ -115,6 +116,23 @@ export default function JobCardTable() {
                 setPrintSizes(data.printSizes);
                 console.log(data.printSizes);
                 setCuttingType(data.cuttingTypes);
+            }
+
+            // Fetch print_size from printSizes based on printing_size
+            const selectedPrintSize = printSizes.find(size => size.print_size_id === data.printing_size);
+            if (selectedPrintSize) {
+                setPrintSize(selectedPrintSize.print_size);
+            }
+            // Fetch colour names based on printing_color_name
+            const colorNames = data.printing_color_name.split(', ');
+            const selectedColours = colours.filter(colour => colorNames.includes(colour.colour_name));
+            if (selectedColours.length > 0) {
+                setColours(selectedColours);
+            }
+            // Fetch bag type based on cutting_bag_type
+            const selectedBagType = bagTypes.find(bag => bag.bag_id === data.cutting_bag_type);
+            if (selectedBagType) {
+                setBagTypes([selectedBagType]);
             }
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -339,8 +357,8 @@ export default function JobCardTable() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="info-card-content">
-                                        <InfoRow label="Roll Type" value={data.slitting_roll_type} />
-                                        <InfoRow label="Slitting Size" value={data.slitting_size || "Not specified"} />
+                                        {/* <InfoRow label="Roll Type" value={data.slitting_roll_type} /> */}
+                                        <InfoRow label="Slitting" value={data.slitting_size || "Not specified"} />
                                         <InfoRow label="Remark" value={data.slitting_remark || "Not specified"} />
                                     </CardContent>
                                 </Card>
@@ -355,8 +373,8 @@ export default function JobCardTable() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="info-card-content">
-                                        <InfoRow label="Printing Size" value={data.printing_size || "Not specified"} />
-                                        <InfoRow label="Color Type" value={data.printing_color_type || "Not specified"} />
+                                        <InfoRow label="Cylinder Size" value={printSize || "Not specified"} />
+                                        <InfoRow label="Color Type" value={data.printing_color_type + ' Colour(s)' || "Not specified"} />
                                         <InfoRow label="Color Name(s)" value={data.formattedColorNames || data.printing_color_name || "Not specified"} />
                                         <InfoRow label="No. of Bags" value={data.printing_no_of_bag || "Not specified"} />
                                         <InfoRow label="Remark" value={data.printing_remark || "Not specified"} />
@@ -375,10 +393,10 @@ export default function JobCardTable() {
                                     </CardHeader>
                                     <CardContent className="info-card-content">
                                         <InfoRow label="Cutting Type" value={cuttingType.find(ct => ct.cutting_id === parseInt(data.cutting_type))?.cutting_type || data.cutting_type || "Not specified"} />
-                                        <InfoRow label="Bags Select" value={data.cutting_bags_select || "Not specified"} />
-                                        <InfoRow label="Bag Type" value={bagTypes.find(bt => bt.bag_id === parseInt(data.cutting_bag_type))?.bag_type || data.cutting_bag_type || "Not specified"} />
-                                        <InfoRow label="Print Name" value={data.cutting_print_name || "Not specified"} />
                                         <InfoRow label="No. of Bags" value={data.cuting_no_of_bag || "Not specified"} />
+                                        <InfoRow label="Selected Type" value={data.cutting_bags_select ? (data.cutting_bags_select === '1' ? 'Non Printing' : 'Printing') : "Not specified"} />
+                                        <InfoRow label="Bag Size" value={bagTypes.find(bt => bt.bag_id === parseInt(data.cutting_bag_type))?.bag_type || data.cutting_bag_type || "Not specified"} />
+                                        <InfoRow label="Print Name" value={data.cutting_print_name || "Not specified"} />
                                         <InfoRow label="Fold" value={data.cutting_fold || "Not specified"} />
                                         <InfoRow label="Remark" value={data.cuting_remark || "Not specified"} />
                                     </CardContent>
