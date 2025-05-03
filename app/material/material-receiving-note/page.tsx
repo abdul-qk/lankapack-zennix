@@ -20,7 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Eye, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { Pencil, Trash2, Eye, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, UploadCloud, Download } from "lucide-react"; // Added UploadCloud, Download
 import Link from "next/link";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -28,6 +28,23 @@ import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"; // Added Dialog components
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"; // Added Select components
+import { Label } from "@/components/ui/label"; // Added Label
 
 type SupplierInfo = {
     supplier_id: number;
@@ -36,6 +53,12 @@ type SupplierInfo = {
     supplier_address: string;
     supplier_contact_no: string;
     supplier_email: string;
+}
+
+// Added Supplier type for dropdown
+type Supplier = {
+    supplier_id: number;
+    supplier_name: string;
 }
 
 type MaterialInfo = {
@@ -55,6 +78,13 @@ export default function MaterialInfoTable() {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const { toast } = useToast();
 
+    // State for import dialog
+    const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
+    const [suppliers, setSuppliers] = React.useState<Supplier[]>([]);
+    const [selectedSupplierId, setSelectedSupplierId] = React.useState<string>("");
+    const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+    const [isUploading, setIsUploading] = React.useState(false);
+
     // Debounce search input to optimize filtering
     React.useEffect(() => {
         const timer = setTimeout(() => {
@@ -67,6 +97,7 @@ export default function MaterialInfoTable() {
     // Fetch data on component mount (or when search state changes)
     React.useEffect(() => {
         fetchData();
+        fetchSuppliers(); // Fetch suppliers for the dialog
     }, []);
 
     const fetchData = async () => {
@@ -77,9 +108,24 @@ export default function MaterialInfoTable() {
             setData(result.data);
         } catch (error) {
             console.error("Error fetching data:", error);
-            alert("Failed to fetch data");
+            toast({ description: "Failed to fetch material notes", variant: "destructive" });
         }
         setLoading(false);
+    };
+
+    // Fetch suppliers for the import dialog dropdown
+    const fetchSuppliers = async () => {
+        try {
+            // Assuming an endpoint exists to fetch just suppliers, similar to the add page
+            // Adjust the endpoint if necessary
+            const response = await fetch(`/api/job/supplier`); // Corrected endpoint based on directory structure
+            if (!response.ok) throw new Error('Failed to fetch suppliers');
+            const data = await response.json();
+            setSuppliers(data.data || []); // Adjust based on actual API response structure
+        } catch (error) {
+            console.error("Error fetching suppliers:", error);
+            toast({ description: "Failed to fetch suppliers for import", variant: "destructive" });
+        }
     };
 
     // Filter data based on the debounced search input
@@ -177,6 +223,57 @@ export default function MaterialInfoTable() {
         }
     };
 
+    // Handle file selection
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            setSelectedFile(event.target.files[0]);
+        }
+    };
+
+    // Handle CSV download
+    const handleDownloadSample = () => {
+        // Trigger download via a link or direct fetch
+        window.location.href = '/api/material/material-receiving-note/import/sample';
+    };
+
+    // Handle file upload
+    const handleUpload = async () => {
+        if (!selectedSupplierId || !selectedFile) {
+            toast({ description: "Please select a supplier and a CSV file.", variant: "destructive" });
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("supplierId", selectedSupplierId);
+        formData.append("file", selectedFile);
+
+        try {
+            const response = await fetch('/api/material/material-receiving-note/import', {
+                method: 'POST',
+                body: formData,
+                // No 'Content-Type' header needed, browser sets it for FormData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Upload failed');
+            }
+
+            const result = await response.json();
+            toast({ description: result.message || "File imported successfully!" });
+            setIsImportDialogOpen(false); // Close dialog on success
+            setSelectedFile(null); // Reset file input
+            setSelectedSupplierId(""); // Reset supplier
+            fetchData(); // Refresh the table data
+        } catch (error: any) {
+            console.error("Error uploading file:", error);
+            toast({ description: error.message || "Failed to import file.", variant: "destructive" });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const totalPages = table.getPageCount();
     const currentPage = table.getState().pagination.pageIndex + 1;
 
@@ -219,12 +316,73 @@ export default function MaterialInfoTable() {
                             onChange={(e) => setSearch(e.target.value)}
                             className="max-w-sm"
                         />
-                        <Link href={`/material/material-receiving-note/add`}>
-                            <Button variant={'primary'}>
-                                <PlusCircle />
-                                Add New Material Note
-                            </Button>
-                        </Link>
+                        <div className="flex space-x-2"> {/* Wrap buttons */} 
+                            {/* Import Button and Dialog */}
+                            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant={'outline'}> {/* Changed variant */} 
+                                        <UploadCloud className="mr-2 h-4 w-4" />
+                                        Import
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Import Material Items</DialogTitle>
+                                        <DialogDescription>
+                                            Select a supplier and upload a CSV file with material details.
+                                            <Button variant="link" className="p-0 h-auto ml-1" onClick={handleDownloadSample}>
+                                                <Download className="mr-1 h-3 w-3" /> Download Sample CSV
+                                            </Button>
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="supplier" className="text-right">
+                                                Supplier
+                                            </Label>
+                                            <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
+                                                <SelectTrigger className="col-span-3">
+                                                    <SelectValue placeholder="Select a supplier" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {suppliers.map(supplier => (
+                                                        <SelectItem key={supplier.supplier_id} value={String(supplier.supplier_id)}>
+                                                            {supplier.supplier_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="csvFile" className="text-right">
+                                                CSV File
+                                            </Label>
+                                            <Input
+                                                id="csvFile"
+                                                type="file"
+                                                accept=".csv"
+                                                onChange={handleFileChange}
+                                                className="col-span-3"
+                                            />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
+                                        <Button onClick={handleUpload} disabled={isUploading || !selectedSupplierId || !selectedFile}>
+                                            {isUploading ? "Uploading..." : "Upload"}
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
+                            {/* Add New Button */}
+                            <Link href={`/material/material-receiving-note/add`}>
+                                <Button variant={'primary'}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> {/* Added margin */} 
+                                    Add New Material Note
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
 
                     <Table>

@@ -149,12 +149,27 @@ export default function SupplierInfoTable() {
                                     <DialogTitle>Edit Roll Type {row.original.supplier_name}</DialogTitle>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Input placeholder="Enter Supplier Name" value={supplier_name} onChange={(e) => setCustomerName(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Supplier Company" value={supplier_company} onChange={(e) => setSupplier(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Email" value={supplier_email} onChange={(e) => setEmail(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Customer Mobile" value={supplier_contact_no} onChange={(e) => setMobile(e.target.value)} className="col-span-4" />
-                                        <Input placeholder="Enter Address" value={supplier_address} onChange={(e) => setAddress(e.target.value)} className="col-span-4" />
+                                    <div className="flex flex-col w-full items-start gap-4">
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <label>Supplier Name</label>
+                                            <Input placeholder="Enter Supplier Name" value={supplier_name} onChange={(e) => setCustomerName(e.target.value)} className="w-full" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <label>Company Name</label>
+                                            <Input placeholder="Enter Supplier Company" value={supplier_company} onChange={(e) => setSupplier(e.target.value)} className="w-full" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <label>Email</label>
+                                            <Input placeholder="Enter Email" value={supplier_email} onChange={(e) => setEmail(e.target.value)} className="w-full" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <label>Mobile</label>
+                                            <Input placeholder="Enter Customer Mobile" value={supplier_contact_no} onChange={(e) => setMobile(e.target.value)} className="w-full" />
+                                        </div>
+                                        <div className="flex flex-col w-full items-start gap-1">
+                                            <label>Address</label>
+                                            <Input placeholder="Enter Address" value={supplier_address} onChange={(e) => setAddress(e.target.value)} className="w-full" />
+                                        </div>
                                     </div>
                                 </div>
                                 <Button variant="primary" size="sm" onClick={() => handleEdit(item.supplier_id, supplier_name, supplier_company, supplier_email, supplier_contact_no, supplier_address)}>

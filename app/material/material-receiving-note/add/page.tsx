@@ -13,6 +13,11 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
 import { set } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Barcode, DeleteIcon, Printer, ScanBarcode, Trash2 } from "lucide-react";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog"; import dynamic from "next/dynamic";
+
+const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
 // Define types
 interface Supplier {
@@ -41,6 +46,7 @@ interface MaterialItem {
     material_item_net_weight: string;
     material_item_gross_weight: string;
     material_colour: string;
+    material_item_barcode?: string; // Added barcode field
 }
 
 interface MaterialInfo {
@@ -50,10 +56,11 @@ interface MaterialInfo {
 }
 
 interface APIResponse {
-    materialInfo: MaterialInfo;
+    // materialInfo: MaterialInfo; // No longer needed for initial load
     suppliers: Supplier[];
     particulars: Particular[];
     colours: Colour[];
+    tempItems?: MaterialItem[]; // Add tempItems, make it optional
 }
 
 export default function AddMaterialReceivingNotePage() {
@@ -69,6 +76,7 @@ export default function AddMaterialReceivingNotePage() {
     const [particulars, setParticulars] = useState<Particular[]>([]);
     const [colours, setColours] = useState<Colour[]>([]);
     const [items, setItems] = useState<MaterialItem[]>([]);
+    const [addedItemIds, setAddedItemIds] = useState<number[]>([]); // Track IDs of items added in this session
     const [formData, setFormData] = useState<MaterialItem>({
         material_item_id: 0,
         material_item_reel_no: "",
@@ -99,6 +107,12 @@ export default function AddMaterialReceivingNotePage() {
             setSuppliers(data.suppliers);
             setParticulars(data.particulars);
             setColours(data.colours);
+
+            // Populate items and addedItemIds with tempItems if they exist
+            if (data.tempItems && data.tempItems.length > 0) {
+                setItems(data.tempItems);
+                setAddedItemIds(data.tempItems.map(item => item.material_item_id));
+            }
         } catch (error) {
             console.error("Error fetching data:", error);
             toast({ description: "Failed fetching data", variant: "destructive" });
@@ -132,62 +146,119 @@ export default function AddMaterialReceivingNotePage() {
         }
     }
 
-    const handleAddItem = () => {
+    const handleAddItem = async () => {
         if (!formData.material_item_reel_no || !formData.particular || !formData.material_colour || !formData.material_item_variety || !formData.material_item_gsm || !formData.material_item_size || !formData.material_item_net_weight || !formData.material_item_gross_weight) {
-            alert("All fields are required.");
+            toast({ description: "All item fields are required.", variant: "destructive" });
             return;
         }
 
-        setItems([...items, { ...formData, material_item_particular: formData.particular.particular_id }]);
-        setFormData({
-            material_item_id: 0,
-            material_item_reel_no: "",
-            material_item_particular: 0,
-            material_item_variety: "",
-            material_item_gsm: "",
-            material_item_size: "",
-            material_item_net_weight: "",
-            material_item_gross_weight: "",
-            material_colour: "",
-            particular: { particular_id: 0, particular_name: "" },
-        });
-        setSelectedParticularId("");
-        setSelectedColourId("");
+        try {
+            const itemToAdd = {
+                ...formData,
+                material_item_particular: formData.particular.particular_id,
+                material_info_id: 1, // Temporary ID
+            };
+
+            const response = await fetch(`/api/material/material-receiving-note/add-item`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ item: itemToAdd }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to add item");
+            }
+
+            const savedItem: MaterialItem = await response.json();
+
+            // Add the saved item (with barcode) to the local state
+            setItems([...items, savedItem]);
+            setAddedItemIds([...addedItemIds, savedItem.material_item_id]); // Track the ID
+
+            // Reset form
+            setFormData({
+                material_item_id: 0,
+                material_item_reel_no: "",
+                material_item_particular: 0,
+                material_item_variety: "",
+                material_item_gsm: "",
+                material_item_size: "",
+                material_item_net_weight: "",
+                material_item_gross_weight: "",
+                material_colour: "",
+                particular: { particular_id: 0, particular_name: "" },
+            });
+            setSelectedParticularId("");
+            setSelectedColourId("");
+            toast({ description: "Item added successfully!" });
+
+        } catch (error: any) {
+            console.error("Error adding item:", error);
+            toast({ description: error.message || "Failed to add item", variant: "destructive" });
+        }
     };
 
-    const handleDeleteItem = async (id: number) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+    const handleDeleteItem = async (idToDelete: number) => {
+        const confirmDelete = window.confirm("Are you sure you want to remove this item from the list?");
 
         if (!confirmDelete) return;
 
-        setItems(items.filter(item => item.material_item_id !== id));
+        // First update the UI
+        setItems(items.filter(item => item.material_item_id !== idToDelete));
+        setAddedItemIds(addedItemIds.filter(id => id !== idToDelete));
+        
+        // Then delete from database
+        try {
+            const response = await fetch(`/api/material/material-receiving-note/delete-item/${idToDelete}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete item from DB');
+            toast({ description: "Item removed successfully." });
+        } catch (error: any) {
+            console.error("Error deleting item:", error);
+            toast({ description: `Failed to remove item: ${error.message}`, variant: "destructive" });
+            // Note: We don't re-add the item to the UI since it's already been removed
+            // The user can refresh the page to see the current state from the database
+        }
     };
 
 
     const handleSave = async () => {
+        if (!selectedSupplier) {
+            toast({ description: "Please select a supplier.", variant: "destructive" });
+            return;
+        }
+        if (addedItemIds.length === 0) {
+            toast({ description: "Please add at least one item.", variant: "destructive" });
+            return;
+        }
+
         try {
-            const response = await fetch(`/api/material/material-receiving-note/add/`, {
+            const response = await fetch(`/api/material/material-receiving-note/finalize`, { // Changed endpoint
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    materialInfo: {
-                        material_supplier: selectedSupplier,
-                        material_items: items.map(item => ({
-                            ...item,
-                            particular: item.particular?.particular_id,
-                        })),
-                    },
+                    material_supplier: selectedSupplier,
+                    itemIds: addedItemIds, // Send only the IDs of items added in this session
                 }),
             });
 
             if (!response.ok) {
-                throw new Error("Failed to save data");
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to save data");
             }
 
-            alert("Data saved successfully!");
-        } catch (error) {
+            toast({ description: "Material Receiving Note saved successfully!" });
+            // Optionally redirect or clear the form
+            setItems([]);
+            setAddedItemIds([]);
+            setSelectedSupplier('');
+            // router.push('/material/material-receiving-note'); // Example redirect
+
+        } catch (error: any) {
             console.error("Error saving data:", error);
-            alert("Failed to save data");
+            toast({ description: error.message || "Failed to save data", variant: "destructive" });
         }
     };
 
@@ -325,19 +396,109 @@ export default function AddMaterialReceivingNotePage() {
                                 </TableHeader>
                                 <TableBody>
                                     {items.map(item => (
-                                        <TableRow key={item.material_item_id}>
+                                        <TableRow key={item.material_item_id}> {/* Use item.material_item_id which should be unique now */}
                                             <TableCell>{item.material_item_reel_no}</TableCell>
                                             <TableCell>{item.material_colour}</TableCell>
-                                            <TableCell>{item.particular?.particular_name}</TableCell>
+                                            <TableCell>{particulars.find(p => p.particular_id === item.material_item_particular)?.particular_name || 'N/A'}</TableCell> {/* Display name based on ID */}
                                             <TableCell>{item.material_item_variety}</TableCell>
                                             <TableCell>{item.material_item_gsm}</TableCell>
                                             <TableCell>{item.material_item_size}</TableCell>
                                             <TableCell>{item.material_item_net_weight}</TableCell>
                                             <TableCell>{item.material_item_gross_weight}</TableCell>
                                             <TableCell>
-                                                <Button variant="destructive" onClick={() => handleDeleteItem(item.material_item_id)}>
-                                                    Delete
-                                                </Button>
+                                                <div className="flex gap-2 items-center">
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="ghost" size="sm">
+                                                                <Barcode className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Material Barcode</DialogTitle>
+                                                            </DialogHeader>
+                                                            <div className="flex justify-center my-4">
+                                                                <ReactBarcode value={item.material_item_barcode || 'Generating...'} />
+                                                            </div>
+
+                                                            {/* Vertical layout for data */}
+                                                            <div className="w-full">
+                                                                <div className="grid grid-cols-2 gap-2 w-full">
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Reel No</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_id}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Net Weight</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_net_weight}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">GSM</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_gsm}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Size</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_size}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Colour</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_colour}</div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex justify-center mt-4">
+                                                                <Button
+                                                                    onClick={() => {
+                                                                        const printContent = document.createElement('div');
+                                                                        printContent.innerHTML = `
+                                                                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                                                                        <div style="text-align: center; margin-bottom: 20px;">
+                                                                            <h2>Bundle Barcode</h2>
+                                                                            <div style="margin: 20px 0;">
+                                                                                ${document.querySelector('[data-testid="react-barcode"]')?.outerHTML || ''}
+                                                                            </div>
+                                                                            <p style="color: #666;">${item.material_item_barcode}</p>
+                                                                        </div>
+                                                                        <div style="margin-top: 20px;">
+                                                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Reel No</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_id}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">New Weight</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_net_weight}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">GSM</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_gsm}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Size</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_size}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Colour</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_colour}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
+
+                                                                        const printWindow = window.open('', '_blank');
+                                                                        if (printWindow) {
+                                                                            printWindow.document.write(printContent.innerHTML);
+                                                                            printWindow.document.close();
+                                                                            printWindow.onload = () => {
+                                                                                printWindow.print();
+                                                                            };
+                                                                        } else {
+                                                                            toast({
+                                                                                title: "Error",
+                                                                                description: "Unable to open print window. Please allow pop-ups.",
+                                                                                variant: "destructive",
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    className="flex gap-2 items-center"
+                                                                >
+                                                                    <Printer className="h-4 w-4" />
+                                                                    Print
+                                                                </Button>
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                    <Trash2 color="red" className="h-4 w-4" onClick={() => handleDeleteItem(item.material_item_id)} />
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
