@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { set } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Barcode, DeleteIcon, Printer, ScanBarcode, Trash2 } from "lucide-react";
-import { AlertDialogHeader } from "@/components/ui/alert-dialog"; import dynamic from "next/dynamic";
+import dynamic from "next/dynamic";
 
 const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 

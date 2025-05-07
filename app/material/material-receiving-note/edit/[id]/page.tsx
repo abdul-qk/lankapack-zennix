@@ -11,6 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Barcode, Printer } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useToast } from "@/hooks/use-toast";
+
+const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
 // Define types
 interface Supplier {
@@ -39,6 +45,7 @@ interface MaterialItem {
     material_item_net_weight: string;
     material_item_gross_weight: string;
     material_colour: string;
+    material_item_barcode: string;
 }
 
 interface MaterialInfo {
@@ -58,6 +65,8 @@ export default function EditMaterialReceivingNotePage() {
     const params = useParams();
     const id = params.id;
 
+    const { toast } = useToast();
+
     const [materialInfo, setMaterialInfo] = useState<MaterialInfo | null>(null);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [particulars, setParticulars] = useState<Particular[]>([]);
@@ -74,6 +83,7 @@ export default function EditMaterialReceivingNotePage() {
         material_item_net_weight: "",
         material_item_gross_weight: "",
         material_colour: "",
+        material_item_barcode: "",
     });
 
     useEffect(() => {
@@ -119,25 +129,55 @@ export default function EditMaterialReceivingNotePage() {
         }
     };
 
-    const handleAddItem = () => {
+    const handleAddItem = async () => {
         if (!formData.material_item_reel_no || !formData.particular || !formData.material_colour || !formData.material_item_variety || !formData.material_item_gsm || !formData.material_item_size || !formData.material_item_net_weight || !formData.material_item_gross_weight) {
-            alert("All fields are required.");
+            toast({ description: "All item fields are required.", variant: "destructive" });
             return;
         }
 
-        setItems([...items, { ...formData, material_item_particular: formData.particular.particular_id }]);
-        setFormData({
-            material_item_id: 0,
-            material_item_reel_no: "",
-            material_item_particular: 0,
-            material_item_variety: "",
-            material_item_gsm: "",
-            material_item_size: "",
-            material_item_net_weight: "",
-            material_item_gross_weight: "",
-            material_colour: "",
-            particular: { particular_id: 0, particular_name: "" },
-        });
+        try {
+            const itemToAdd = {
+                ...formData,
+                material_item_particular: formData.particular.particular_id,
+                material_info_id: materialInfo?.material_info_id,
+            };
+
+            const response = await fetch(`/api/material/material-receiving-note/add-item`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ item: itemToAdd }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to add item");
+            }
+
+            const savedItem: MaterialItem = await response.json();
+
+            // Add the saved item (with barcode) to the local state
+            setItems([...items, savedItem]);
+
+            // Reset form
+            setFormData({
+                material_item_id: 0,
+                material_item_reel_no: "",
+                material_item_particular: 0,
+                material_item_variety: "",
+                material_item_gsm: "",
+                material_item_size: "",
+                material_item_net_weight: "",
+                material_item_gross_weight: "",
+                material_colour: "",
+                material_item_barcode: "",
+                particular: { particular_id: 0, particular_name: "" },
+            });
+            toast({ description: "Item added successfully!" });
+
+        } catch (error: any) {
+            console.error("Error adding item:", error);
+            toast({ description: error.message || "Failed to add item", variant: "destructive" });
+        }
     };
 
     const handleDeleteItem = async (id: number) => {
@@ -335,6 +375,96 @@ export default function EditMaterialReceivingNotePage() {
                                             <TableCell>{item.material_item_net_weight}</TableCell>
                                             <TableCell>{item.material_item_gross_weight}</TableCell>
                                             <TableCell>
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="ghost" size="sm">
+                                                            <Barcode className="h-4 w-4" />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>Material Barcode</DialogTitle>
+                                                        </DialogHeader>
+                                                        <div className="flex justify-center my-4">
+                                                            <ReactBarcode value={item.material_item_barcode || 'Generating...'} />
+                                                        </div>
+
+                                                        {/* Vertical layout for data */}
+                                                        <div className="w-full">
+                                                            <div className="grid grid-cols-2 gap-2 w-full">
+
+                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Reel No</div>
+                                                                <div className="p-2 border rounded-r">{item.material_item_id}</div>
+
+                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Net Weight</div>
+                                                                <div className="p-2 border rounded-r">{item.material_item_net_weight}</div>
+
+                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">GSM</div>
+                                                                <div className="p-2 border rounded-r">{item.material_item_gsm}</div>
+
+                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Size</div>
+                                                                <div className="p-2 border rounded-r">{item.material_item_size}</div>
+
+                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Colour</div>
+                                                                <div className="p-2 border rounded-r">{item.material_colour}</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex justify-center mt-4">
+                                                            <Button
+                                                                onClick={() => {
+                                                                    const printContent = document.createElement('div');
+                                                                    printContent.innerHTML = `
+                                                                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                                                                        <div style="text-align: center; margin-bottom: 20px;">
+                                                                            <h2>Bundle Barcode</h2>
+                                                                            <div style="margin: 20px 0;">
+                                                                                ${document.querySelector('[data-testid="react-barcode"]')?.outerHTML || ''}
+                                                                            </div>
+                                                                            <p style="color: #666;">${item.material_item_barcode}</p>
+                                                                        </div>
+                                                                        <div style="margin-top: 20px;">
+                                                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Reel No</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_id}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">New Weight</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_net_weight}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">GSM</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_gsm}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Size</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_size}</div>
+                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Colour</div>
+                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_colour}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
+
+                                                                    const printWindow = window.open('', '_blank');
+                                                                    if (printWindow) {
+                                                                        printWindow.document.write(printContent.innerHTML);
+                                                                        printWindow.document.close();
+                                                                        printWindow.onload = () => {
+                                                                            printWindow.print();
+                                                                        };
+                                                                    } else {
+                                                                        toast({
+                                                                            title: "Error",
+                                                                            description: "Unable to open print window. Please allow pop-ups.",
+                                                                            variant: "destructive",
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="flex gap-2 items-center"
+                                                            >
+                                                                <Printer className="h-4 w-4" />
+                                                                Print
+                                                            </Button>
+                                                        </div>
+                                                    </DialogContent>
+                                                </Dialog>
                                                 <Button variant="destructive" onClick={() => handleDeleteItem(item.material_item_id)}>
                                                     Delete
                                                 </Button>
