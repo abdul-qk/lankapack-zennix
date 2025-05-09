@@ -180,6 +180,7 @@ export default function InvoiceView() {
             <thead>
               <tr>
                 <th>Item #</th>
+                <th>DO Number</th>
                 <th>Bundle Type</th>
                 <th>Quantity</th>
                 <th>Unit Price</th>
@@ -190,14 +191,15 @@ export default function InvoiceView() {
               ${data?.invoiceItems.map((item, index) => `
                 <tr>
                   <td>${index + 1}</td>
-                  <td>${item.bundel_type}</td>
+                  <td>${item.de_number}</td>
+                  <td>${item.bag_type}</td>
                   <td>${item.bundel_qty}</td>
                   <td>${item.item_price}</td>
                   <td>${item.item_total}</td>
                 </tr>
               `).join('')}
               <tr class="total-row">
-                <td colspan="4" style="text-align: right;">Total:</td>
+                <td colspan="5" style="text-align: right;">Total:</td>
                 <td>${data?.totalAmount}</td>
               </tr>
             </tbody>
@@ -305,6 +307,7 @@ export default function InvoiceView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Item #</TableHead>
+                    <TableHead>Do Number</TableHead>
                     <TableHead>Bundle Type</TableHead>
                     <TableHead>Quantity</TableHead>
                     <TableHead className="text-right">Unit Price</TableHead>
@@ -315,6 +318,7 @@ export default function InvoiceView() {
                   {invoiceItems.map((item, index) => (
                     <TableRow key={item.bill_item_id}>
                       <TableCell>{index + 1}</TableCell>
+                      <TableCell>{item.de_number}</TableCell>
                       <TableCell>{item.bag_type}</TableCell>
                       <TableCell>{item.bundel_qty}</TableCell>
                       <TableCell className="text-right">{item.item_price}</TableCell>

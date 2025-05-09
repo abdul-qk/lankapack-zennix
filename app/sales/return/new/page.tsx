@@ -62,7 +62,7 @@ export default function NewReturnPage() {
       try {
         const response = await fetch("/api/sales/return/new");
         const result = await response.json();
-        
+
         if (result.success && result.data) {
           setCustomers(result.data);
         } else {
@@ -134,8 +134,9 @@ export default function NewReturnPage() {
       }
 
       const itemData = result.data;
+
       const priceValue = parseFloat(price);
-      const total = priceValue * itemData.weight;
+      const total = priceValue * itemData.bags;
 
       // Add item to the list
       const newItem: ReturnItem = {
@@ -154,7 +155,7 @@ export default function NewReturnPage() {
       // Clear inputs for next item
       setBarcode("");
       setPrice("");
-      
+
       toast({
         title: "Success",
         description: "Item added to return"
@@ -218,7 +219,7 @@ export default function NewReturnPage() {
           title: "Success",
           description: "Return note created successfully"
         });
-        
+
         // Redirect to the view page
         router.push(`/sales/return/view/${result.data.returnInfoId}`);
       } else {
@@ -339,8 +340,8 @@ export default function NewReturnPage() {
                   />
                 </div>
                 <div>
-                  <Button 
-                    onClick={handleAddItem} 
+                  <Button
+                    onClick={handleAddItem}
                     disabled={validatingBarcode || submitting}
                     className="w-full md:w-auto"
                   >
@@ -418,8 +419,8 @@ export default function NewReturnPage() {
               <Button variant="outline" asChild>
                 <Link href="/sales/return">Cancel</Link>
               </Button>
-              <Button 
-                onClick={handleSaveReturn} 
+              <Button
+                onClick={handleSaveReturn}
                 disabled={returnItems.length === 0 || submitting}
               >
                 {submitting ? "Saving..." : "Save Return Note"}
