@@ -195,7 +195,20 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                                         <DialogTitle>Non-Complete Bundle Barcode</DialogTitle>
                                                     </DialogHeader>
                                                     <div className="flex justify-center my-4">
-                                                        <ReactBarcode value={item.non_complete_barcode} />
+                                                        <div
+                                                            className="flex justify-center my-4"
+                                                            id={`barcode-container-${item.non_complete_barcode}`}
+                                                        >
+                                                            <ReactBarcode
+                                                                value={item.non_complete_barcode || "NO BARCODE"}
+                                                                width={1.5} // Adjusted for potentially smaller print areas
+                                                                height={40} // Adjusted for potentially smaller print areas
+                                                                margin={5}
+                                                                background="#ffffff"
+                                                                lineColor="#000000"
+                                                                displayValue={true}
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     {/* Vertical layout for data */}
@@ -219,54 +232,144 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                                     <div className="flex justify-center mt-4">
                                                         <Button
                                                             onClick={() => {
+                                                                const barcodeContainer = document.getElementById(`barcode-container-${item.non_complete_barcode}`);
+                                                                const barcodeSvgElement = barcodeContainer ? barcodeContainer.querySelector('svg') : null;
+                                                                // Ensure the SVG is scaled down if it's too large for the print area
+                                                                if (barcodeSvgElement) {
+                                                                    barcodeSvgElement.style.maxWidth = "90%"; // Max width within its container
+                                                                    barcodeSvgElement.style.height = "auto";
+                                                                }
+                                                                const barcodeHTML = barcodeSvgElement ? barcodeSvgElement.outerHTML : '<p style="color:red;">Barcode image not found.</p>';
+
                                                                 const printContent = document.createElement('div');
                                                                 printContent.innerHTML = `
-                                                                        <div style="font-family: Arial, sans-serif; padding: 20px;">
-                                                                            <div style="text-align: center; margin-bottom: 20px;">
-                                                                                <h2>Bundle Barcode</h2>
-                                                                                <div style="margin: 20px 0;">
-                                                                                    ${document.querySelector('[data-testid="react-barcode"]')?.outerHTML || ''}
-                                                                                </div>
-                                                                                <p style="color: #666;">${item.non_complete_barcode}</p>
-                                                                            </div>
-                                                                            <div style="margin-top: 20px;">
-                                                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                                                                    <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Bundle ID</div>
-                                                                                    <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.non_complete_id}</div>
-                                                                                    <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Type</div>
-                                                                                    <div style="border: 1px solid #e5e7eb; padding: 8px;">${bundleType}</div>
-                                                                                    <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Weight</div>
-                                                                                    <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.non_complete_weight}</div>
-                                                                                    <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Bags</div>
-                                                                                    <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.non_complete_bags}</div>
-                                                                                </div>
-                                                                            </div>
+                                                                    <div class="label-container">
+                                                                        <div class="barcode-section">
+                                                                            ${barcodeHTML}
                                                                         </div>
-                                                                    `;
+                                                                        <hr class="divider"/>
+                                                                        <table class="details-table">
+                                                                            <tr><td><strong>Bundle ID:</strong></td><td>${item.non_complete_id}</td></tr>
+                                                                            <tr><td><strong>Type:</strong></td><td>${bundleType}</td></tr>
+                                                                            <tr><td><strong>Weight:</strong></td><td>${item.non_complete_weight}</td></tr>
+                                                                            <tr><td><strong>Bags:</strong></td><td>${item.non_complete_bags}</td></tr>
+                                                                        </table>
+                                                                    </div>
+                                                                `;
 
-                                                                    const printWindow = window.open('', '_blank');
-                                                                    if (printWindow) {
-                                                                        printWindow.document.write(printContent.innerHTML);
-                                                                        printWindow.document.close();
-                                                                        printWindow.onload = () => {
-                                                                            printWindow.print();
-                                                                        };
-                                                                    } else {
-                                                                        toast({
-                                                                            title: "Error",
-                                                                            description: "Unable to open print window. Please allow pop-ups.",
-                                                                            variant: "destructive",
-                                                                        });
-                                                                    }
-                                                                }}
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="flex gap-2 items-center"
-                                                            >
-                                                                <Printer className="h-4 w-4" />
-                                                                Print
-                                                            </Button>
-                                                        </div>
+                                                                const printWindow = window.open('', '_blank', 'width=500,height=400'); // Adjusted window size for preview
+                                                                if (printWindow) {
+                                                                    printWindow.document.write('<html><head><title>Print Material Label</title>');
+                                                                    // MODIFICATION: Added @page rule for 4x3 inch size and beautified styles
+                                                                    printWindow.document.write(`
+                                                                                    <style>
+                                                                                        @page {
+                                                                                            size: 4in 3in; /* Attempt to set physical size */
+                                                                                            margin: 0.15in; /* Minimal margin */
+                                                                                        }
+                                                                                        body { 
+                                                                                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                                                                            margin: 0; 
+                                                                                            padding: 0;
+                                                                                            width: 100%; 
+                                                                                            height: 100%;
+                                                                                            display: flex;
+                                                                                            flex-direction: column;
+                                                                                            align-items: center;
+                                                                                            justify-content: center; /* Center content on the small page */
+                                                                                            box-sizing: border-box;
+                                                                                            font-size: 9pt; /* Smaller base font for small label */
+                                                                                        }
+                                                                                        .label-container {
+                                                                                            width: 100%;
+                                                                                            max-width: 3.7in; /* Max width considering margins */
+                                                                                            padding: 10px;
+                                                                                            border: 1px solid #ccc;
+                                                                                            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+                                                                                            text-align: center;
+                                                                                            box-sizing: border-box;
+                                                                                        }
+                                                                                        .label-title {
+                                                                                            font-size: 11pt;
+                                                                                            font-weight: bold;
+                                                                                            margin-top: 0;
+                                                                                            margin-bottom: 8px;
+                                                                                            color: #333;
+                                                                                        }
+                                                                                        .barcode-section {
+                                                                                            margin: 5px 0;
+                                                                                            display: inline-block; /* To center the SVG */
+                                                                                        }
+                                                                                        .barcode-section svg {
+                                                                                            max-width: 100%; /* Ensure SVG scales down */
+                                                                                            height: auto;    /* Maintain aspect ratio */
+                                                                                            max-height: 1in; /* Limit barcode height */
+                                                                                        }
+                                                                                        .barcode-value {
+                                                                                            font-size: 8pt;
+                                                                                            color: #555;
+                                                                                            margin-top: 2px;
+                                                                                            margin-bottom: 8px;
+                                                                                            word-break: break-all;
+                                                                                        }
+                                                                                        .divider {
+                                                                                            border: none;
+                                                                                            border-top: 1px dashed #ddd;
+                                                                                            margin: 8px 0;
+                                                                                        }
+                                                                                        .details-table {
+                                                                                            width: 100%;
+                                                                                            margin-top: 8px;
+                                                                                            border-collapse: collapse;
+                                                                                            text-align: left;
+                                                                                        }
+                                                                                        .details-table td {
+                                                                                            padding: 3px 5px;
+                                                                                            vertical-align: top;
+                                                                                        }
+                                                                                        .details-table td:first-child {
+                                                                                            font-weight: bold;
+                                                                                            white-space: nowrap;
+                                                                                            color: #444;
+                                                                                            width: 30%; /* Adjust label column width */
+                                                                                        }
+                                                                                        @media print {
+                                                                                            body { 
+                                                                                                font-size: 9pt; /* Ensure font size is appropriate for print */
+                                                                                                -webkit-print-color-adjust: exact; /* For Chrome/Safari to print backgrounds */
+                                                                                                print-color-adjust: exact; /* Standard */
+                                                                                            }
+                                                                                            .label-container {
+                                                                                                border: 1px solid #666; /* Make border more visible on print */
+                                                                                                box-shadow: none; /* Remove shadow for print */
+                                                                                            }
+                                                                                        }
+                                                                                    </style>
+                                                                                `);
+                                                                    printWindow.document.write('</head><body>');
+                                                                    printWindow.document.write(printContent.innerHTML);
+                                                                    printWindow.document.write('</body></html>');
+                                                                    printWindow.document.close();
+                                                                    printWindow.onload = () => {
+                                                                        printWindow.focus();
+                                                                        printWindow.print();
+                                                                    };
+                                                                } else {
+                                                                    toast({
+                                                                        title: "Error",
+                                                                        description: "Unable to open print window. Please allow pop-ups.",
+                                                                        variant: "destructive",
+                                                                    });
+                                                                }
+                                                            }}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex gap-2 items-center"
+                                                        >
+                                                            <Printer className="h-4 w-4" />
+                                                            Print
+                                                        </Button>
+                                                    </div>
                                                 </DialogContent>
                                             </Dialog>
                                         </TableCell>

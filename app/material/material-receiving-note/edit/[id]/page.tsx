@@ -428,7 +428,6 @@ export default function EditMaterialReceivingNotePage() {
                                                                         value={item.material_item_barcode || "NO BARCODE"}
                                                                         width={1.5} // Adjusted for potentially smaller print areas
                                                                         height={40} // Adjusted for potentially smaller print areas
-                                                                        fontSize={10} // Adjusted for potentially smaller print areas
                                                                         margin={5}
                                                                         background="#ffffff"
                                                                         lineColor="#000000"
