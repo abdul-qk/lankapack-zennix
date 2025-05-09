@@ -87,6 +87,7 @@ export default function EditSlittingInfo() {
     const params = useParams();
     const id = params.id;
     const [barcode, setBarcode] = React.useState("");
+    const [selectedBarcode, setSelectedBarcode] = React.useState<string>("");
     const [rollWeight, setRollWeight] = React.useState("");
     const [rollWidth, setRollWidth] = React.useState("");
     const [selectedSlittingId, setSelectedSlittingId] = React.useState<number | null>(null);
@@ -227,6 +228,7 @@ export default function EditSlittingInfo() {
                     slitting_id: selectedSlittingId,
                     slitting_roll_weight: rollWeight,
                     slitting_roll_width: rollWidth,
+                    selectedBarcode: selectedBarcode,
                 }),
             });
 
@@ -339,7 +341,7 @@ export default function EditSlittingInfo() {
     };
 
     // Add a function to handle selecting a slitting record
-    const handleSelectSlitting = (slittingId: number) => {
+    const handleSelectSlitting = (slittingId: number, barcode: string) => {
         // If clicking the same record, deselect it
         if (slittingId === selectedSlittingId) {
             setSelectedSlittingId(null);
@@ -349,6 +351,7 @@ export default function EditSlittingInfo() {
         }
 
         setSelectedSlittingId(slittingId);
+        setSelectedBarcode(barcode);
 
         // Find the selected slitting record
         const selectedRecord = slittingData?.find(item => item.slitting_id === slittingId);
@@ -574,7 +577,7 @@ export default function EditSlittingInfo() {
                                             <TableRow
                                                 key={item.slitting_id}
                                                 className={selectedSlittingId === item.slitting_id ? "bg-blue-100 hover:bg-blue-200" : "hover:bg-gray-100"}
-                                                onClick={() => handleSelectSlitting(item.slitting_id)}
+                                                onClick={() => handleSelectSlitting(item.slitting_id, item.roll_barcode_no)}
                                                 style={{ cursor: "pointer" }}
                                             >
                                                 <TableCell>

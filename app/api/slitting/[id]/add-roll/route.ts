@@ -7,8 +7,29 @@ export async function POST(
 ) {
   try {
     const jobCardId = parseInt(params.id);
-    const { slitting_id, slitting_roll_weight, slitting_roll_width } =
+    const { slitting_id, slitting_roll_weight, slitting_roll_width, selectedBarcode } =
       await req.json();
+
+    // Get stock data using selectedBarcode to fetch material information
+    if (!selectedBarcode) {
+      return Response.json(
+        { error: "Selected barcode is required" },
+        { status: 400 }
+      );
+    }
+
+    const stockData = await prisma.hps_stock.findFirst({
+      where: { 
+        stock_barcode: BigInt(selectedBarcode),
+      }
+    });
+
+    if (!stockData) {
+      return Response.json(
+        { error: "Stock record not found for the selected barcode" },
+        { status: 404 }
+      );
+    }
 
     // Validate inputs
     if (!slitting_id) {
@@ -42,7 +63,6 @@ export async function POST(
         roll_id: true,
       },
     });
-
     const nextId = (highestRollRecord?.roll_id || 0) + 1;
 
     // Format date as dd-mm-yyhh:mm:ss
@@ -55,10 +75,8 @@ export async function POST(
     const seconds = String(now.getSeconds()).padStart(2, "0");
 
     const formattedDate = `${day}-${month}-${year}${hours}:${minutes}:${seconds}`;
-
     // Remove non-numeric characters
     const numericDate = formattedDate.replace(/[^0-9]/g, "");
-
     // Create barcode by concatenating nextId and numericDate
     const slittingBarcode = `${nextId}${numericDate}`;
 
@@ -73,6 +91,22 @@ export async function POST(
         add_date: new Date(),
         user_id: 1, // Replace with actual user ID from your auth system
         del_ind: 0,
+      },
+    });
+
+    // Create a stock record for the slitting roll
+    await prisma.hps_stock.create({
+      data: {
+        material_item_particular: stockData.material_item_particular,
+        stock_barcode: BigInt(slittingBarcode),
+        main_id: stockData.main_id,
+        material_item_id: stockData.material_item_id,
+        item_net_weight: slitting_roll_weight.toString(),
+        item_gsm: stockData.item_gsm,
+        material_item_size: stockData.material_item_size,
+        material_used_buy: 2,
+        material_status: 1,
+        stock_date: new Date(),
       },
     });
 

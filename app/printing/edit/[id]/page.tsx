@@ -93,6 +93,7 @@ export default function EditPrintingInfo() {
 
     const [loading, setLoading] = React.useState(true);
     const [barcode, setBarcode] = React.useState("");
+    const [selectedBarcode, setSelectedBarcode] = React.useState<string>("");
     const [data, setData] = React.useState<JobCardData>();
     const [printingData, setPrintingData] = React.useState<PrintingInfo[]>();
     const [printingPackData, setPrintingPackData] = React.useState<PrintingPackInfo[]>();
@@ -331,7 +332,7 @@ export default function EditPrintingInfo() {
     };
 
     // Function to handle selecting a print record
-    const handleSelectPrint = (printId: number) => {
+    const handleSelectPrint = (printId: number, barcode: string) => {
         // If clicking the same record, deselect it
         if (printId === selectedPrintId) {
             setSelectedPrintId(null);
@@ -340,6 +341,7 @@ export default function EditPrintingInfo() {
         }
 
         setSelectedPrintId(printId);
+        setSelectedBarcode(barcode);
 
         // Find the selected print record
         const selectedRecord = printingData?.find(item => item.print_id === printId);
@@ -391,7 +393,8 @@ export default function EditPrintingInfo() {
                 },
                 body: JSON.stringify({
                     print_id: selectedPrintId,
-                    print_pack_weight: rollWeight
+                    print_pack_weight: rollWeight,
+                    selectedBarcode: selectedBarcode
                 }),
             });
 
@@ -628,7 +631,7 @@ export default function EditPrintingInfo() {
                                             <TableRow
                                                 key={item.print_id}
                                                 className={selectedPrintId === item.print_id ? "bg-blue-100 hover:bg-blue-200" : "hover:bg-gray-100"}
-                                                onClick={() => handleSelectPrint(item.print_id)}
+                                                onClick={() => handleSelectPrint(item.print_id, item.print_barcode_no)}
                                                 style={{ cursor: "pointer" }}
                                             >
                                                 <TableCell>

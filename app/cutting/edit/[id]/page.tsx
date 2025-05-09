@@ -123,6 +123,7 @@ export default function ViewSlittingInfo() {
     const { toast } = useToast();
 
     const [newBarcode, setNewBarcode] = React.useState("");
+    const [selectedBarcode, setSelectedBarcode] = React.useState<string>("");
     const [newWeight, setNewWeight] = React.useState("");
     const [selectedCuttingId, setSelectedCuttingId] = React.useState<number | null>(null);
     const [bagWeight, setBagWeight] = React.useState("");
@@ -245,7 +246,7 @@ export default function ViewSlittingInfo() {
         }
     }
 
-    const handleSelectCutting = (cuttingId: number) => {
+    const handleSelectCutting = (cuttingId: number, barcode: string) => {
         // If clicking the same record, deselect it
         if (cuttingId === selectedCuttingId) {
             setSelectedCuttingId(null);
@@ -256,6 +257,7 @@ export default function ViewSlittingInfo() {
         }
 
         setSelectedCuttingId(cuttingId);
+        setSelectedBarcode(barcode);
         // Reset form fields when selecting a new cutting
         setBagWeight("");
         setNoOfBags("");
@@ -475,7 +477,7 @@ export default function ViewSlittingInfo() {
                                             <TableRow
                                                 key={item.cutting_id}
                                                 className={selectedCuttingId === item.cutting_id ? "bg-blue-100 hover:bg-blue-200" : "hover:bg-gray-100"}
-                                                onClick={() => handleSelectCutting(item.cutting_id)}
+                                                onClick={() => handleSelectCutting(item.cutting_id, item.roll_barcode_no)}
                                                 style={{ cursor: "pointer" }}
                                             >
                                                 <TableCell className="font-medium">{index + 1}</TableCell>

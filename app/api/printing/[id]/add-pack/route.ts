@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const jobCardId = parseInt(params.id);
-    const { print_id, print_pack_weight } = await req.json();
+    const { print_id, print_pack_weight, selectedBarcode } = await req.json();
 
     // Validate input
     if (!print_id) {
@@ -17,6 +17,13 @@ export async function POST(
     if (!print_pack_weight) {
       return Response.json(
         { error: "Print pack weight is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!selectedBarcode) {
+      return Response.json(
+        { error: "Selected barcode is required" },
         { status: 400 }
       );
     }
@@ -32,6 +39,20 @@ export async function POST(
     if (!printRecord) {
       return Response.json(
         { error: "Print record not found" },
+        { status: 404 }
+      );
+    }
+
+    // Find the source stock record
+    const sourceStock = await prisma.hps_stock.findFirst({
+      where: {
+        stock_barcode: BigInt(selectedBarcode),
+      },
+    });
+
+    if (!sourceStock) {
+      return Response.json(
+        { error: "Source stock record not found" },
         { status: 404 }
       );
     }
@@ -71,6 +92,22 @@ export async function POST(
       },
       data: {
         print_barcode: printPackBarcode,
+      },
+    });
+
+    // Create a new stock record
+    const newStock = await prisma.hps_stock.create({
+      data: {
+        material_item_particular: sourceStock.material_item_particular,
+        material_used_buy: 3,
+        main_id: sourceStock.main_id,
+        material_item_id: sourceStock.material_item_id,
+        item_gsm: sourceStock.item_gsm,
+        stock_barcode: BigInt(printPackBarcode),
+        material_item_size: sourceStock.material_item_size,
+        item_net_weight: print_pack_weight.toString(),
+        stock_date: new Date(),
+        material_status: 1
       },
     });
 
