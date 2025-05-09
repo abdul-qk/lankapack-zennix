@@ -45,8 +45,17 @@ export async function DELETE(req: Request) {
   try {
     const { id } = await req.json();
 
-    await prisma.hps_material_info.delete({
-      where: { material_info_id: id },
+    // Use a transaction to ensure both operations complete or neither does
+    await prisma.$transaction(async (tx) => {
+      // First delete all related material items
+      await tx.hps_material_item.deleteMany({
+        where: { material_info_id: id },
+      });
+
+      // Then delete the material info record
+      await tx.hps_material_info.delete({
+        where: { material_info_id: id },
+      });
     });
 
     return new Response(JSON.stringify({ message: "Deleted successfully" }), {

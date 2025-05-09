@@ -220,6 +220,7 @@ model hps_material_item {
 
   material_info         hps_material_info  @relation(fields: [material_info_id], references: [material_info_id])
   particular            hps_particular?    @relation(fields: [material_item_particular], references: [particular_id])
+  stocks                hps_stock[]        
 
   @@map("hps_material_item")
 }
@@ -397,6 +398,7 @@ model hps_stock {
   material_status          Int
 
   particular               hps_particular     @relation(fields: [material_item_particular], references: [particular_id])
+  material_item            hps_material_item  @relation(fields: [material_item_id], references: [material_item_id])
 }
 
 model hps_supplier {

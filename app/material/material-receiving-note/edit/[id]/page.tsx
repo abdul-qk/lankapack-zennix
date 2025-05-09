@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Barcode, Printer } from "lucide-react";
+import { Barcode, Printer, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,7 +44,7 @@ interface MaterialItem {
     material_item_size: string;
     material_item_net_weight: string;
     material_item_gross_weight: string;
-    material_colour: string;
+    material_colour: string | undefined;
     material_item_barcode: string;
 }
 
@@ -66,6 +66,7 @@ export default function EditMaterialReceivingNotePage() {
     const id = params.id;
 
     const { toast } = useToast();
+    const router = useRouter();
 
     const [materialInfo, setMaterialInfo] = useState<MaterialInfo | null>(null);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -158,20 +159,25 @@ export default function EditMaterialReceivingNotePage() {
             // Add the saved item (with barcode) to the local state
             setItems([...items, savedItem]);
 
-            // Reset form
-            setFormData({
-                material_item_id: 0,
-                material_item_reel_no: "",
-                material_item_particular: 0,
-                material_item_variety: "",
-                material_item_gsm: "",
-                material_item_size: "",
-                material_item_net_weight: "",
-                material_item_gross_weight: "",
-                material_colour: "",
-                material_item_barcode: "",
-                particular: { particular_id: 0, particular_name: "" },
-            });
+            // Fetch updated items from the server
+            window.location.reload(); // Refresh the page
+            fetchData(Number(id));
+
+            // Reset form and dropdowns
+            // setFormData({
+            //     material_item_id: 0,
+            //     material_item_reel_no: "",
+            //     material_item_particular: 0,
+            //     material_item_variety: "",
+            //     material_item_gsm: "",
+            //     material_item_size: "",
+            //     material_item_net_weight: "",
+            //     material_item_gross_weight: "",
+            //     material_colour: undefined,
+            //     material_item_barcode: "",
+            //     particular: { particular_id: 0, particular_name: "" },
+            // });
+
             toast({ description: "Item added successfully!" });
 
         } catch (error: any) {
@@ -185,8 +191,6 @@ export default function EditMaterialReceivingNotePage() {
 
         if (!confirmDelete) return;
 
-        setItems(items.filter(item => item.material_item_id !== id));
-
         try {
             const response = await fetch(`/api/material/material-receiving-note/item/${id}`, {
                 method: "DELETE",
@@ -195,6 +199,8 @@ export default function EditMaterialReceivingNotePage() {
 
             if (!response.ok) {
                 throw new Error("Failed to delete data");
+            } else {
+                setItems(items.filter(item => item.material_item_id !== id));
             }
 
             alert("Data deleted successfully!");
@@ -280,6 +286,7 @@ export default function EditMaterialReceivingNotePage() {
                                     onChange={(e: any) => handleFormChange("material_item_reel_no", e.target.value)}
                                 />
                                 <Select
+                                    name="particular"
                                     onValueChange={(value: any) => handleFormChange("particular", particulars.find(p => p.particular_id === Number(value))!)}
                                 >
                                     <SelectTrigger>
@@ -321,6 +328,7 @@ export default function EditMaterialReceivingNotePage() {
                                     onChange={(e: any) => handleFormChange("material_item_gross_weight", e.target.value)}
                                 />
                                 <Select
+                                    name="colour"
                                     onValueChange={handleColourChange}
                                     defaultValue={formData.material_colour}
                                 >
@@ -375,46 +383,47 @@ export default function EditMaterialReceivingNotePage() {
                                             <TableCell>{item.material_item_net_weight}</TableCell>
                                             <TableCell>{item.material_item_gross_weight}</TableCell>
                                             <TableCell>
-                                                <Dialog>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="sm">
-                                                            <Barcode className="h-4 w-4" />
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent>
-                                                        <DialogHeader>
-                                                            <DialogTitle>Material Barcode</DialogTitle>
-                                                        </DialogHeader>
-                                                        <div className="flex justify-center my-4">
-                                                            <ReactBarcode value={item.material_item_barcode || 'Generating...'} />
-                                                        </div>
-
-                                                        {/* Vertical layout for data */}
-                                                        <div className="w-full">
-                                                            <div className="grid grid-cols-2 gap-2 w-full">
-
-                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Reel No</div>
-                                                                <div className="p-2 border rounded-r">{item.material_item_id}</div>
-
-                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Net Weight</div>
-                                                                <div className="p-2 border rounded-r">{item.material_item_net_weight}</div>
-
-                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">GSM</div>
-                                                                <div className="p-2 border rounded-r">{item.material_item_gsm}</div>
-
-                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Size</div>
-                                                                <div className="p-2 border rounded-r">{item.material_item_size}</div>
-
-                                                                <div className="font-semibold bg-gray-100 p-2 rounded-l">Colour</div>
-                                                                <div className="p-2 border rounded-r">{item.material_colour}</div>
+                                                <div className="flex gap-2 items-center">
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="ghost" size="sm">
+                                                                <Barcode className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Material Barcode</DialogTitle>
+                                                            </DialogHeader>
+                                                            <div className="flex justify-center my-4">
+                                                                <ReactBarcode value={item.material_item_barcode || 'Generating...'} />
                                                             </div>
-                                                        </div>
 
-                                                        <div className="flex justify-center mt-4">
-                                                            <Button
-                                                                onClick={() => {
-                                                                    const printContent = document.createElement('div');
-                                                                    printContent.innerHTML = `
+                                                            {/* Vertical layout for data */}
+                                                            <div className="w-full">
+                                                                <div className="grid grid-cols-2 gap-2 w-full">
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Reel No</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_reel_no}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Net Weight</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_net_weight}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">GSM</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_gsm}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Size</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_item_size}</div>
+
+                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Colour</div>
+                                                                    <div className="p-2 border rounded-r">{item.material_colour}</div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex justify-center mt-4">
+                                                                <Button
+                                                                    onClick={() => {
+                                                                        const printContent = document.createElement('div');
+                                                                        printContent.innerHTML = `
                                                                     <div style="font-family: Arial, sans-serif; padding: 20px;">
                                                                         <div style="text-align: center; margin-bottom: 20px;">
                                                                             <h2>Bundle Barcode</h2>
@@ -440,34 +449,38 @@ export default function EditMaterialReceivingNotePage() {
                                                                     </div>
                                                                 `;
 
-                                                                    const printWindow = window.open('', '_blank');
-                                                                    if (printWindow) {
-                                                                        printWindow.document.write(printContent.innerHTML);
-                                                                        printWindow.document.close();
-                                                                        printWindow.onload = () => {
-                                                                            printWindow.print();
-                                                                        };
-                                                                    } else {
-                                                                        toast({
-                                                                            title: "Error",
-                                                                            description: "Unable to open print window. Please allow pop-ups.",
-                                                                            variant: "destructive",
-                                                                        });
-                                                                    }
-                                                                }}
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="flex gap-2 items-center"
-                                                            >
-                                                                <Printer className="h-4 w-4" />
-                                                                Print
-                                                            </Button>
-                                                        </div>
-                                                    </DialogContent>
-                                                </Dialog>
-                                                <Button variant="destructive" onClick={() => handleDeleteItem(item.material_item_id)}>
+                                                                        const printWindow = window.open('', '_blank');
+                                                                        if (printWindow) {
+                                                                            printWindow.document.write(printContent.innerHTML);
+                                                                            printWindow.document.close();
+                                                                            printWindow.onload = () => {
+                                                                                printWindow.print();
+                                                                            };
+                                                                        } else {
+                                                                            toast({
+                                                                                title: "Error",
+                                                                                description: "Unable to open print window. Please allow pop-ups.",
+                                                                                variant: "destructive",
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    className="flex gap-2 items-center"
+                                                                >
+                                                                    <Printer className="h-4 w-4" />
+                                                                    Print
+                                                                </Button>
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                    <Button variant="ghost" size="sm">
+                                                        <Trash2 color="red" className="h-4 w-4 cursor-pointer" onClick={() => handleDeleteItem(item.material_item_id)} />
+                                                    </Button>
+                                                </div>
+                                                {/* <Button variant="destructive" onClick={() => handleDeleteItem(item.material_item_id)}>
                                                     Delete
-                                                </Button>
+                                                </Button> */}
                                             </TableCell>
                                         </TableRow>
                                     ))}
