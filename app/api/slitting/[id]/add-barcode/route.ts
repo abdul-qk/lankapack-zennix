@@ -21,7 +21,6 @@ export async function POST(
     const stockItem = await prisma.hps_stock.findFirst({
       where: {
         stock_barcode: barcodeBigInt,
-        material_status: 0, // Only select items with status 0 (not being used)
       },
     });
 

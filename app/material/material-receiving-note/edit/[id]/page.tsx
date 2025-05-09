@@ -37,14 +37,14 @@ interface Colour {
 interface MaterialItem {
     material_item_id: number;
     material_item_reel_no: string;
-    material_item_particular: number;
-    particular?: Particular;
+    material_item_particular: number; // This is an ID
+    particular?: Particular; // This is the resolved object
     material_item_variety: string;
     material_item_gsm: string;
     material_item_size: string;
     material_item_net_weight: string;
     material_item_gross_weight: string;
-    material_colour: string | undefined;
+    material_colour: string | undefined; // Should match a colour_name or be derived from colour_id
     material_item_barcode: string;
 }
 
@@ -94,15 +94,23 @@ export default function EditMaterialReceivingNotePage() {
     const fetchData = async (materialId: number) => {
         try {
             const response = await fetch(`/api/material/material-receiving-note/edit/${materialId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data: APIResponse = await response.json();
             setMaterialInfo(data.materialInfo);
             setSuppliers(data.suppliers);
             setParticulars(data.particulars);
             setColours(data.colours);
-            setItems(data.materialInfo.material_items);
+            // Ensure items have the particular object resolved if BE sends only ID
+            const resolvedItems = data.materialInfo.material_items.map(item => ({
+                ...item,
+                particular: data.particulars.find(p => p.particular_id === item.material_item_particular) || item.particular
+            }));
+            setItems(resolvedItems);
         } catch (error) {
             console.error("Error fetching data:", error);
-            alert("Failed to fetch data");
+            toast({ description: "Failed to fetch data. Please try again.", variant: "destructive" });
         }
     };
 
@@ -110,7 +118,6 @@ export default function EditMaterialReceivingNotePage() {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    // Handle supplier change specifically
     const handleSupplierChange = (value: string) => {
         if (materialInfo) {
             const selectedSupplier = suppliers.find(supplier => supplier.supplier_id === Number(value));
@@ -123,15 +130,8 @@ export default function EditMaterialReceivingNotePage() {
         }
     };
 
-    const handleColourChange = (colourId: string) => {
-        const selectedColour = colours.find(colour => colour.colour_id === Number(colourId));
-        if (selectedColour) {
-            handleFormChange("material_colour", selectedColour.colour_name);
-        }
-    };
-
     const handleAddItem = async () => {
-        if (!formData.material_item_reel_no || !formData.particular || !formData.material_colour || !formData.material_item_variety || !formData.material_item_gsm || !formData.material_item_size || !formData.material_item_net_weight || !formData.material_item_gross_weight) {
+        if (!formData.material_item_reel_no || !formData.particular?.particular_id || !formData.material_colour || !formData.material_item_variety || !formData.material_item_gsm || !formData.material_item_size || !formData.material_item_net_weight || !formData.material_item_gross_weight) {
             toast({ description: "All item fields are required.", variant: "destructive" });
             return;
         }
@@ -139,14 +139,17 @@ export default function EditMaterialReceivingNotePage() {
         try {
             const itemToAdd = {
                 ...formData,
-                material_item_particular: formData.particular.particular_id,
+                material_item_particular: formData.particular.particular_id, // Send ID
                 material_info_id: materialInfo?.material_info_id,
             };
+            // Remove the particular object before sending, if your API expects only the ID
+            const { particular, ...itemPayload } = itemToAdd;
+
 
             const response = await fetch(`/api/material/material-receiving-note/add-item`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ item: itemToAdd }),
+                body: JSON.stringify({ item: itemPayload }),
             });
 
             if (!response.ok) {
@@ -156,27 +159,26 @@ export default function EditMaterialReceivingNotePage() {
 
             const savedItem: MaterialItem = await response.json();
 
-            // Add the saved item (with barcode) to the local state
-            setItems([...items, savedItem]);
+            const resolvedSavedItem = {
+                ...savedItem,
+                particular: particulars.find(p => p.particular_id === savedItem.material_item_particular)
+            };
 
-            // Fetch updated items from the server
-            window.location.reload(); // Refresh the page
-            fetchData(Number(id));
+            setItems([...items, resolvedSavedItem]);
 
-            // Reset form and dropdowns
-            // setFormData({
-            //     material_item_id: 0,
-            //     material_item_reel_no: "",
-            //     material_item_particular: 0,
-            //     material_item_variety: "",
-            //     material_item_gsm: "",
-            //     material_item_size: "",
-            //     material_item_net_weight: "",
-            //     material_item_gross_weight: "",
-            //     material_colour: undefined,
-            //     material_item_barcode: "",
-            //     particular: { particular_id: 0, particular_name: "" },
-            // });
+            setFormData({
+                material_item_id: 0,
+                material_item_reel_no: "",
+                material_item_particular: 0,
+                particular: { particular_id: 0, particular_name: "" },
+                material_item_variety: "",
+                material_item_gsm: "",
+                material_item_size: "",
+                material_item_net_weight: "",
+                material_item_gross_weight: "",
+                material_colour: "",
+                material_item_barcode: "",
+            });
 
             toast({ description: "Item added successfully!" });
 
@@ -186,55 +188,65 @@ export default function EditMaterialReceivingNotePage() {
         }
     };
 
-    const handleDeleteItem = async (id: number) => {
+    const handleDeleteItem = async (itemId: number) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this item?");
-
         if (!confirmDelete) return;
 
         try {
-            const response = await fetch(`/api/material/material-receiving-note/item/${id}`, {
+            const response = await fetch(`/api/material/material-receiving-note/item/${itemId}`, {
                 method: "DELETE",
-                headers: { "Content-Type": "application/json" },
             });
 
             if (!response.ok) {
-                throw new Error("Failed to delete data");
-            } else {
-                setItems(items.filter(item => item.material_item_id !== id));
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || "Failed to delete item");
             }
 
-            alert("Data deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting data:", error);
-            alert("Failed to delete data");
+            setItems(items.filter(item => item.material_item_id !== itemId));
+            toast({ description: "Item deleted successfully!" });
+
+        } catch (error: any) {
+            console.error("Error deleting item:", error);
+            toast({ description: error.message || "Failed to delete item", variant: "destructive" });
         }
     };
 
 
     const handleSave = async () => {
+        if (!materialInfo) {
+            toast({ description: "Material information not loaded.", variant: "destructive" });
+            return;
+        }
         try {
-            const response = await fetch(`/api/material/material-receiving-note/edit/${materialInfo?.material_info_id}`, {
+            const payload = {
+                material_info_id: materialInfo.material_info_id,
+                material_supplier: materialInfo.supplier.supplier_id,
+                material_items: items.map(item => {
+                    const { particular, ...restOfItem } = item;
+                    return {
+                        ...restOfItem,
+                        material_item_particular: item.particular?.particular_id || item.material_item_particular,
+                    };
+                }),
+            };
+
+            const response = await fetch(`/api/material/material-receiving-note/edit/${materialInfo.material_info_id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    materialInfo: {
-                        material_supplier: materialInfo?.supplier.supplier_id,
-                        material_items: items.map(item => ({
-                            ...item,
-                            particular: item.particular?.particular_id,
-                        })),
-                    },
-                }),
+                body: JSON.stringify({ materialInfo: payload }),
             });
 
             if (!response.ok) {
-                throw new Error("Failed to save data");
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || "Failed to save data");
             }
 
-            alert("Data saved successfully!");
-        } catch (error) {
+            toast({ description: "Data saved successfully!" });
+            fetchData(Number(id));
+
+        } catch (error: any) {
             console.error("Error saving data:", error);
-            alert("Failed to save data");
+            toast({ description: error.message || "Failed to save data", variant: "destructive" });
         }
     };
 
@@ -242,7 +254,7 @@ export default function EditMaterialReceivingNotePage() {
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <header className="flex h-16 items-center gap-2">
+                <header className="flex h-16 items-center gap-2 sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <div className="flex items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
@@ -256,7 +268,7 @@ export default function EditMaterialReceivingNotePage() {
                     </div>
                 </header>
 
-                <div className="container mx-auto p-6">
+                <main className="p-6">
                     <Card className="mb-6">
                         <CardHeader>
                             <h2 className="text-xl font-semibold">Material Information</h2>
@@ -264,9 +276,9 @@ export default function EditMaterialReceivingNotePage() {
                         <CardContent>
                             <Select
                                 onValueChange={handleSupplierChange}
-                                defaultValue={materialInfo?.supplier.supplier_name}
+                                value={materialInfo?.supplier.supplier_id ? String(materialInfo.supplier.supplier_id) : ""}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="mb-4">
                                     <SelectValue placeholder="Select a supplier" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -278,16 +290,24 @@ export default function EditMaterialReceivingNotePage() {
                                 </SelectContent>
                             </Select>
 
-                            {/* Form Fields */}
-                            <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 border p-4 rounded-md">
                                 <Input
                                     placeholder="Reel No"
                                     value={formData.material_item_reel_no}
-                                    onChange={(e: any) => handleFormChange("material_item_reel_no", e.target.value)}
+                                    onChange={(e) => handleFormChange("material_item_reel_no", e.target.value)}
                                 />
                                 <Select
-                                    name="particular"
-                                    onValueChange={(value: any) => handleFormChange("particular", particulars.find(p => p.particular_id === Number(value))!)}
+                                    value={formData.particular?.particular_id ? String(formData.particular.particular_id) : ""}
+                                    onValueChange={(value) => {
+                                        const selectedParticular = particulars.find(p => p.particular_id === Number(value));
+                                        if (selectedParticular) {
+                                            handleFormChange("particular", selectedParticular);
+                                            handleFormChange("material_item_particular", selectedParticular.particular_id);
+                                        } else {
+                                            handleFormChange("particular", { particular_id: 0, particular_name: "" });
+                                            handleFormChange("material_item_particular", 0);
+                                        }
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a particular" />
@@ -300,37 +320,43 @@ export default function EditMaterialReceivingNotePage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-
-                                {/* Additional fields */}
                                 <Input
                                     placeholder="Variety"
                                     value={formData.material_item_variety}
-                                    onChange={(e: any) => handleFormChange("material_item_variety", e.target.value)}
+                                    onChange={(e) => handleFormChange("material_item_variety", e.target.value)}
                                 />
                                 <Input
                                     placeholder="GSM"
                                     value={formData.material_item_gsm}
-                                    onChange={(e: any) => handleFormChange("material_item_gsm", e.target.value)}
+                                    onChange={(e) => handleFormChange("material_item_gsm", e.target.value)}
                                 />
                                 <Input
                                     placeholder="Size"
                                     value={formData.material_item_size}
-                                    onChange={(e: any) => handleFormChange("material_item_size", e.target.value)}
+                                    onChange={(e) => handleFormChange("material_item_size", e.target.value)}
                                 />
                                 <Input
                                     placeholder="Net Weight"
                                     value={formData.material_item_net_weight}
-                                    onChange={(e: any) => handleFormChange("material_item_net_weight", e.target.value)}
+                                    onChange={(e) => handleFormChange("material_item_net_weight", e.target.value)}
+                                    type="number"
                                 />
                                 <Input
                                     placeholder="Gross Weight"
                                     value={formData.material_item_gross_weight}
-                                    onChange={(e: any) => handleFormChange("material_item_gross_weight", e.target.value)}
+                                    onChange={(e) => handleFormChange("material_item_gross_weight", e.target.value)}
+                                    type="number"
                                 />
                                 <Select
-                                    name="colour"
-                                    onValueChange={handleColourChange}
-                                    defaultValue={formData.material_colour}
+                                    value={formData.material_colour ? String(colours.find(c => c.colour_name === formData.material_colour)?.colour_id) : ""}
+                                    onValueChange={(value) => {
+                                        const selectedColourObject = colours.find(c => c.colour_id === Number(value));
+                                        if (selectedColourObject) {
+                                            handleFormChange("material_colour", selectedColourObject.colour_name);
+                                        } else {
+                                            handleFormChange("material_colour", "");
+                                        }
+                                    }}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a colour" />
@@ -351,148 +377,249 @@ export default function EditMaterialReceivingNotePage() {
                         </CardContent>
                     </Card>
 
-                    {/* Material Items Table */}
                     <Card>
                         <CardHeader>
                             <h2 className="text-xl font-semibold">Material Items</h2>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Reel No</TableHead>
-                                        <TableHead>Colour</TableHead>
-                                        <TableHead>Particular</TableHead>
-                                        <TableHead>Variety</TableHead>
-                                        <TableHead>Gsm</TableHead>
-                                        <TableHead>Size</TableHead>
-                                        <TableHead>Net Weight</TableHead>
-                                        <TableHead>Gross Weight</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {items.map(item => (
-                                        <TableRow key={item.material_item_id}>
-                                            <TableCell>{item.material_item_reel_no}</TableCell>
-                                            <TableCell>{item.material_colour}</TableCell>
-                                            <TableCell>{item.particular?.particular_name}</TableCell>
-                                            <TableCell>{item.material_item_variety}</TableCell>
-                                            <TableCell>{item.material_item_gsm}</TableCell>
-                                            <TableCell>{item.material_item_size}</TableCell>
-                                            <TableCell>{item.material_item_net_weight}</TableCell>
-                                            <TableCell>{item.material_item_gross_weight}</TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-2 items-center">
-                                                    <Dialog>
-                                                        <DialogTrigger asChild>
-                                                            <Button variant="ghost" size="sm">
-                                                                <Barcode className="h-4 w-4" />
-                                                            </Button>
-                                                        </DialogTrigger>
-                                                        <DialogContent>
-                                                            <DialogHeader>
-                                                                <DialogTitle>Material Barcode</DialogTitle>
-                                                            </DialogHeader>
-                                                            <div className="flex justify-center my-4">
-                                                                <ReactBarcode value={item.material_item_barcode || 'Generating...'} />
-                                                            </div>
-
-                                                            {/* Vertical layout for data */}
-                                                            <div className="w-full">
-                                                                <div className="grid grid-cols-2 gap-2 w-full">
-
-                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Reel No</div>
-                                                                    <div className="p-2 border rounded-r">{item.material_item_reel_no}</div>
-
-                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Net Weight</div>
-                                                                    <div className="p-2 border rounded-r">{item.material_item_net_weight}</div>
-
-                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">GSM</div>
-                                                                    <div className="p-2 border rounded-r">{item.material_item_gsm}</div>
-
-                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Size</div>
-                                                                    <div className="p-2 border rounded-r">{item.material_item_size}</div>
-
-                                                                    <div className="font-semibold bg-gray-100 p-2 rounded-l">Colour</div>
-                                                                    <div className="p-2 border rounded-r">{item.material_colour}</div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex justify-center mt-4">
-                                                                <Button
-                                                                    onClick={() => {
-                                                                        const printContent = document.createElement('div');
-                                                                        printContent.innerHTML = `
-                                                                    <div style="font-family: Arial, sans-serif; padding: 20px;">
-                                                                        <div style="text-align: center; margin-bottom: 20px;">
-                                                                            <h2>Bundle Barcode</h2>
-                                                                            <div style="margin: 20px 0;">
-                                                                                ${document.querySelector('[data-testid="react-barcode"]')?.outerHTML || ''}
-                                                                            </div>
-                                                                            <p style="color: #666;">${item.material_item_barcode}</p>
-                                                                        </div>
-                                                                        <div style="margin-top: 20px;">
-                                                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Reel No</div>
-                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_id}</div>
-                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">New Weight</div>
-                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_net_weight}</div>
-                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">GSM</div>
-                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_gsm}</div>
-                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Size</div>
-                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_item_size}</div>
-                                                                                <div style="background: #f3f4f6; padding: 8px; font-weight: 600;">Colour</div>
-                                                                                <div style="border: 1px solid #e5e7eb; padding: 8px;">${item.material_colour}</div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                `;
-
-                                                                        const printWindow = window.open('', '_blank');
-                                                                        if (printWindow) {
-                                                                            printWindow.document.write(printContent.innerHTML);
-                                                                            printWindow.document.close();
-                                                                            printWindow.onload = () => {
-                                                                                printWindow.print();
-                                                                            };
-                                                                        } else {
-                                                                            toast({
-                                                                                title: "Error",
-                                                                                description: "Unable to open print window. Please allow pop-ups.",
-                                                                                variant: "destructive",
-                                                                            });
-                                                                        }
-                                                                    }}
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="flex gap-2 items-center"
-                                                                >
-                                                                    <Printer className="h-4 w-4" />
-                                                                    Print
-                                                                </Button>
-                                                            </div>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                    <Button variant="ghost" size="sm">
-                                                        <Trash2 color="red" className="h-4 w-4 cursor-pointer" onClick={() => handleDeleteItem(item.material_item_id)} />
-                                                    </Button>
-                                                </div>
-                                                {/* <Button variant="destructive" onClick={() => handleDeleteItem(item.material_item_id)}>
-                                                    Delete
-                                                </Button> */}
-                                            </TableCell>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Reel No</TableHead>
+                                            <TableHead>Colour</TableHead>
+                                            <TableHead>Particular</TableHead>
+                                            <TableHead>Variety</TableHead>
+                                            <TableHead>Gsm</TableHead>
+                                            <TableHead>Size</TableHead>
+                                            <TableHead>Net Weight</TableHead>
+                                            <TableHead>Gross Weight</TableHead>
+                                            <TableHead>Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {items.map(item => (
+                                            <TableRow key={item.material_item_id}>
+                                                <TableCell>{item.material_item_reel_no}</TableCell>
+                                                <TableCell>{item.material_colour}</TableCell>
+                                                <TableCell>{item.particular?.particular_name || 'N/A'}</TableCell>
+                                                <TableCell>{item.material_item_variety}</TableCell>
+                                                <TableCell>{item.material_item_gsm}</TableCell>
+                                                <TableCell>{item.material_item_size}</TableCell>
+                                                <TableCell>{item.material_item_net_weight}</TableCell>
+                                                <TableCell>{item.material_item_gross_weight}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-1 items-center">
+                                                        <Dialog>
+                                                            <DialogTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                    <Barcode className="h-4 w-4" />
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                            <DialogContent className="sm:max-w-md">
+                                                                <DialogHeader>
+                                                                    <DialogTitle>Material Barcode</DialogTitle>
+                                                                </DialogHeader>
+                                                                <div
+                                                                    className="flex justify-center my-4"
+                                                                    id={`barcode-container-${item.material_item_id}`}
+                                                                >
+                                                                    <ReactBarcode
+                                                                        value={item.material_item_barcode || "NO BARCODE"}
+                                                                        width={1.5} // Adjusted for potentially smaller print areas
+                                                                        height={40} // Adjusted for potentially smaller print areas
+                                                                        fontSize={10} // Adjusted for potentially smaller print areas
+                                                                        margin={5}
+                                                                        background="#ffffff"
+                                                                        lineColor="#000000"
+                                                                        displayValue={true}
+                                                                    />
+                                                                </div>
+                                                                <div className="w-full space-y-2">
+                                                                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm">
+                                                                        <div className="font-semibold bg-gray-100 p-2 rounded-l-md">Reel No</div>
+                                                                        <div className="p-2 border rounded-r-md break-all">{item.material_item_reel_no}</div>
+
+                                                                        <div className="font-semibold bg-gray-100 p-2 rounded-l-md">Net Weight</div>
+                                                                        <div className="p-2 border rounded-r-md">{item.material_item_net_weight}</div>
+
+                                                                        <div className="font-semibold bg-gray-100 p-2 rounded-l-md">GSM</div>
+                                                                        <div className="p-2 border rounded-r-md">{item.material_item_gsm}</div>
+
+                                                                        <div className="font-semibold bg-gray-100 p-2 rounded-l-md">Size</div>
+                                                                        <div className="p-2 border rounded-r-md">{item.material_item_size}</div>
+
+                                                                        <div className="font-semibold bg-gray-100 p-2 rounded-l-md">Colour</div>
+                                                                        <div className="p-2 border rounded-r-md">{item.material_colour}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex justify-center mt-6">
+                                                                    <Button
+                                                                        onClick={() => {
+                                                                            const barcodeContainer = document.getElementById(`barcode-container-${item.material_item_id}`);
+                                                                            const barcodeSvgElement = barcodeContainer ? barcodeContainer.querySelector('svg') : null;
+                                                                            // Ensure the SVG is scaled down if it's too large for the print area
+                                                                            if (barcodeSvgElement) {
+                                                                                barcodeSvgElement.style.maxWidth = "90%"; // Max width within its container
+                                                                                barcodeSvgElement.style.height = "auto";
+                                                                            }
+                                                                            const barcodeHTML = barcodeSvgElement ? barcodeSvgElement.outerHTML : '<p style="color:red;">Barcode image not found.</p>';
+
+                                                                            const printContentDiv = document.createElement('div');
+                                                                            // MODIFICATION: Beautified item details and layout for print
+                                                                            printContentDiv.innerHTML = `
+                                                                                <div class="label-container">
+                                                                                    <div class="barcode-section">
+                                                                                        ${barcodeHTML}
+                                                                                    </div>
+                                                                                    <hr class="divider"/>
+                                                                                    <table class="details-table">
+                                                                                        <tr><td><strong>Reel No:</strong></td><td>${item.material_item_reel_no}</td></tr>
+                                                                                        <tr><td><strong>Net Wt:</strong></td><td>${item.material_item_net_weight}</td></tr>
+                                                                                        <tr><td><strong>GSM:</strong></td><td>${item.material_item_gsm}</td></tr>
+                                                                                        <tr><td><strong>Size:</strong></td><td>${item.material_item_size}</td></tr>
+                                                                                        <tr><td><strong>Colour:</strong></td><td>${item.material_colour}</td></tr>
+                                                                                    </table>
+                                                                                </div>
+                                                                            `;
+
+                                                                            const printWindow = window.open('', '_blank', 'width=500,height=400'); // Adjusted window size for preview
+                                                                            if (printWindow) {
+                                                                                printWindow.document.write('<html><head><title>Print Material Label</title>');
+                                                                                // MODIFICATION: Added @page rule for 4x3 inch size and beautified styles
+                                                                                printWindow.document.write(`
+                                                                                    <style>
+                                                                                        @page {
+                                                                                            size: 4in 3in; /* Attempt to set physical size */
+                                                                                            margin: 0.15in; /* Minimal margin */
+                                                                                        }
+                                                                                        body { 
+                                                                                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                                                                            margin: 0; 
+                                                                                            padding: 0;
+                                                                                            width: 100%; 
+                                                                                            height: 100%;
+                                                                                            display: flex;
+                                                                                            flex-direction: column;
+                                                                                            align-items: center;
+                                                                                            justify-content: center; /* Center content on the small page */
+                                                                                            box-sizing: border-box;
+                                                                                            font-size: 9pt; /* Smaller base font for small label */
+                                                                                        }
+                                                                                        .label-container {
+                                                                                            width: 100%;
+                                                                                            max-width: 3.7in; /* Max width considering margins */
+                                                                                            padding: 10px;
+                                                                                            border: 1px solid #ccc;
+                                                                                            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+                                                                                            text-align: center;
+                                                                                            box-sizing: border-box;
+                                                                                        }
+                                                                                        .label-title {
+                                                                                            font-size: 11pt;
+                                                                                            font-weight: bold;
+                                                                                            margin-top: 0;
+                                                                                            margin-bottom: 8px;
+                                                                                            color: #333;
+                                                                                        }
+                                                                                        .barcode-section {
+                                                                                            margin: 5px 0;
+                                                                                            display: inline-block; /* To center the SVG */
+                                                                                        }
+                                                                                        .barcode-section svg {
+                                                                                            max-width: 100%; /* Ensure SVG scales down */
+                                                                                            height: auto;    /* Maintain aspect ratio */
+                                                                                            max-height: 1in; /* Limit barcode height */
+                                                                                        }
+                                                                                        .barcode-value {
+                                                                                            font-size: 8pt;
+                                                                                            color: #555;
+                                                                                            margin-top: 2px;
+                                                                                            margin-bottom: 8px;
+                                                                                            word-break: break-all;
+                                                                                        }
+                                                                                        .divider {
+                                                                                            border: none;
+                                                                                            border-top: 1px dashed #ddd;
+                                                                                            margin: 8px 0;
+                                                                                        }
+                                                                                        .details-table {
+                                                                                            width: 100%;
+                                                                                            margin-top: 8px;
+                                                                                            border-collapse: collapse;
+                                                                                            text-align: left;
+                                                                                        }
+                                                                                        .details-table td {
+                                                                                            padding: 3px 5px;
+                                                                                            vertical-align: top;
+                                                                                        }
+                                                                                        .details-table td:first-child {
+                                                                                            font-weight: bold;
+                                                                                            white-space: nowrap;
+                                                                                            color: #444;
+                                                                                            width: 30%; /* Adjust label column width */
+                                                                                        }
+                                                                                        @media print {
+                                                                                            body { 
+                                                                                                font-size: 9pt; /* Ensure font size is appropriate for print */
+                                                                                                -webkit-print-color-adjust: exact; /* For Chrome/Safari to print backgrounds */
+                                                                                                print-color-adjust: exact; /* Standard */
+                                                                                            }
+                                                                                            .label-container {
+                                                                                                border: 1px solid #666; /* Make border more visible on print */
+                                                                                                box-shadow: none; /* Remove shadow for print */
+                                                                                            }
+                                                                                        }
+                                                                                    </style>
+                                                                                `);
+                                                                                printWindow.document.write('</head><body>');
+                                                                                printWindow.document.write(printContentDiv.innerHTML);
+                                                                                printWindow.document.write('</body></html>');
+                                                                                printWindow.document.close();
+                                                                                printWindow.onload = () => {
+                                                                                    printWindow.focus();
+                                                                                    printWindow.print();
+                                                                                };
+                                                                            } else {
+                                                                                toast({
+                                                                                    title: "Error",
+                                                                                    description: "Unable to open print window. Please check pop-up blocker settings.",
+                                                                                    variant: "destructive",
+                                                                                });
+                                                                            }
+                                                                        }}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="flex gap-2 items-center"
+                                                                    >
+                                                                        <Printer className="h-4 w-4" />
+                                                                        Print
+                                                                    </Button>
+                                                                </div>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteItem(item.material_item_id)}>
+                                                            <Trash2 color="red" className="h-4 w-4 cursor-pointer" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            {items.length === 0 && (
+                                <p className="text-center text-gray-500 py-4">No items added yet.</p>
+                            )}
                         </CardContent>
                     </Card>
 
-                    <Button className="mt-6" onClick={handleSave}>
-                        Save Changes
-                    </Button>
-                </div>
+                    <div className="mt-6 flex justify-end">
+                        <Button onClick={handleSave}>
+                            Save Changes
+                        </Button>
+                    </div>
+                </main>
             </SidebarInset>
         </SidebarProvider>
     );
