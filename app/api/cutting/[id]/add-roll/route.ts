@@ -32,7 +32,7 @@ export async function POST(
     const randomDigits = Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, "0");
-    const barcode = `CR${cutting_id}${timestamp.substring(
+    const barcode = `${cutting_id}${timestamp.substring(
       timestamp.length - 6
     )}${randomDigits}`;
 

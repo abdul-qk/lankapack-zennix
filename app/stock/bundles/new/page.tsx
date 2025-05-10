@@ -79,7 +79,23 @@ export default function AddBundlePage() {
 
     React.useEffect(() => {
         fetchBarcodes();
+        fetchBarcodeDummy();
     }, []);
+
+    const fetchBarcodeDummy = async () => {
+        try {
+            const response = await fetch('/api/barcodeDummy');
+            const data = await response.json();
+            console.log(data);
+        } catch (error) {
+            console.error("Error fetching barcodes:", error);
+            toast({
+                title: "Error",
+                description: "Failed to fetch barcodes",
+                variant: "destructive",
+            });
+        }
+    }
 
     const fetchBarcodes = async () => {
         try {
@@ -769,4 +785,5 @@ export default function AddBundlePage() {
                 </div>
             </SidebarInset>
         </SidebarProvider>
-    );}
+    );
+}
