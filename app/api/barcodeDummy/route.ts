@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
-    // Fetch all filtered material info data
     const colorInfo = await prisma.hps_cutting_roll.findMany({});
 
     return new Response(JSON.stringify({ data: colorInfo }), {

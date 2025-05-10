@@ -163,8 +163,8 @@ export default function FinishingGoodsTable() {
             cell: ({ row }) => {
                 const status = row.original.del_ind;
                 return (
-                    <Badge variant={status === 0 ? "default" : "secondary"}>
-                        {status === 0 ? "IN" : "OUT"}
+                    <Badge variant={status === 1 ? "default" : "secondary"}>
+                        {status === 0 ? "OUT" : "IN"}
                     </Badge>
                 );
             }

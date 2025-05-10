@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (statusFilter && statusFilter !== "all") {
-      whereConditions.del_ind = statusFilter === "in" ? 0 : 1;
+      whereConditions.del_ind = statusFilter === "in" ? 1 : 0;
     }
 
     // Fetch completeItem data with filters

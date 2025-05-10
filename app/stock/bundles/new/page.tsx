@@ -100,7 +100,7 @@ export default function AddBundlePage() {
     const fetchBarcodes = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/barcodeDummy', {
+            const response = await fetch('/api/stock/bundle/barcode', {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
