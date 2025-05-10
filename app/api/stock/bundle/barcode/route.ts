@@ -39,7 +39,7 @@ export async function GET() {
 
     return NextResponse.json({
       message: "Barcodes fetched successfully",
-      allBarcodes: totalCount,
+      allBarcodes: barcodes,
       barcodes: validBarcodes,
     });
   } catch (error) {
