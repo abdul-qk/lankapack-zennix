@@ -47,7 +47,7 @@ export async function POST(
         cutting_barcode: barcode,
         add_date: new Date(),
         user_id: 1, // Replace with actual user ID from your auth system
-        del_ind: 0,
+        del_ind: 1,
       },
     });
 

@@ -18,6 +18,9 @@ export async function GET() {
 
     // Fetch all barcodes from cutting_roll table with detailed logging
     const barcodes = await prisma.hps_cutting_roll.findMany({
+      where: {
+        del_ind: 1,
+      },
       select: {
         cutting_roll_id: true,
         cutting_barcode: true,
