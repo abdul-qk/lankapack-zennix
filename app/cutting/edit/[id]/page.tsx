@@ -97,6 +97,7 @@ interface CuttingInfo {
     wastage_width: string;
     added_date: string;
     update_date: string;
+    net_weight: string;
 }
 
 interface CuttingRollInfo {
@@ -489,7 +490,7 @@ export default function ViewSlittingInfo() {
                                                         {item.roll_barcode_no}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>{item.cutting_weight}</TableCell>
+                                                <TableCell>{item.net_weight}</TableCell>
                                                 <TableCell>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>

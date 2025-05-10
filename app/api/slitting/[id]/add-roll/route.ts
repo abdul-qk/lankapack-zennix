@@ -103,7 +103,7 @@ export async function POST(
         material_item_id: stockData.material_item_id,
         item_net_weight: slitting_roll_weight.toString(),
         item_gsm: stockData.item_gsm,
-        material_item_size: stockData.material_item_size,
+        material_item_size: slitting_roll_width.toString(),
         material_used_buy: 2,
         material_status: 1,
         stock_date: new Date(),

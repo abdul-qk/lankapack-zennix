@@ -31,11 +31,31 @@ export async function GET(
       },
     });
 
-    const cuttingData = await prisma.hps_cutting.findMany({
+    const basicCuttingData = await prisma.hps_cutting.findMany({
       where: {
         job_card_id: jobCardId,
       },
     });
+
+    const cuttingData = await Promise.all(
+      basicCuttingData.map(async (cutting) => {
+        // Converting the barcode string to BigInt for comparison with hps_stock.stock_barcode
+        const stockItem = await prisma.hps_stock.findFirst({
+          where: {
+            stock_barcode: BigInt(cutting.roll_barcode_no),
+          },
+          select: {
+            item_net_weight: true,
+          },
+        });
+
+        // Return the slitting data with the added net_weight field
+        return {
+          ...cutting,
+          net_weight: stockItem?.item_net_weight || null,
+        };
+      })
+    );
 
     const cuttingRollData = await prisma.hps_cutting_roll.findMany({
       where: {

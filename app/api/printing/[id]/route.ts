@@ -63,11 +63,31 @@ export async function GET(
       colorNames = mappedColors.join(", ");
     }
 
-    const printingData = await prisma.hps_print.findMany({
+    const basicPrintingData = await prisma.hps_print.findMany({
       where: {
         job_card_id: jobCardId,
       },
     });
+
+    const printingData = await Promise.all(
+      basicPrintingData.map(async (printing) => {
+        // Converting the barcode string to BigInt for comparison with hps_stock.stock_barcode
+        const stockItem = await prisma.hps_stock.findFirst({
+          where: {
+            stock_barcode: BigInt(printing.print_barcode_no),
+          },
+          select: {
+            item_net_weight: true,
+          },
+        });
+
+        // Return the slitting data with the added net_weight field
+        return {
+          ...printing,
+          net_weight: stockItem?.item_net_weight || null,
+        };
+      })
+    );
 
     const printingPackData = await prisma.hps_print_pack.findMany({
       where: {

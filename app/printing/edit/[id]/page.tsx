@@ -74,6 +74,7 @@ interface PrintingInfo {
     balance_width: string;
     print_wastage: string;
     print_barcode_no: string;
+    net_weight: string;
 }
 
 interface PrintingPackInfo {
@@ -450,16 +451,6 @@ export default function EditPrintingInfo() {
             return;
         }
 
-        // Validate that all fields contain only numbers
-        if (!/^\d*\.?\d*$/.test(balanceWeight) || !/^\d*\.?\d*$/.test(balanceWidth) || !/^\d*\.?\d*$/.test(printWastage)) {
-            toast({
-                title: "Error",
-                description: "All fields must be numbers",
-                variant: "destructive",
-            });
-            return;
-        }
-
         try {
             setLoading(true);
             const response = await fetch(`/api/printing/${id}/update-wastage`, {
@@ -620,6 +611,7 @@ export default function EditPrintingInfo() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Barcode</TableHead>
+                                            <TableHead>Weight</TableHead>
                                             <TableHead>Balance Weight</TableHead>
                                             <TableHead>Balance Width</TableHead>
                                             <TableHead>Printing Wastage</TableHead>
@@ -642,6 +634,7 @@ export default function EditPrintingInfo() {
                                                         {item.print_barcode_no}
                                                     </div>
                                                 </TableCell>
+                                                <TableCell>{item.net_weight}</TableCell>
                                                 <TableCell>{item.balance_weight}</TableCell>
                                                 <TableCell>{item.balance_width}</TableCell>
                                                 <TableCell>{item.print_wastage}</TableCell>

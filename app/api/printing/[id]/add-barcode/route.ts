@@ -17,7 +17,7 @@ export async function POST(
     // Convert barcode to BigInt if necessary (since it's BigInt in the schema)
     const barcodeBigInt = BigInt(roll_barcode_no);
 
-    // Check if the barcode exists in stock
+    // Check if the barcode exists in stock and get item_net_weight
     const stockItem = await prisma.hps_stock.findFirst({
       where: {
         stock_barcode: barcodeBigInt,
