@@ -86,7 +86,9 @@ export default function AddBundlePage() {
             setLoading(true);
             const response = await fetch('/api/stock/bundle/barcode', {
                 headers: {
-                    'Cache-Control': 'no-cache'
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
                 }
             });
             const data = await response.json();
