@@ -57,6 +57,7 @@ interface NonCompleteItem {
 export default function AddBundlePage() {
     const [loading, setLoading] = React.useState(true);
     const [barcodeOptions, setBarcodeOptions] = React.useState<BarcodeOption[]>([]);
+    const [filteredOptions, setFilteredOptions] = React.useState<BarcodeOption[]>([]);
     const [selectedBarcode, setSelectedBarcode] = React.useState<string>("");
     const [selectedBarcodeData, setSelectedBarcodeData] = React.useState<BarcodeOption | null>(null);
     const [rollData, setRollData] = React.useState<RollData | null>(null);
@@ -83,7 +84,11 @@ export default function AddBundlePage() {
     const fetchBarcodes = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/stock/bundle/barcode');
+            const response = await fetch('/api/stock/bundle/barcode', {
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
             const data = await response.json();
 
             if (data && data.barcodes) {
@@ -492,17 +497,25 @@ export default function AddBundlePage() {
                                         <SelectValue placeholder="Select a barcode" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {barcodeOptions.length > 0 ? (
-                                            barcodeOptions.map((option) => (
-                                                <SelectItem key={option.cutting_roll_id} value={option.cutting_barcode}>
-                                                    {option.cutting_barcode}
-                                                </SelectItem>
-                                            ))
-                                        ) : (
-                                            <SelectItem value="no-options" disabled>
-                                                No barcodes available
+                                        <div className="px-3 pb-2">
+                                            <Input
+                                                placeholder="Search barcode..."
+                                                className="h-9"
+                                                onChange={(e) => {
+                                                    const searchValue = e.target.value.toLowerCase();
+                                                    setFilteredOptions(
+                                                        barcodeOptions.filter(option =>
+                                                            option.cutting_barcode.toLowerCase().includes(searchValue)
+                                                        )
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                        {(filteredOptions.length > 0 ? filteredOptions : barcodeOptions).map((option) => (
+                                            <SelectItem key={option.cutting_roll_id} value={option.cutting_barcode}>
+                                                {option.cutting_barcode}
                                             </SelectItem>
-                                        )}
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -754,5 +767,4 @@ export default function AddBundlePage() {
                 </div>
             </SidebarInset>
         </SidebarProvider>
-    );
-}
+    );}
