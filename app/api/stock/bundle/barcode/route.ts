@@ -3,50 +3,18 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET() {
-  console.log("Fetching barcodes...");
+export async function GET(req: Request) {
   try {
-    // First, get total count
-    const totalBarcodes = await prisma.hps_cutting_roll.findMany({});
+    // Fetch all filtered material info data
+    const colorInfo = await prisma.hps_cutting_roll.findMany({});
 
-    // console.log(`Total records with non-null barcodes: ${totalCount}`);
-
-    // Fetch all barcodes from cutting_roll table with detailed logging
-    const barcodes = await prisma.hps_cutting_roll.findMany({
-      select: {
-        cutting_roll_id: true,
-        cutting_barcode: true,
-      },
-      where: {
-        del_ind: 1,
-      },
-      orderBy: {
-        cutting_roll_id: "desc",
-      },
-    });
-
-    console.log(`Records fetched: ${barcodes.length}`);
-
-    // Log the last few records for debugging
-    if (barcodes.length > 0) {
-      console.log("Last 5 records:", barcodes.slice(0, 5));
-    }
-
-    // Filter out any null values that might slip through
-    const validBarcodes = barcodes.filter((item) => item.cutting_barcode);
-
-    return NextResponse.json({
-      message: "Barcodes fetched successfully",
-      allBarcodes: totalBarcodes,
-      barcodes: validBarcodes,
+    return new Response(JSON.stringify({ data: colorInfo }), {
+      status: 200,
     });
   } catch (error) {
-    console.error("Error fetching barcodes:", error);
-    return NextResponse.json(
-      { message: "Error fetching barcodes", error: String(error) },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    console.error("Error fetching color info:", error);
+    return new Response(JSON.stringify({ error: "Failed to fetch data" }), {
+      status: 500,
+    });
   }
 }

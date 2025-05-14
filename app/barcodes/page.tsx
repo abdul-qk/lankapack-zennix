@@ -62,7 +62,7 @@ export default function ColoursTable() {
         try {
             const response = await fetch(`/api/stock/bundle/barcode`);
             const result = await response.json();
-            setData(result.allBarcodes);
+            setData(result.data);
         } catch (error) {
             console.error("Error fetching data:", error);
             alert("Failed to fetch data");
