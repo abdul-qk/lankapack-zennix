@@ -7,9 +7,9 @@ export async function GET() {
   console.log("Fetching barcodes...");
   try {
     // First, get total count
-    const totalCount = await prisma.hps_cutting_roll.count({});
+    const totalBarcodes = await prisma.hps_cutting_roll.findMany({});
 
-    console.log(`Total records with non-null barcodes: ${totalCount}`);
+    // console.log(`Total records with non-null barcodes: ${totalCount}`);
 
     // Fetch all barcodes from cutting_roll table with detailed logging
     const barcodes = await prisma.hps_cutting_roll.findMany({
@@ -37,7 +37,7 @@ export async function GET() {
 
     return NextResponse.json({
       message: "Barcodes fetched successfully",
-      allBarcodes: barcodes,
+      allBarcodes: totalBarcodes,
       barcodes: validBarcodes,
     });
   } catch (error) {
