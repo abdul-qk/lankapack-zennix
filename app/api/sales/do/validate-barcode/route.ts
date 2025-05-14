@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
     const completeItem = await prisma.hps_complete_item.findFirst({
       where: {
         complete_item_barcode: barcode,
-        del_ind: 0,
+        // del_ind: 1,
       },
     });
+
+    console.log(barcode); // Add this line for debugging
 
     if (!completeItem) {
       return new Response(
