@@ -160,11 +160,27 @@ export default function AddBundlePage() {
             const selectedOption = barcodeOptions.find(option => option.cutting_barcode === value);
             setSelectedBarcodeData(selectedOption || null);
             fetchRollData(value);
+            fetchCompleteItems();
         } else {
             setSelectedBarcodeData(null);
             setRollData(null);
         }
     };
+
+    const fetchCompleteItems = async () => {
+        try {
+            const response = await fetch('/api/stock/bundle/complete');
+            const result = await response.json();
+            console.log(completeItems);
+        } catch (error) {
+            console.error("Error fetching complete items:", error);
+            toast({
+                title: "Error",
+                description: "Failed to fetch complete items",
+                variant: "destructive",
+            });
+        }
+    }
 
     const handleSubmitComplete = async (e: React.FormEvent) => {
         e.preventDefault();

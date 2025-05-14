@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GET() {
+  console.log("Fetching barcodes...");
   try {
     // First, get total count
     const totalCount = await prisma.hps_cutting_roll.count({

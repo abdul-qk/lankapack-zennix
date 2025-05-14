@@ -9,6 +9,7 @@ export async function GET() {
     const items = await prisma.hps_complete_item.findMany({
       where: {
         del_ind: 1,
+        complete_item_info: 1,
       },
       orderBy: {
         complete_item_id: "desc",
