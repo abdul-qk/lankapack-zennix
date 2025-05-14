@@ -200,8 +200,8 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                             <ReactBarcode
                                                                 value={item.complete_item_barcode || "NO BARCODE"}
                                                                 width={1.5} // Adjusted for potentially smaller print areas
-                                                                height={40} // Adjusted for potentially smaller print areas
-                                                                margin={5}
+                                                                height={30} // Adjusted for potentially smaller print areas
+                                                                margin={3}
                                                                 background="#ffffff"
                                                                 lineColor="#000000"
                                                                 displayValue={true}
@@ -262,7 +262,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                                     printWindow.document.write(`
                                                                                     <style>
                                                                                         @page {
-                                                                                            size: 4in 3in; /* Attempt to set physical size */
+                                                                                            size: 3in 2in; /* Attempt to set physical size */
                                                                                             margin: 0.15in; /* Minimal margin */
                                                                                         }
                                                                                         body { 
@@ -276,11 +276,12 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                                                             align-items: center;
                                                                                             justify-content: center; /* Center content on the small page */
                                                                                             box-sizing: border-box;
-                                                                                            font-size: 9pt; /* Smaller base font for small label */
+                                                                                            font-size: 9pt !important; /* Smaller base font for small label */
                                                                                         }
                                                                                         .label-container {
                                                                                             width: 100%;
-                                                                                            max-width: 3.7in; /* Max width considering margins */
+                                                                                            max-width: 3in; /* Max width considering margins */
+                                                                                            max-height: 2in; /* Max height considering margins */
                                                                                             padding: 10px;
                                                                                             border: 1px solid #ccc;
                                                                                             box-shadow: 0 0 5px rgba(0,0,0,0.1);
@@ -288,15 +289,18 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                                                             box-sizing: border-box;
                                                                                         }
                                                                                         .label-title {
-                                                                                            font-size: 11pt;
-                                                                                            font-weight: bold;
+                                                                                            font-size: 9pt !important;
+                                                                                            font-weight: normal;
                                                                                             margin-top: 0;
                                                                                             margin-bottom: 8px;
                                                                                             color: #333;
                                                                                         }
                                                                                         .barcode-section {
-                                                                                            margin: 5px 0;
+                                                                                            margin: 0;
                                                                                             display: inline-block; /* To center the SVG */
+                                                                                        }
+                                                                                        .barcode-section svg text{
+                                                                                            font-size: 16px !important;
                                                                                         }
                                                                                         .barcode-section svg {
                                                                                             max-width: 100%; /* Ensure SVG scales down */
@@ -324,12 +328,14 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                                                         .details-table td {
                                                                                             padding: 3px 5px;
                                                                                             vertical-align: top;
+                                                                                            font-size: 10px;
                                                                                         }
                                                                                         .details-table td:first-child {
                                                                                             font-weight: bold;
                                                                                             white-space: nowrap;
                                                                                             color: #444;
                                                                                             width: 30%; /* Adjust label column width */
+                                                                                            font-size: 11px;
                                                                                         }
                                                                                         @media print {
                                                                                             body { 
