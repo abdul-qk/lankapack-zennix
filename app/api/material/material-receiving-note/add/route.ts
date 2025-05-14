@@ -9,16 +9,16 @@ export async function GET(req: Request) {
     const colours = await prisma.hps_colour.findMany();
 
     // Fetch temporary items (material_info_id = 1)
-    const tempItems = await prisma.hps_material_item.findMany({
-      where: {
-        material_info_id: 1,
-      },
-      include: {
-        particular: true, // Include related particular data if needed on the frontend
-      },
-    });
+    // const tempItems = await prisma.hps_material_item.findMany({
+    //   where: {
+    //     material_info_id: 1,
+    //   },
+    //   include: {
+    //     particular: true, // Include related particular data if needed on the frontend
+    //   },
+    // });
 
-    return new Response(JSON.stringify({ suppliers, particulars, colours, tempItems }), {
+    return new Response(JSON.stringify({ suppliers, particulars, colours }), {
       status: 200,
     });
   } catch (error) {
