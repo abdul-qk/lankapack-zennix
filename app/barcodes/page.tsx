@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type ColorInfo = {
     cutting_roll_id: number;
@@ -41,7 +42,30 @@ export default function ColoursTable() {
     const [debouncedSearch, setDebouncedSearch] = React.useState("");  // Debounced search state
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [new_colour_name, setNewColourName] = React.useState("");
+    const [jobCards, setJobCards] = React.useState<{ job_card_id: string }[]>([]);
+    const [selectedJobCard, setSelectedJobCard] = React.useState<string>("");
     const { toast } = useToast();
+
+    // Fetch job cards on component mount
+    React.useEffect(() => {
+        const fetchJobCards = async () => {
+            try {
+                const response = await fetch('/api/job/jobcard');
+                const result = await response.json();
+                // Sort job cards in descending order
+                const sortedJobCards = result.data.sort((a: { job_card_id: string }, b: { job_card_id: string }) =>
+                    String(b.job_card_id).localeCompare(String(a.job_card_id))
+                );
+                setJobCards(sortedJobCards);
+            } catch (error) {
+                console.error("Error fetching job cards:", error);
+                toast({ description: "Failed to fetch job cards", variant: "destructive" });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchJobCards();
+    }, []);
 
     // Debounce search input to optimize filtering
     React.useEffect(() => {
@@ -52,20 +76,22 @@ export default function ColoursTable() {
         return () => clearTimeout(timer);  // Clear the timeout on cleanup
     }, [search]);
 
-    // Fetch data on component mount (or when search state changes)
+    // Fetch data when job card selection changes
     React.useEffect(() => {
-        fetchData();
-    }, []);
+        if (selectedJobCard) {
+            fetchData(selectedJobCard);
+        }
+    }, [selectedJobCard]);
 
-    const fetchData = async () => {
+    const fetchData = async (jobCardId: string) => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/stock/bundle/barcode`);
+            const response = await fetch(`/api/stock/bundle/barcode?job_card_id=${jobCardId}`);
             const result = await response.json();
             setData(result.data);
         } catch (error) {
             console.error("Error fetching data:", error);
-            alert("Failed to fetch data");
+            toast({ description: "Failed to fetch data", variant: "destructive" });
         }
         setLoading(false);
     };
@@ -117,20 +143,6 @@ export default function ColoursTable() {
         return pageNumbers;
     }, [currentPage, totalPages]);
 
-    const handleAdd = async (colour_name: string) => {
-        try {
-            await fetch(`/api/job/color/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ colour_name }),
-            });
-            toast({ description: "Entry added successfully!" });
-            fetchData(); // Refresh data
-        } catch (error) {
-            toast({ description: "Failed to add entry", variant: "destructive" });
-        }
-    }
-
     if (loading) { return <Loading /> }
 
     return (
@@ -151,74 +163,96 @@ export default function ColoursTable() {
                     </div>
                 </header>
                 <div className="container mx-auto p-4">
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                                        No results.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-
-                    <div className="flex items-center justify-end space-x-2 pt-8">
-                        {/* First Page */}
-                        <Button variant="outline" size="sm" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
-                            <ChevronsLeft size={16} />
-                        </Button>
-
-                        {/* Previous Page */}
-                        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-                            <ChevronLeft size={16} />
-                        </Button>
-
-                        {/* Page Numbers */}
-                        {visiblePageNumbers.map((page) => (
-                            <Button
-                                key={page}
-                                variant={page === currentPage ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => table.setPageIndex(page - 1)}
-                            >
-                                {page}
-                            </Button>
-                        ))}
-
-                        {/* Next Page */}
-                        <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                            <ChevronRight size={16} />
-                        </Button>
-
-                        {/* Last Page */}
-                        <Button variant="outline" size="sm" onClick={() => table.setPageIndex(totalPages - 1)} disabled={!table.getCanNextPage()}>
-                            <ChevronsRight size={16} />
-                        </Button>
+                    <div className="mb-4">
+                        <Select value={selectedJobCard} onValueChange={setSelectedJobCard}>
+                            <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Select Job Card" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {jobCards.map((jobCard) => (
+                                    <SelectItem key={jobCard.job_card_id} value={jobCard.job_card_id}>
+                                        {jobCard.job_card_id}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
+                    {selectedJobCard ? (
+                        <>
+                            <Table>
+                                <TableHeader>
+                                    {table.getHeaderGroups().map((headerGroup) => (
+                                        <TableRow key={headerGroup.id}>
+                                            {headerGroup.headers.map((header) => (
+                                                <TableHead key={header.id}>
+                                                    {header.isPlaceholder
+                                                        ? null
+                                                        : flexRender(header.column.columnDef.header, header.getContext())}
+                                                </TableHead>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableHeader>
+                                <TableBody>
+                                    {table.getRowModel().rows.length ? (
+                                        table.getRowModel().rows.map((row) => (
+                                            <TableRow key={row.id}>
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <TableCell key={cell.id}>
+                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} className="h-24 text-center">
+                                                No results.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+
+                            <div className="flex items-center justify-end space-x-2 pt-8">
+                                {/* First Page */}
+                                <Button variant="outline" size="sm" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
+                                    <ChevronsLeft size={16} />
+                                </Button>
+
+                                {/* Previous Page */}
+                                <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+                                    <ChevronLeft size={16} />
+                                </Button>
+
+                                {/* Page Numbers */}
+                                {visiblePageNumbers.map((page) => (
+                                    <Button
+                                        key={page}
+                                        variant={page === currentPage ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => table.setPageIndex(page - 1)}
+                                    >
+                                        {page}
+                                    </Button>
+                                ))}
+
+                                {/* Next Page */}
+                                <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+                                    <ChevronRight size={16} />
+                                </Button>
+
+                                {/* Last Page */}
+                                <Button variant="outline" size="sm" onClick={() => table.setPageIndex(totalPages - 1)} disabled={!table.getCanNextPage()}>
+                                    <ChevronsRight size={16} />
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center mt-8">
+                            Please select a job card to view barcodes.
+                        </div>
+                    )}
                 </div>
             </SidebarInset>
         </SidebarProvider>
