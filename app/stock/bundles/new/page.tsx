@@ -62,6 +62,8 @@ export default function AddBundlePage() {
     const [selectedBarcodeData, setSelectedBarcodeData] = React.useState<BarcodeOption | null>(null);
     const [rollData, setRollData] = React.useState<RollData | null>(null);
     const [isLoadingData, setIsLoadingData] = React.useState(false);
+    const [selectedJobCard, setSelectedJobCard] = React.useState<string>("");
+    const [jobCards, setJobCards] = React.useState<{ job_card_id: string }[]>([]);
 
     // Complete bundle states
     const [bundleWeight, setBundleWeight] = React.useState<string>("");
@@ -78,29 +80,36 @@ export default function AddBundlePage() {
     const { toast } = useToast();
 
     React.useEffect(() => {
-        fetchBarcodes();
-        fetchBarcodeDummy();
+        const fetchJobCards = async () => {
+            try {
+                const response = await fetch('/api/job/jobcard');
+                const result = await response.json();
+                // Sort job cards in descending order
+                const sortedJobCards = result.data.sort((a: { job_card_id: string }, b: { job_card_id: string }) =>
+                    String(b.job_card_id).localeCompare(String(a.job_card_id))
+                );
+                setJobCards(sortedJobCards);
+            } catch (error) {
+                console.error("Error fetching job cards:", error);
+                toast({ description: "Failed to fetch job cards", variant: "destructive" });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchJobCards();
     }, []);
 
-    const fetchBarcodeDummy = async () => {
-        try {
-            const response = await fetch('/api/barcodeDummy');
-            const data = await response.json();
-            console.log(data);
-        } catch (error) {
-            console.error("Error fetching barcodes:", error);
-            toast({
-                title: "Error",
-                description: "Failed to fetch barcodes",
-                variant: "destructive",
-            });
+    // Fetch data when job card selection changes
+    React.useEffect(() => {
+        if (selectedJobCard) {
+            fetchBarcodes(selectedJobCard);
         }
-    }
+    }, [selectedJobCard]);
 
-    const fetchBarcodes = async () => {
+    const fetchBarcodes = async (barcode: string) => {
         try {
             setLoading(true);
-            const response = await fetch('/api/stock/bundle/barcode', {
+            const response = await fetch(`/api/stock/bundle/barcode?job_card_id=${barcode}`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
@@ -109,8 +118,8 @@ export default function AddBundlePage() {
             });
             const data = await response.json();
 
-            if (data && data.barcodes) {
-                setBarcodeOptions(data.barcodes);
+            if (data && data.data) {
+                setBarcodeOptions(data.data);
             }
         } catch (error) {
             console.error("Error fetching barcodes:", error);
@@ -524,34 +533,51 @@ export default function AddBundlePage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="mb-6">
-                                <Label htmlFor="barcode-select" className="mb-2 block">Cutting Roll Barcode</Label>
-                                <Select value={selectedBarcode} onValueChange={handleBarcodeChange}>
-                                    <SelectTrigger id="barcode-select" className="w-full">
-                                        <SelectValue placeholder="Select a barcode" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <div className="px-3 pb-2">
-                                            <Input
-                                                placeholder="Search barcode..."
-                                                className="h-9"
-                                                onChange={(e) => {
-                                                    const searchValue = e.target.value.toLowerCase();
-                                                    setFilteredOptions(
-                                                        barcodeOptions.filter(option =>
-                                                            option.cutting_barcode.toLowerCase().includes(searchValue)
-                                                        )
-                                                    );
-                                                }}
-                                            />
-                                        </div>
-                                        {(filteredOptions.length > 0 ? filteredOptions : barcodeOptions).map((option) => (
-                                            <SelectItem key={option.cutting_roll_id} value={option.cutting_barcode}>
-                                                {option.cutting_barcode}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                            <div className="flex gap-2 w-full">
+                                <div className="mb-6 w-full">
+                                    <Label htmlFor="job-card-select" className="mb-2 block">Select Job Card</Label>
+                                    <Select value={selectedJobCard} onValueChange={setSelectedJobCard}>
+                                        <SelectTrigger id="job-card-select" className="w-full">
+                                            <SelectValue placeholder="Select Job Card" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {jobCards.map((jobCard) => (
+                                                <SelectItem key={jobCard.job_card_id} value={jobCard.job_card_id}>
+                                                    {jobCard.job_card_id}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="mb-6 w-full">
+                                    <Label htmlFor="barcode-select" className="mb-2 block">Cutting Roll Barcode</Label>
+                                    <Select disabled={selectedJobCard == ""} value={selectedBarcode} onValueChange={handleBarcodeChange}>
+                                        <SelectTrigger id="barcode-select" className="w-full">
+                                            <SelectValue placeholder="Select a barcode" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <div className="px-3 pb-2">
+                                                <Input
+                                                    placeholder="Search barcode..."
+                                                    className="h-9"
+                                                    onChange={(e) => {
+                                                        const searchValue = e.target.value.toLowerCase();
+                                                        setFilteredOptions(
+                                                            barcodeOptions.filter(option =>
+                                                                option.cutting_barcode.toLowerCase().includes(searchValue)
+                                                            )
+                                                        );
+                                                    }}
+                                                />
+                                            </div>
+                                            {(filteredOptions.length > 0 ? filteredOptions : barcodeOptions).map((option) => (
+                                                <SelectItem key={option.cutting_roll_id} value={option.cutting_barcode}>
+                                                    {option.cutting_barcode}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
