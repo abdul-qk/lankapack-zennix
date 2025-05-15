@@ -65,6 +65,7 @@ export default function ReturnView() {
   const params = useParams();
   const [data, setData] = useState<ReturnData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [logoLoaded, setLogoLoaded] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,19 +91,34 @@ export default function ReturnView() {
     }
   }, [params.id]);
 
-  const handlePrint = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
+  const [printError, setPrintError] = useState<string>('');
+  const [isPrinting, setIsPrinting] = useState(false);
 
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Please allow pop-ups to print');
+  const handlePrint = async () => {
+    const printContent = printRef.current;
+    if (!printContent) {
+      setPrintError('Print content not found');
       return;
     }
 
-    // Add necessary styles and content to the new window
-    printWindow.document.write(`
+    if (!logoLoaded) {
+      setPrintError('Logo is still loading. Please wait...');
+      return;
+    }
+
+    setIsPrinting(true);
+    setPrintError('');
+
+    try {
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        setPrintError('Please allow pop-ups to print');
+        return;
+      }
+
+      // Add necessary styles and content to the new window
+      printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -164,14 +180,20 @@ export default function ReturnView() {
       </html>
     `);
 
-    // Wait for content to load then print
-    printWindow.document.close();
-    printWindow.onload = function () {
-      printWindow.focus();
-      printWindow.print();
-      // Don't close the window immediately to allow printing
-      // The user can close it manually after printing
-    };
+      // Wait for content to load then print
+      printWindow.document.close();
+
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 1000); // 1 second delay
+      
+    } catch (error) {
+      console.error('Print error:', error);
+      setPrintError(error instanceof Error ? error.message : 'Failed to print');
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   if (loading) {
@@ -219,10 +241,16 @@ export default function ReturnView() {
 
         <div className="container mx-auto p-4">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div className="flex justify-end mb-4">
-              <Button onClick={handlePrint}>
+            <div className="flex flex-col items-end gap-2 mb-4">
+              {printError && (
+                <div className="text-red-500 text-sm">{printError}</div>
+              )}
+              <Button
+                onClick={handlePrint}
+                disabled={isPrinting || !logoLoaded}
+              >
                 <Printer className="mr-2 h-4 w-4" />
-                Print
+                {isPrinting ? 'Printing...' : 'Print'}
               </Button>
             </div>
 
@@ -230,7 +258,14 @@ export default function ReturnView() {
               {/* Header with Logo and Address */}
               <div className="print-header text-center mb-8">
                 <div className="flex justify-center mb-2">
-                  <Image src="/company_logo.png" alt="Logo" style={{ width: '150px', height: 'auto', objectFit: 'contain' }} width={150} height={0} />
+                  <Image
+                    src="/company_logo.png"
+                    alt="Logo"
+                    style={{ width: '150px', height: 'auto', objectFit: 'contain' }}
+                    width={150}
+                    height={0}
+                    onLoad={() => setLogoLoaded(true)}
+                  />
                 </div>
                 <div className="text-sm">
                   <p>No 24, 1st Lane, Model Town Road,</p>

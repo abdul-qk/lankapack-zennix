@@ -47,8 +47,18 @@ type CompleteItemInfo = {
     del_ind: number;
 };
 
+type NonCompleteInfo = {
+    non_complete_id: number;
+    non_complete_info: number;
+    non_complete_bags: string;
+    non_complete_barcode: string;
+    non_complete_weight: string;
+    del_ind: number;
+}
+
 export default function FinishingGoodsTable() {
     const [data, setData] = React.useState<CompleteItemInfo[]>([]);
+    const [nonCompleteData, setNonCompleteData] = React.useState<NonCompleteInfo[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [search, setSearch] = React.useState("");
     const [debouncedSearch, setDebouncedSearch] = React.useState("");
@@ -91,13 +101,15 @@ export default function FinishingGoodsTable() {
 
             const response = await fetch(url);
             const result = await response.json();
-            setData(result.data);
+            setData(result.data.complete_items);
+            setNonCompleteData(result.data.non_complete_items);
+
 
             // Extract unique sizes for the filter dropdown (only on initial load)
-            if (uniqueSizes.length === 0 && result.data.length > 0) {
+            if (uniqueSizes.length === 0 && result.data.complete_items.length > 0) {
                 // Use object keys to get unique values instead of Set
                 const sizeMap: Record<string, boolean> = {};
-                result.data.forEach((item: CompleteItemInfo) => {
+                result.data.complete_items.forEach((item: CompleteItemInfo) => {
                     if (item.bundle_type) {
                         sizeMap[item.bundle_type] = true;
                     }
@@ -301,6 +313,18 @@ export default function FinishingGoodsTable() {
                                 </TableRow>
                             )}
                         </TableBody>
+                        <tfoot className="bg-slate-100">
+                            <TableRow>
+                                <TableCell colSpan={3}>
+                                </TableCell>
+                                <TableCell className="text-left font-semibold text-sm">
+                                    Total Bags:
+                                </TableCell>
+                                <TableCell colSpan={3} className="font-bold">
+                                    {table.getRowModel().rows.reduce((total, row) => total + parseInt(row.original.complete_item_bags || '0', 10), 0)}
+                                </TableCell>
+                            </TableRow>
+                        </tfoot>
                     </Table>
 
                     <div className="flex items-center justify-end space-x-2 pt-8">

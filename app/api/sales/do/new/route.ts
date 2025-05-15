@@ -99,6 +99,20 @@ export async function POST(req: NextRequest) {
             )
         );
 
+        // Update del_ind for complete items
+        await Promise.all(
+            items.map((item: any) =>
+                prisma.hps_complete_item.update({
+                    where: {
+                        complete_item_id: item.complete_item_id,
+                    },
+                    data: {
+                        del_ind: 0,
+                    },
+                })
+            )
+        );
+
         return new Response(
             JSON.stringify({
                 success: true,

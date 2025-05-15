@@ -561,6 +561,22 @@ export default function StockTable() {
                                     </TableRow>
                                 )}
                             </TableBody>
+                            <tfoot className="bg-slate-100">
+                                <TableRow>
+                                    <TableCell className="text-left font-semibold text-sm">
+                                        Total Reels:
+                                    </TableCell>
+                                    <TableCell colSpan={5} className="font-bold">
+                                        {table.getRowModel().rows.length}
+                                    </TableCell>
+                                    <TableCell className="text-left font-semibold text-sm">
+                                        Total Weight:
+                                    </TableCell>
+                                    <TableCell colSpan={3} className="font-bold">
+                                        {table.getRowModel().rows.reduce((total, row) => total + parseInt(row.original.item_net_weight || '0', 10), 0)}
+                                    </TableCell>
+                                </TableRow>
+                            </tfoot>
                         </Table>
                     </div>
 

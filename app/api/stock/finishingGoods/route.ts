@@ -22,16 +22,29 @@ export async function GET(req: NextRequest) {
       whereConditions.del_ind = statusFilter === "in" ? 1 : 0;
     }
 
-    // Fetch completeItem data with filters
-    const completeItem = await prisma.hps_complete_item.findMany({
-      where: whereConditions,
-    });
+    // Fetch data from both tables with filters
+    const [completeItems, nonCompleteItems] = await Promise.all([
+      prisma.hps_complete_item.findMany({
+        where: whereConditions,
+      }),
+      prisma.hps_non_complete_item.findMany({
+        where: whereConditions,
+      }),
+    ]);
 
-    return new Response(JSON.stringify({ data: completeItem }), {
-      status: 200,
-    });
+    console.log(nonCompleteItems);
+
+    return new Response(
+      JSON.stringify({
+        data: {
+          complete_items: completeItems,
+          non_complete_items: nonCompleteItems,
+        },
+      }),
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error fetching complete item info:", error);
+    console.error("Error fetching items info:", error);
     return new Response(JSON.stringify({ error: "Failed to fetch data" }), {
       status: 500,
     });

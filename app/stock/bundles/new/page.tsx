@@ -336,8 +336,8 @@ export default function AddBundlePage() {
                 }
 
                 // Reset form
-                setNonCompleteWeight("");
-                setNonCompleteBags("");
+                // setNonCompleteWeight("");
+                // setNonCompleteBags("");
             } else {
                 throw new Error(result.message || "Failed to add non-complete bundle item");
             }
@@ -726,6 +726,8 @@ export default function AddBundlePage() {
                                                     placeholder="Bundle Weight"
                                                     className="mt-1"
                                                     value={nonCompleteWeight}
+                                                    type="number"
+                                                    step={0.1}
                                                     onChange={(e) => setNonCompleteWeight(e.target.value)}
                                                 />
                                             </div>

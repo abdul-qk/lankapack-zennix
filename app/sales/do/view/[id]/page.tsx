@@ -166,12 +166,11 @@ export default function DOView() {
 
         // Wait for content to load then print
         printWindow.document.close();
-        printWindow.onload = function () {
+        
+        setTimeout(() => {
             printWindow.focus();
             printWindow.print();
-            // Don't close the window immediately to allow printing
-            // The user can close it manually after printing
-        };
+        }, 1000); // 1 second delay
     };
 
     if (loading) {
