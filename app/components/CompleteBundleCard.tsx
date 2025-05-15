@@ -299,9 +299,6 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                                                             margin: 0;
                                                                                             display: inline-block; /* To center the SVG */
                                                                                         }
-                                                                                        .barcode-section svg text{
-                                                                                            font-size: 16px !important;
-                                                                                        }
                                                                                         .barcode-section svg {
                                                                                             max-width: 100%; /* Ensure SVG scales down */
                                                                                             height: auto;    /* Maintain aspect ratio */
