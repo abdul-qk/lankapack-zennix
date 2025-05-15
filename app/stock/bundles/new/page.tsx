@@ -241,9 +241,6 @@ export default function AddBundlePage() {
                     setCompleteItems(prevItems => [result.item, ...prevItems]);
                 }
 
-                // Reset form
-                setBundleWeight("");
-                setNoOfBags("");
             } else {
                 throw new Error(result.message || "Failed to add bundle item");
             }
@@ -626,6 +623,8 @@ export default function AddBundlePage() {
                                                     placeholder="Bundle Weight"
                                                     className="mt-1"
                                                     value={bundleWeight}
+                                                    type="number"
+                                                    step={0.1}
                                                     onChange={(e) => setBundleWeight(e.target.value)}
                                                 />
                                             </div>
