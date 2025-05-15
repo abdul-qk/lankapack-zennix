@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +17,7 @@ export async function GET() {
         customer_name: true,
       },
       orderBy: {
-        sales_info_id: 'desc',
+        sales_info_id: "desc",
       },
     });
 
@@ -36,15 +37,24 @@ export async function GET() {
           id: record.sales_info_id,
           doNumber: record.sales_no_bags,
           customerId: record.customer_name,
-          customerName: customer?.customer_full_name || 'Unknown Customer',
+          customerName: customer?.customer_full_name || "Unknown Customer",
         };
       })
     );
 
-    return NextResponse.json({
-      success: true,
-      data: salesWithCustomerNames,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: salesWithCustomerNames,
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching DO numbers:", error);
     return NextResponse.json(
