@@ -24,9 +24,12 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error fetching customers:", error);
-    return new Response(JSON.stringify({ error: "Failed to fetch customers" }), {
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch customers" }),
+      {
+        status: 500,
+      }
+    );
   }
 }
 
@@ -94,6 +97,20 @@ export async function POST(req: NextRequest) {
             item_total: item.total.toString(),
             user_id: 1, // Replace with actual user ID from session
             return_status: 0,
+          },
+        })
+      )
+    );
+
+    // Update del_ind for complete items
+    await Promise.all(
+      items.map((item: any) =>
+        prisma.hps_complete_item.update({
+          where: {
+            complete_item_id: item.complete_item_id,
+          },
+          data: {
+            del_ind: 1,
           },
         })
       )
