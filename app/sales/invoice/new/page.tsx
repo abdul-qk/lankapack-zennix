@@ -95,7 +95,11 @@ export default function NewInvoice() {
 
     const fetchDoNumbers = async () => {
       try {
-        const response = await fetch("/api/sales/do-numbers");
+        const response = await fetch("/api/sales/do-numbers", {
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate"
+          }
+        });
         const data = await response.json();
         if (data.success) {
           setDoNumbers(data.data);
