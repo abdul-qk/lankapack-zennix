@@ -3,7 +3,12 @@ import { PrismaClient } from '@prisma/client';
 import Papa from 'papaparse';
 import { Readable } from 'stream';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    transactionOptions: {
+      maxWait: 10000, // default: 2000
+      timeout: 20000, // default: 5000
+    },
+  });
 
 // Helper function to convert Node.js Readable stream to string
 async function streamToString(stream: Readable): Promise<string> {
@@ -162,8 +167,6 @@ export async function POST(req: NextRequest) {
 
         // Create material info and items in an interactive transaction to handle barcode updates
         const result = await prisma.$transaction(async (tx) => {
-            // Set transaction timeout to 10 minutes for large imports using MySQL's max_execution_time
-            await tx.$executeRaw`SET SESSION max_execution_time = 600000`; // 10 minutes in milliseconds
             const newMaterialInfo = await tx.hps_material_info.create({
                 data: {
                     material_supplier: parseInt(supplierId, 10),
