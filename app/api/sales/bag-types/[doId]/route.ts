@@ -53,6 +53,9 @@ export async function GET(
       });
     });
 
+    // console.log("Bag Type Map:", bagTypeNameToIdMap);
+    // console.log("Bag ID to Type Map:", bagIdToTypeMap);
+
     // Extract unique bag types
     const uniqueBagTypes = [];
     const seenBundleTypes = new Set();
@@ -65,21 +68,24 @@ export async function GET(
 
         // Check if bundle_type is already a numeric ID
         if (typeof item.bundle_type === "number") {
+          console.log("Bundle type is already a number:", item.bundle_type);
           bagTypeId = item.bundle_type;
           const bagInfo = bagIdToTypeMap.get(bagTypeId);
           bagTypeName = bagInfo ? bagInfo.type : `Unknown Type (${bagTypeId})`;
         }
         // Check if bundle_type is a string that contains a numeric ID
-        else if (
-          typeof item.bundle_type === "string" &&
-          !isNaN(parseInt(item.bundle_type))
-        ) {
-          bagTypeId = parseInt(item.bundle_type);
-          const bagInfo = bagIdToTypeMap.get(bagTypeId);
-          bagTypeName = bagInfo ? bagInfo.type : `Unknown Type (${bagTypeId})`;
-        }
+        // else if (
+        //   console.log("Bundle type is a string and has number:", item.bundle_type),
+        //   typeof item.bundle_type === "string" &&
+        //   !isNaN(parseInt(item.bundle_type))
+        // ) {
+        //   bagTypeId = parseInt(item.bundle_type);
+        //   const bagInfo = bagIdToTypeMap.get(bagTypeId);
+        //   bagTypeName = bagInfo ? bagInfo.type : `Unknown Type (${bagTypeId})`;
+        // }
         // Check if bundle_type is a string that matches a bag type name
         else if (typeof item.bundle_type === "string") {
+          console.log("Bundle type is a string:", item.bundle_type);
           // Try to find the bag ID by name
           bagTypeId = bagTypeNameToIdMap.get(item.bundle_type.toLowerCase());
 
