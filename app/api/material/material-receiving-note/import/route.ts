@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
         // Create material info and items in an interactive transaction to handle barcode updates
         const result = await prisma.$transaction(async (tx) => {
             // Set transaction timeout to 10 minutes for large imports
-            tx.$executeRaw`SET LOCAL statement_timeout = '600000'`; // 10 minutes in milliseconds
+            await tx.$executeRaw`SET LOCAL statement_timeout = '600000'`; // 10 minutes in milliseconds
             const newMaterialInfo = await tx.hps_material_info.create({
                 data: {
                     material_supplier: parseInt(supplierId, 10),
