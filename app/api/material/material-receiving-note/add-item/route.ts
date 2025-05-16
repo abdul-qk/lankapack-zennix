@@ -1,7 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from 'next/server';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  transactionOptions: {
+    maxWait: 10000, // default: 2000
+    timeout: 20000, // default: 5000
+  },
+});
 
 export async function POST(req: Request) {
   try {
