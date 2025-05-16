@@ -101,15 +101,15 @@ export default function FinishingGoodsTable() {
 
             const response = await fetch(url);
             const result = await response.json();
-            setData(result.data.complete_items);
-            setNonCompleteData(result.data.non_complete_items);
+            setData(result.data);
+            // setNonCompleteData(result.data.non_complete_items);
 
 
             // Extract unique sizes for the filter dropdown (only on initial load)
-            if (uniqueSizes.length === 0 && result.data.complete_items.length > 0) {
+            if (uniqueSizes.length === 0 && result.data.length > 0) {
                 // Use object keys to get unique values instead of Set
                 const sizeMap: Record<string, boolean> = {};
-                result.data.complete_items.forEach((item: CompleteItemInfo) => {
+                result.data.forEach((item: CompleteItemInfo) => {
                     if (item.bundle_type) {
                         sizeMap[item.bundle_type] = true;
                     }

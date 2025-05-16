@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
@@ -23,23 +23,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch data from both tables with filters
-    const [completeItems, nonCompleteItems] = await Promise.all([
-      prisma.hps_complete_item.findMany({
-        where: whereConditions,
-      }),
-      prisma.hps_non_complete_item.findMany({
-        where: whereConditions,
-      }),
-    ]);
-
-    console.log(nonCompleteItems);
+    const completeItems = await prisma.hps_complete_item.findMany({
+      where: whereConditions,
+    });
 
     return new Response(
       JSON.stringify({
-        data: {
-          complete_items: completeItems,
-          non_complete_items: nonCompleteItems,
-        },
+        data: completeItems,
       }),
       { status: 200 }
     );
