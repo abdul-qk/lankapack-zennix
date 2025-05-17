@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 // Get all data from hps_slitting
 import { PrismaClient } from "@prisma/client";
 

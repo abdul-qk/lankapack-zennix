@@ -20,6 +20,7 @@ export async function GET(
       where: { job_card_id: jobId },
       include: {
         customer: true,
+        print_size: true,
       },
     });
     const printSizes = await prisma.hps_print_size.findMany({});

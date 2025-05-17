@@ -43,6 +43,7 @@ interface JobCardData {
     printing_size: string;
     printing_color_type: string;
     printing_color_name: string;
+    formattedColorNames: string;
     printing_no_of_bag: string;
     printing_remark: string;
     block_size: string;
@@ -576,7 +577,7 @@ export default function EditPrintingInfo() {
                                 <InfoRow label="Cylinder Size" value={data.print_size.print_size || "Not specified"} />
                                 <InfoRow label="Numbar Of Bags" value={data.printing_no_of_bag || "Not specified"} />
                                 <InfoRow label="Color type" value={data.printing_color_type + " Colour(s)" || "Not specified"} />
-                                <InfoRow label="Color" value={colorNames.map((color) => color.split(" ")[0]).join(", ") || "Not specified"} />
+                                <InfoRow label="Color" value={data.formattedColorNames || "Not specified"} />
                                 <InfoRow label="Block Size" value={data.block_size || "Not specified"} />
                                 <InfoRow label="Remark" value={data.printing_remark || "Not specified"} />
                             </CardContent>

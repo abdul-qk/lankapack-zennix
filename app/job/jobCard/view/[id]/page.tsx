@@ -51,6 +51,11 @@ interface BagTypeInfo {
     bags_select: string;
 }
 
+interface PrintInfo {
+    print_size_id: number;
+    print_size: string;
+}
+
 interface JobCardData {
     job_card_id: number;
     customer_id: number;
@@ -62,6 +67,7 @@ interface JobCardData {
     slitting_size: string;
     slitting_remark: string;
     printing_size: string;
+    print_size: PrintInfo;
     printing_color_type: string;
     printing_color_name: string;
     formattedColorNames: string;
@@ -120,6 +126,7 @@ export default function JobCardTable() {
 
             // Fetch print_size from printSizes based on printing_size
             const selectedPrintSize = printSizes.find(size => size.print_size_id === data.printing_size);
+            console.log(selectedPrintSize);
             if (selectedPrintSize) {
                 setPrintSize(selectedPrintSize.print_size);
             }
@@ -373,7 +380,7 @@ export default function JobCardTable() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="info-card-content">
-                                        <InfoRow label="Cylinder Size" value={printSize || "Not specified"} />
+                                        <InfoRow label="Cylinder Size" value={data.print_size.print_size || "Not specified"} />
                                         <InfoRow label="Color Type" value={data.printing_color_type + ' Colour(s)' || "Not specified"} />
                                         <InfoRow label="Color Name(s)" value={data.formattedColorNames || data.printing_color_name || "Not specified"} />
                                         <InfoRow label="No. of Bags" value={data.printing_no_of_bag || "Not specified"} />

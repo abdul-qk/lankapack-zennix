@@ -50,6 +50,7 @@ export async function GET(
     if (printingInfo.printing_color_name) {
       // Split the CSV string into an array of IDs
       const colorIds = printingInfo.printing_color_name.split(",");
+      console.log(colorIds); // Log the colorIds array
 
       // Map each ID to its name and filter out any zeros or invalid IDs
       const mappedColors = colorIds
@@ -58,6 +59,7 @@ export async function GET(
           return colorId > 0 ? colorMap[colorId] || `Unknown (${id})` : null;
         })
         .filter(Boolean); // Remove null values
+      console.log(mappedColors); // Log the mappedColors array
 
       // Join the color names with commas
       colorNames = mappedColors.join(", ");
