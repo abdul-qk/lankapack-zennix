@@ -389,6 +389,19 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                     </TableRow>
                                 ))}
                             </TableBody>
+                            <tfoot className="bg-slate-100">
+                                <TableRow>
+                                    <TableCell className="font-bold">
+                                        {nonCompleteItems.length}
+                                    </TableCell>
+                                    <TableCell className="font-bold">
+                                        {nonCompleteItems.reduce((total, item) => total + parseFloat(item.non_complete_weight), 0).toFixed(2)}
+                                    </TableCell>
+                                    <TableCell colSpan={3} className="font-bold">
+                                        {nonCompleteItems.reduce((total, item) => total + parseInt(item.non_complete_bags), 0)}
+                                    </TableCell>
+                                </TableRow>
+                            </tfoot>
                         </Table>
                     </div>
                 ) : (

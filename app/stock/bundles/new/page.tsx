@@ -403,8 +403,8 @@ export default function AddBundlePage() {
 
         // Return the totals
         return {
-            totalWeight: completeWeight + nonCompleteWeight,
-            totalBags: completeBags + nonCompleteBags,
+            totalWeight: completeWeight,
+            totalBags: completeBags,
             completeWeight,
             completeBags,
             nonCompleteWeight,
@@ -444,8 +444,8 @@ export default function AddBundlePage() {
                 bundle_type: rollData.bag_type,
                 bundle_qty: totals.totalBags,
                 bundle_info_weight: totals.totalWeight.toString(),
-                // bundle_info_bags: totals.totalBags.toString(),
-                bundle_info_bags: rollData.no_of_bags.toString(),
+                bundle_info_bags: totals.totalBags.toString(),
+                // bundle_info_bags: rollData.no_of_bags.toString(),
                 bundle_info_average: average,
                 bundle_slitt_wastage: rollData.slitting_wastage || "0",
                 bundle_print_wastage: rollData.print_wastage || "0",
@@ -700,6 +700,19 @@ export default function AddBundlePage() {
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>
+                                                <tfoot className="bg-slate-100">
+                                                    <TableRow>
+                                                        <TableCell className="font-bold">
+                                                            {completeItems.length}
+                                                        </TableCell>
+                                                        <TableCell className="font-bold">
+                                                            {completeItems.reduce((total, item) => total + parseFloat(item.complete_item_weight), 0).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell colSpan={3} className="font-bold">
+                                                            {completeItems.reduce((total, item) => total + parseInt(item.complete_item_bags), 0)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </tfoot>
                                             </Table>
                                         </div>
                                     ) : (
@@ -803,6 +816,19 @@ export default function AddBundlePage() {
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>
+                                                <tfoot className="bg-slate-100">
+                                                    <TableRow>
+                                                        <TableCell className="font-bold">
+                                                            {nonCompleteItems.length}
+                                                        </TableCell>
+                                                        <TableCell className="font-bold">
+                                                            {nonCompleteItems.reduce((total, item) => total + parseFloat(item.non_complete_weight), 0).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell colSpan={3} className="font-bold">
+                                                            {nonCompleteItems.reduce((total, item) => total + parseInt(item.non_complete_bags), 0)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </tfoot>
                                             </Table>
                                         </div>
                                     ) : (

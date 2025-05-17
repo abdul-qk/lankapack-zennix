@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Barcode, Printer, Trash2 } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
@@ -387,6 +387,19 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                     </TableRow>
                                 ))}
                             </TableBody>
+                            <tfoot className="bg-slate-100">
+                                <TableRow>
+                                    <TableCell className="font-bold">
+                                        {completeItems.length}
+                                    </TableCell>
+                                    <TableCell className="font-bold">
+                                        {completeItems.reduce((total, item) => total + parseFloat(item.complete_item_weight), 0).toFixed(2)}
+                                    </TableCell>
+                                    <TableCell colSpan={3} className="font-bold">
+                                        {completeItems.reduce((total, item) => total + parseInt(item.complete_item_bags), 0)}
+                                    </TableCell>
+                                </TableRow>
+                            </tfoot>
                         </Table>
                     </div>
                 ) : (
