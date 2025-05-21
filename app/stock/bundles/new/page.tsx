@@ -79,37 +79,38 @@ export default function AddBundlePage() {
 
     const { toast } = useToast();
 
-    React.useEffect(() => {
-        const fetchJobCards = async () => {
-            try {
-                const response = await fetch('/api/job/jobcard');
-                const result = await response.json();
-                // Sort job cards in descending order
-                const sortedJobCards = result.data.sort((a: { job_card_id: string }, b: { job_card_id: string }) =>
-                    String(b.job_card_id).localeCompare(String(a.job_card_id))
-                );
-                setJobCards(sortedJobCards);
-            } catch (error) {
-                console.error("Error fetching job cards:", error);
-                toast({ description: "Failed to fetch job cards", variant: "destructive" });
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchJobCards();
-    }, []);
+    // React.useEffect(() => {
+    //     const fetchJobCards = async () => {
+    //         try {
+    //             const response = await fetch('/api/job/jobcard');
+    //             const result = await response.json();
+    //             // Sort job cards in descending order
+    //             const sortedJobCards = result.data.sort((a: { job_card_id: string }, b: { job_card_id: string }) =>
+    //                 String(b.job_card_id).localeCompare(String(a.job_card_id))
+    //             );
+    //             setJobCards(sortedJobCards);
+    //         } catch (error) {
+    //             console.error("Error fetching job cards:", error);
+    //             toast({ description: "Failed to fetch job cards", variant: "destructive" });
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchJobCards();
+    // }, []);
 
     // Fetch data when job card selection changes
     React.useEffect(() => {
-        if (selectedJobCard) {
-            fetchBarcodes(selectedJobCard);
-        }
-    }, [selectedJobCard]);
+        fetchBarcodes();
+        // if (selectedJobCard) {
+        //     fetchBarcodes(selectedJobCard);
+        // }
+    }, []);
 
-    const fetchBarcodes = async (barcode: string) => {
+    const fetchBarcodes = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/stock/bundle/barcode?job_card_id=${barcode}`, {
+            const response = await fetch(`/api/stock/bundle/barcode`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
@@ -532,7 +533,7 @@ export default function AddBundlePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex gap-2 w-full">
-                                <div className="mb-6 w-full">
+                                {/* <div className="mb-6 w-full">
                                     <Label htmlFor="job-card-select" className="mb-2 block">Select Job Card</Label>
                                     <Select value={selectedJobCard} onValueChange={setSelectedJobCard}>
                                         <SelectTrigger id="job-card-select" className="w-full">
@@ -546,10 +547,10 @@ export default function AddBundlePage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                </div>
+                                </div> */}
                                 <div className="mb-6 w-full">
                                     <Label htmlFor="barcode-select" className="mb-2 block">Cutting Roll Barcode</Label>
-                                    <Select disabled={selectedJobCard == ""} value={selectedBarcode} onValueChange={handleBarcodeChange}>
+                                    <Select value={selectedBarcode} onValueChange={handleBarcodeChange}>
                                         <SelectTrigger id="barcode-select" className="w-full">
                                             <SelectValue placeholder="Select a barcode" />
                                         </SelectTrigger>
