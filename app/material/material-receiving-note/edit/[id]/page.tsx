@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Barcode, Printer, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useToast } from "@/hooks/use-toast";
+import Loading from "@/components/layouts/loading";
 
 const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
@@ -67,7 +68,7 @@ export default function EditMaterialReceivingNotePage() {
 
     const { toast } = useToast();
     const router = useRouter();
-
+    const [loading, setLoading] = useState(true);
     const [materialInfo, setMaterialInfo] = useState<MaterialInfo | null>(null);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [particulars, setParticulars] = useState<Particular[]>([]);
@@ -89,6 +90,7 @@ export default function EditMaterialReceivingNotePage() {
 
     useEffect(() => {
         if (id) fetchData(Number(id));
+        setLoading(false);
     }, [id]);
 
     const fetchData = async (materialId: number) => {
@@ -249,6 +251,8 @@ export default function EditMaterialReceivingNotePage() {
             toast({ description: error.message || "Failed to save data", variant: "destructive" });
         }
     };
+
+    if (loading) return <Loading />;
 
     return (
         <SidebarProvider>

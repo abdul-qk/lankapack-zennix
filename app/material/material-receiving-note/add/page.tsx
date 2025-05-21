@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { set } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Barcode, DeleteIcon, Printer, ScanBarcode, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Loading from "@/components/layouts/loading";
 
 const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
@@ -68,8 +69,12 @@ export default function AddMaterialReceivingNotePage() {
     const id = params.id;
     // Add toast
     const { toast } = useToast();
+    const router = useRouter();
 
     // const [materialInfo, setMaterialInfo] = useState<MaterialInfo | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [itemLoading, setItemLoading] = useState(false);
+    const [materialLoading, setMaterialLoading] = useState(false);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState('');
     const [selectedParticularId, setSelectedParticularId] = useState<string | undefined>(undefined);
@@ -98,6 +103,7 @@ export default function AddMaterialReceivingNotePage() {
 
     useEffect(() => {
         fetchData();
+        setLoading(false);
     }, []);
 
     const fetchData = async () => {
@@ -152,6 +158,7 @@ export default function AddMaterialReceivingNotePage() {
             return;
         }
 
+        setItemLoading(true);
         try {
             const itemToAdd = {
                 ...formData,
@@ -196,6 +203,8 @@ export default function AddMaterialReceivingNotePage() {
         } catch (error: any) {
             console.error("Error adding item:", error);
             toast({ description: error.message || "Failed to add item", variant: "destructive" });
+        } finally {
+            setItemLoading(false);
         }
     };
 
@@ -207,7 +216,7 @@ export default function AddMaterialReceivingNotePage() {
         // First update the UI
         setItems(items.filter(item => item.material_item_id !== idToDelete));
         setAddedItemIds(addedItemIds.filter(id => id !== idToDelete));
-        
+
         // Then delete from database
         try {
             const response = await fetch(`/api/material/material-receiving-note/delete-item/${idToDelete}`, {
@@ -233,7 +242,7 @@ export default function AddMaterialReceivingNotePage() {
             toast({ description: "Please add at least one item.", variant: "destructive" });
             return;
         }
-
+        setMaterialLoading(true);
         try {
             const response = await fetch(`/api/material/material-receiving-note/finalize`, { // Changed endpoint
                 method: "POST",
@@ -244,23 +253,27 @@ export default function AddMaterialReceivingNotePage() {
                 }),
             });
 
+            console.log("Response:", response);
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Failed to save data");
             }
 
             toast({ description: "Material Receiving Note saved successfully!" });
-            // Optionally redirect or clear the form
-            setItems([]);
-            setAddedItemIds([]);
-            setSelectedSupplier('');
-            // router.push('/material/material-receiving-note'); // Example redirect
+            // redirect to edit page
+            const data = await response.json();
+            router.push(`/material/material-receiving-note/edit/${data.material_info_id}`);
 
         } catch (error: any) {
             console.error("Error saving data:", error);
             toast({ description: error.message || "Failed to save data", variant: "destructive" });
+        } finally {
+            setMaterialLoading(false);
         }
     };
+
+    if (loading) return <Loading />;
 
     return (
         <SidebarProvider>
@@ -368,8 +381,8 @@ export default function AddMaterialReceivingNotePage() {
                                 </Select>
                             </div>
 
-                            <Button className="mt-4" onClick={handleAddItem}>
-                                Add Item
+                            <Button disabled={itemLoading} className="mt-4" onClick={handleAddItem}>
+                                {!itemLoading ? `Add Item` : 'Adding...'}
                             </Button>
                         </CardContent>
                     </Card>
@@ -507,8 +520,8 @@ export default function AddMaterialReceivingNotePage() {
                         </CardContent>
                     </Card>
 
-                    <Button className="mt-6" onClick={handleSave}>
-                        Save Changes
+                    <Button disabled={materialLoading} className="mt-6" onClick={handleSave}>
+                        {!materialLoading? `Save Changes` : 'Saving...'}
                     </Button>
                 </div>
             </SidebarInset>
