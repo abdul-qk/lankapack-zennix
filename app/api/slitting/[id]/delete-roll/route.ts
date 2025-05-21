@@ -1,6 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  transactionOptions: {
+    maxWait: 10000, // default: 2000
+    timeout: 20000, // default: 5000
+  },
+});
 
 export async function DELETE(
   req: Request,
@@ -72,7 +77,8 @@ export async function DELETE(
 
       return {
         slittingRollDeleted: true,
-        slittingRecordUpdated: slittingRecord && slittingRecord.number_of_roll > 0,
+        slittingRecordUpdated:
+          slittingRecord && slittingRecord.number_of_roll > 0,
         stockEntriesDeleted: stockDeletionResult.count,
       };
     });
@@ -80,7 +86,8 @@ export async function DELETE(
     return Response.json(
       {
         success: true,
-        message: "Slitting roll and corresponding stock entry deleted successfully",
+        message:
+          "Slitting roll and corresponding stock entry deleted successfully",
         details: result,
       },
       { status: 200 }

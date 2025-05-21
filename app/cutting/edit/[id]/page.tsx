@@ -632,7 +632,7 @@ export default function ViewSlittingInfo() {
                                                         disabled={!selectedCuttingId}
                                                         className="w-full"
                                                     >
-                                                        Add Roll
+                                                        Add Batch
                                                     </Button>
                                                 </div>
                                             </div>

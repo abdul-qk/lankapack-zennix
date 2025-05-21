@@ -1,6 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  transactionOptions: {
+    maxWait: 10000, // default: 2000
+    timeout: 20000, // default: 5000
+  },
+});
 
 export async function GET(req: Request) {
   try {
@@ -59,7 +64,6 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ data: sortedResult }), {
       status: 200,
     });
-    
   } catch (error) {
     console.error("Error fetching slitting info:", error);
     return new Response(JSON.stringify({ error: "Failed to fetch data" }), {
