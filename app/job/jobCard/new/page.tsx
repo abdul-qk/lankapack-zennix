@@ -245,13 +245,15 @@ export default function JobCardTable() {
             return;
         }
 
+        // console.log('Added Date:', jobCardDate?.toLocaleDateString())
+
         const payload = {
             customer_id: selectedCustomer,
             paper_roll_id: selectedPaperRollId,
             gsm: selectedGsm,
             size: selectedSize,
-            job_card_date: jobCardDate.toISOString(),
-            delivery_date: deliveryDate.toISOString(),
+            job_card_date: jobCardDate?.toLocaleDateString(),
+            delivery_date: deliveryDate?.toLocaleDateString(),
             unit_price: unitPrice,
             slitting: {
                 active: slitting,

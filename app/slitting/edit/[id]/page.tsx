@@ -363,7 +363,7 @@ export default function EditSlittingInfo() {
         }
     };
 
-    const handleDeleteRoll = async (rollId: number) => {
+    const handleDeleteRoll = async (rollId: number, barcode: string) => {
         // Confirm deletion with user
         const confirmDelete = window.confirm(
             "Are you sure you want to delete this roll? This action cannot be undone."
@@ -380,7 +380,7 @@ export default function EditSlittingInfo() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ roll_id: rollId }),
+                body: JSON.stringify({ roll_id: rollId, barcode }),
             });
 
             const data = await response.json();
@@ -814,7 +814,7 @@ export default function EditSlittingInfo() {
                                                             size={20}
                                                             onClick={(e) => {
                                                                 e.stopPropagation(); // Prevent row selection when deleting
-                                                                handleDeleteRoll(item.roll_id);
+                                                                handleDeleteRoll(item.roll_id, item.slitting_barcode);
                                                             }}
                                                         />
                                                     </div>
