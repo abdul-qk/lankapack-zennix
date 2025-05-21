@@ -40,6 +40,7 @@ type JobCardInfo = {
     slitting_size: string;
     add_date: string;
     updated_date: string;
+    card_slitting: number;
 };
 
 interface CustomerInfo {
@@ -144,8 +145,8 @@ export default function SlitingTable() {
                                 <EyeIcon size={16} />
                             </Button>
                         </Link>
-                        <Link href={`/slitting/edit/${item.job_card_id}`}>
-                            <Button variant="outline" size="sm">
+                        <Link href={`/slitting/edit/${item.job_card_id}`} onClick={(e) => item.card_slitting === 1 && e.preventDefault()} style={{ pointerEvents: item.card_slitting === 1 ? 'none' : 'auto' }}>
+                            <Button variant="outline" size="sm" disabled={item.card_slitting === 1}>
                                 <PencilIcon size={16} />
                             </Button>
                         </Link>

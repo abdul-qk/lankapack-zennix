@@ -40,6 +40,7 @@ type JobCardInfo = {
     printing_no_of_bag: string;
     add_date: string;
     updated_date: string;
+    card_printting: number;
 };
 
 interface CustomerInfo {
@@ -140,8 +141,8 @@ export default function SlitingTable() {
                                 <EyeIcon size={16} />
                             </Button>
                         </Link>
-                        <Link href={`/printing/edit/${item.job_card_id}`}>
-                            <Button variant="outline" size="sm">
+                        <Link href={`/printing/edit/${item.job_card_id}`} onClick={(e) => item.card_printting === 1 && e.preventDefault()} style={{ pointerEvents: item.card_printting === 1 ? 'none' : 'auto' }}>
+                            <Button variant="outline" size="sm" disabled={item.card_printting === 1}>
                                 <PencilIcon size={16} />
                             </Button>
                         </Link>

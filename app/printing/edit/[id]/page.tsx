@@ -522,6 +522,45 @@ export default function EditPrintingInfo() {
         </div>
     );
 
+    const handleComplete = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/printing/${id}/complete`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                toast({
+                    title: "Error",
+                    description: data.error || "Failed to mark as completed",
+                    variant: "destructive",
+                });
+            } else {
+                toast({
+                    title: "Success",
+                    description: "Printing process marked as completed",
+                });
+                fetchData(Number(id));
+                // Go to printing page
+                window.location.href = `/printing`;
+            }
+        } catch (error) {
+            console.error("Error completing printing:", error);
+            toast({
+                title: "Error",
+                description: "An unexpected error occurred. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) { return <Loading /> }
 
     return (
@@ -832,6 +871,15 @@ export default function EditPrintingInfo() {
                             </CardContent>
                         )}
                     </Card>
+                    <div className="fixed bottom-6 right-6">
+                        <Button
+                            onClick={handleComplete}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            disabled={data?.card_slitting === 1}
+                        >
+                            {data?.card_slitting === 1 ? "Completed" : "Complete"}
+                        </Button>
+                    </div>
                 </div>
             </SidebarInset>
         </SidebarProvider>
