@@ -135,8 +135,8 @@ export default function NewReturnPage() {
 
       const itemData = result.data;
 
-      setPrice(itemData.price);
-      const priceValue = parseFloat(itemData.price);
+      // setPrice(itemData.price);
+      const priceValue = parseFloat(price);
       const total = priceValue * itemData.bags;
 
       // Add item to the list
@@ -146,7 +146,7 @@ export default function NewReturnPage() {
         bagType: itemData.bundle_type,
         weight: itemData.weight,
         bags: itemData.bags,
-        price: parseFloat(itemData.price),
+        price: parseFloat(price),
         total: total,
         complete_item_id: itemData.complete_item_id
       };
