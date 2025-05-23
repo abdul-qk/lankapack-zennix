@@ -25,7 +25,7 @@ import { Separator } from "@radix-ui/react-separator";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/layouts/loading";
-import { Trash } from "lucide-react";
+import { Search, Trash } from "lucide-react";
 import Link from "next/link";
 
 type Customer = {
@@ -108,14 +108,14 @@ export default function NewReturnPage() {
       return;
     }
 
-    if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter a valid price"
-      });
-      return;
-    }
+    // if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Error",
+    //     description: "Please enter a valid price"
+    //   });
+    //   return;
+    // }
 
     setValidatingBarcode(true);
 
@@ -135,7 +135,8 @@ export default function NewReturnPage() {
 
       const itemData = result.data;
 
-      const priceValue = parseFloat(price);
+      setPrice(itemData.price);
+      const priceValue = parseFloat(itemData.price);
       const total = priceValue * itemData.bags;
 
       // Add item to the list
@@ -145,7 +146,7 @@ export default function NewReturnPage() {
         bagType: itemData.bundle_type,
         weight: itemData.weight,
         bags: itemData.bags,
-        price: priceValue,
+        price: parseFloat(itemData.price),
         total: total,
         complete_item_id: itemData.complete_item_id
       };
@@ -238,7 +239,7 @@ export default function NewReturnPage() {
   };
 
   // Handle Enter key press in barcode field
-  const handleBarcodeKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleBarcodeKeyPress = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (price) {
@@ -249,6 +250,11 @@ export default function NewReturnPage() {
         if (priceInput) {
           priceInput.focus();
         }
+
+        // Fetch price
+        const response = await fetch(`/api/sales/return/validate-barcode?barcode=${barcode}`);
+        const result = await response.json();
+        setPrice(result.data.price.toString());
       }
     }
   };
@@ -260,6 +266,13 @@ export default function NewReturnPage() {
       handleAddItem();
     }
   };
+
+  const handleFetchPrice = async () => {
+    // Fetch price
+    const response = await fetch(`/api/sales/return/validate-barcode?barcode=${barcode}`);
+    const result = await response.json();
+    setPrice(result.data.price.toString());
+  }
 
   if (loading) {
     return <Loading />;
@@ -315,15 +328,26 @@ export default function NewReturnPage() {
             {/* Item Entry Form */}
             <div className="mb-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Barcode</label>
-                  <Input
-                    value={barcode}
-                    onChange={(e) => setBarcode(e.target.value)}
-                    onKeyPress={handleBarcodeKeyPress}
-                    placeholder="Scan or enter barcode"
+                <div className="flex gap-2 items-end w-auto">
+                  <div className="w-full">
+                    <label className="block text-sm font-medium mb-1">Barcode</label>
+                    <Input
+                      value={barcode}
+                      onChange={(e) => setBarcode(e.target.value)}
+                      onKeyPress={handleBarcodeKeyPress}
+                      placeholder="Scan or enter barcode"
+                      disabled={validatingBarcode || submitting}
+                    />
+                  </div>
+                  <div>
+                  </div>
+                  <Button
+                    onClick={handleFetchPrice}
                     disabled={validatingBarcode || submitting}
-                  />
+                    className=""
+                  >
+                    <Search />
+                  </Button>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Price</label>
@@ -345,7 +369,7 @@ export default function NewReturnPage() {
                     disabled={validatingBarcode || submitting}
                     className="w-full md:w-auto"
                   >
-                    Add
+                    Add Return Item
                   </Button>
                 </div>
               </div>

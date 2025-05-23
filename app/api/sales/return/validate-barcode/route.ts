@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
@@ -24,11 +24,20 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const bundlePrice = await prisma.hps_bag_type.findFirst({
+      where: {
+        bag_type: completeItem?.bundle_type,
+      },
+      select: {
+        bag_price: true,
+      },
+    });
+
     if (!completeItem) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Barcode not found in complete items" 
+        JSON.stringify({
+          success: false,
+          error: "Barcode not found in complete items",
         }),
         { status: 404 }
       );
@@ -52,9 +61,9 @@ export async function GET(req: NextRequest) {
 
       if (returnInfo && returnInfo.del_ind === 0) {
         return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: "This item has already been returned" 
+          JSON.stringify({
+            success: false,
+            error: "This item has already been returned",
           }),
           { status: 400 }
         );
@@ -70,6 +79,7 @@ export async function GET(req: NextRequest) {
           bundle_type: completeItem.bundle_type,
           weight: parseFloat(completeItem.complete_item_weight),
           bags: parseInt(completeItem.complete_item_bags),
+          price: bundlePrice?.bag_price,
         },
       }),
       { status: 200 }

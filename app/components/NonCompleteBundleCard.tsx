@@ -327,7 +327,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                                                                         .details-table td {
                                                                                             padding: 3px 5px;
                                                                                             vertical-align: top;
-                                                                                            font-size: 10px;
+                                                                                            font-size: 11px;
                                                                                         }
                                                                                         .details-table td:first-child {
                                                                                             font-weight: bold;
