@@ -61,6 +61,22 @@ export async function GET(
   }
 }
 
+const parseDate = (dateStr: string) => {
+  if (!dateStr) return null;
+  // Split the date string and extract components
+  const parts = dateStr.split('/');
+  if (parts.length !== 3) return null;
+  
+  const month = parseInt(parts[0], 10) - 1; // JS months are 0-indexed
+  const day = parseInt(parts[1], 10);
+  const year = parseInt(parts[2], 10);
+  
+  // Create date in UTC to avoid timezone issues
+  const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+  console.log(`Parsed date: ${dateStr} -> ${date.toISOString()}`);
+  return date;
+};
+
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
@@ -80,8 +96,11 @@ export async function PUT(
       cutting,
     } = await req.json();
 
-    // Format dates properly
-    const formattedUpdatedDate = new Date(); // Current date for updated_date
+    // Parse and format dates properly
+    const formattedUpdatedDate = new Date().toISOString(); // Current date with time for updated_date
+    const parsedJobCardDate = job_card_date ? parseDate(job_card_date) : null;
+    const parsedDeliveryDate = delivery_date ? parseDate(delivery_date) : null;
+    const formattedJobCardDate = parsedJobCardDate ? parsedJobCardDate.toISOString() : null;
 
     // Update the job card with the appropriate fields
     const updatedJobCard = await prisma.hps_jobcard.update({
@@ -136,9 +155,8 @@ export async function PUT(
 
         // Dates
         updated_date: formattedUpdatedDate,
-        delivery_date: delivery_date
-          ? new Date(delivery_date).toISOString().split("T")[0]
-          : "",
+        add_date: formattedJobCardDate || undefined,
+        delivery_date: parsedDeliveryDate ? parsedDeliveryDate.toISOString() : undefined,
       },
     });
 

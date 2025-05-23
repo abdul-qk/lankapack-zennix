@@ -47,8 +47,28 @@ export async function POST(req: Request) {
       cutting,
     } = await req.json();
 
-    // Format dates properly
-    const formattedAddDate = new Date(job_card_date);
+    console.log('Received job_card_date:', job_card_date);
+    console.log('Received delivery_date:', delivery_date);
+
+    // Parse date strings and create dates that preserve the day
+    // Function to safely parse date string in MM/DD/YYYY format
+    const parseDate = (dateStr: string) => {
+      if (!dateStr) return null;
+      // Split the date string and extract components
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return null;
+      
+      const month = parseInt(parts[0], 10) - 1; // JS months are 0-indexed
+      const day = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      
+      // Create date in UTC to avoid timezone issues
+      const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+      console.log(`Parsed date: ${dateStr} -> ${date.toISOString()}`);
+      return date;
+    };
+    
+    const formattedAddDate = parseDate(job_card_date) || new Date();
     const formattedUpdatedDate = new Date(); // Current date for updated_date
 
     // Create the job card with the appropriate fields from the schema
@@ -103,7 +123,10 @@ export async function POST(req: Request) {
         add_date: formattedAddDate,
         updated_date: formattedUpdatedDate,
         delivery_date: delivery_date
-          ? new Date(delivery_date).toISOString().split("T")[0]
+          ? (() => {
+              const parsedDate = parseDate(delivery_date);
+              return parsedDate ? parsedDate.toISOString().split("T")[0] : "";
+            })()
           : "",
 
         // Status indicators

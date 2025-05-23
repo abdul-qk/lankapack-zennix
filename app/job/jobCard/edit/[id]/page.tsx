@@ -370,8 +370,8 @@ export default function EditJobCard() {
             paper_roll_id: selectedPaperRollId,
             gsm: selectedGsm,
             size: selectedSize,
-            job_card_date: jobCardDate ? jobCardDate.toISOString() : new Date().toISOString(),
-            delivery_date: deliveryDate ? deliveryDate.toISOString() : "",
+            job_card_date: jobCardDate ? jobCardDate.toLocaleDateString() : new Date().toLocaleDateString(),
+            delivery_date: deliveryDate ? deliveryDate.toLocaleDateString() : "",
             unit_price: unitPrice,
             slitting: {
                 active: slitting,
