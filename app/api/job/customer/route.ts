@@ -60,7 +60,7 @@ export async function POST(req: Request) {
         customer_add_date: new Date(),
         customer_email_address,
         hps_user_id: 0,
-        del_ind: 0,
+        del_ind: 1,
       },
     });
 

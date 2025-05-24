@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const completeItem = await prisma.hps_complete_item.findFirst({
       where: {
         complete_item_barcode: barcode,
-        // del_ind: 1,
+        del_ind: 1,
       },
     });
 
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Barcode not found in complete items"
+          error: "Barcode not found in complete items or already sold"
         }),
         { status: 404 }
       );
