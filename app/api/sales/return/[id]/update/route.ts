@@ -35,7 +35,7 @@ export async function PUT(
     const existingReturn = await prisma.hps_return_info.findUnique({
       where: {
         return_info_id: returnId,
-        del_ind: 0,
+        del_ind: 1,
       },
     });
 

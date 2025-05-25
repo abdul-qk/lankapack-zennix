@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         return_no_bags: totalBags.toString(),
         add_date: new Date(),
         user_id: 1, // Replace with actual user ID from session
-        del_ind: 0,
+        del_ind: 1,
       },
     });
 

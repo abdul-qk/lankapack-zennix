@@ -8,11 +8,8 @@ export async function GET() {
     // Fetch all return info records that aren't deleted (del_ind = 0)
     const returnInfo = await prisma.hps_return_info.findMany({
       where: {
-        del_ind: 0,
-      },
-      orderBy: {
-        return_info_id: "asc",
-      },
+        del_ind: 1,
+      }
     });
 
     // Get customer IDs from the return info records

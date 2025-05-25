@@ -4,27 +4,9 @@ const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
-    const { search } = Object.fromEntries(new URL(req.url).searchParams);
-
-    // Build the search filter to apply across all columns
-    const searchFilter = search
-      ? {
-          OR: [
-            {
-              supplier: {
-                supplier_name: { contains: search, mode: "insensitive" },
-              },
-            },
-            { total_reels: { equals: parseInt(search, 10) || 0 } },
-            { total_net_weight: { equals: parseFloat(search) || 0 } },
-            { total_gross_weight: { equals: parseFloat(search) || 0 } },
-          ],
-        }
-      : {};
 
     // Fetch all filtered material info data
     const materialInfo = await prisma.hps_material_info.findMany({
-      where: searchFilter,
       include: {
         supplier: true,
       },

@@ -20,7 +20,7 @@ export async function GET(
     const returnInfo = await prisma.hps_return_info.findUnique({
       where: {
         return_info_id: returnId,
-        del_ind: 0, // Only non-deleted records
+        del_ind: 1, // Only non-deleted records
       },
     });
 
