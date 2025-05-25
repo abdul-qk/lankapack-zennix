@@ -15,6 +15,9 @@ export async function GET(req: Request) {
         cutting_id: true,
         cutting_barcode: true,
       },
+      orderBy: {
+        cutting_id: "desc",
+      },
     });
 
     return new Response(JSON.stringify({ data: barcodeInfo }), {
