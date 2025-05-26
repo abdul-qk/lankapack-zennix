@@ -183,7 +183,7 @@ export default function EditReturnPage({ params }: PageProps) {
 
       const itemData = result.data;
       const priceValue = parseFloat(price);
-      const total = priceValue * itemData.weight;
+      const total = priceValue * itemData.bags;
 
       // Add item to the list
       const newItem: ReturnItem = {
