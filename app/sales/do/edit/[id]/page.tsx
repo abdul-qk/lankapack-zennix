@@ -192,7 +192,7 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
             }
 
             const priceValue = itemData.price;
-            const total = priceValue * itemData.weight;
+            const total = priceValue * itemData.bags;
 
             // Add item to the list
             const newItem: SalesItem = {
