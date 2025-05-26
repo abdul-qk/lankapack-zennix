@@ -107,6 +107,17 @@ export default function NewDoPage() {
             return;
         }
 
+        // Check for duplicate barcode
+        const isDuplicate = salesItems.some(item => item.barcode === barcode);
+        if (isDuplicate) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "This barcode has already been added"
+            });
+            return;
+        }
+
         setValidatingBarcode(true);
 
         try {
