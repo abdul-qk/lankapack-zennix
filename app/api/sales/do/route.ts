@@ -70,21 +70,48 @@ export async function DELETE(req: NextRequest) {
       });
     }
 
-    // Soft delete by setting del_ind to 1
-    const updatedRecord = await prisma.hps_sales_info.update({
-      where: {
-        sales_info_id: parseInt(id),
-      },
-      data: {
-        del_ind: 0,
-      },
-    });
-
-    if (!updatedRecord) {
-      return new Response(JSON.stringify({ error: "Record not found" }), {
-        status: 404,
+    await prisma.$transaction(async (tx) => {
+      const updatedRecord = await tx.hps_sales_info.delete({
+        where: {
+          sales_info_id: parseInt(id),
+        },
       });
-    }
+
+      const saleItems = await tx.hps_sales_item.findMany({
+        where: {
+          sales_info_id: parseInt(id),
+        },
+      });
+
+      await Promise.all(
+        saleItems.map((item: any) =>
+          tx.hps_sales_item.delete({
+            where: {
+              sales_item_id: item.sales_item_id,
+            },
+          })
+        )
+      );
+
+      await Promise.all(
+        saleItems.map((item: any) =>
+          tx.hps_complete_item.update({
+            where: {
+              complete_item_id: item.complete_item_id,
+            },
+            data: {
+              del_ind: 1,
+            },
+          })
+        )
+      );
+
+      if (!updatedRecord) {
+        return new Response(JSON.stringify({ error: "Record not found" }), {
+          status: 404,
+        });
+      }
+    });
 
     return new Response(
       JSON.stringify({
