@@ -61,12 +61,9 @@ export async function DELETE(
     }
 
     // Soft delete by updating del_ind to 0
-    await prisma.hps_non_complete_item.update({
+    await prisma.hps_non_complete_item.delete({
       where: {
         non_complete_id: id,
-      },
-      data: {
-        del_ind: 0,
       },
     });
 

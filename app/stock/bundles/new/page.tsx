@@ -439,6 +439,8 @@ export default function AddBundlePage() {
 
             // Use the cutting_roll_id from the selected barcode
             const barcode = selectedBarcodeData?.cutting_roll_id || 0;
+            console.log(selectedBarcodeData);
+            console.log(barcode);
 
             const bundleData = {
                 bundle_barcode: barcode,

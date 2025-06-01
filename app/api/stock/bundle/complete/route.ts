@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
     if (
       !body.bundle_type ||
       !body.complete_item_weight ||
-      !body.complete_item_bags
+      !body.complete_item_bags ||
+      !body.complete_item_info
     ) {
       return NextResponse.json(
         { message: "Missing required fields" },
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     // Create the new complete item
     const completeItem = await prisma.hps_complete_item.create({
       data: {
-        complete_item_info: body.user_id || 1,
+        complete_item_info: Number(body.complete_item_info) || 1,
         bundle_type: body.bundle_type,
         complete_item_weight: body.complete_item_weight,
         complete_item_bags: body.complete_item_bags,

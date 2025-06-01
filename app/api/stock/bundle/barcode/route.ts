@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     // Fetch cutting roll data filtered by job_card_id
     const barcodeInfo = await prisma.hps_cutting_roll.findMany({
       select: {
-        cutting_id: true,
+        cutting_roll_id: true,
         cutting_barcode: true,
       },
       orderBy: {

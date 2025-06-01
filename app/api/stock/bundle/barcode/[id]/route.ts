@@ -116,7 +116,7 @@ export async function GET(
         // Get print wastage
         const printWastageData = await prisma.hps_print_wastage.findFirst({
           where: {
-            job_card_id: cuttingRoll.job_card_id,
+            print_id: printPack.print_id,
           },
           select: {
             print_wastage: true,
@@ -144,7 +144,7 @@ export async function GET(
                 slitting_wastage: true,
               },
             });
-            
+
           slittingWastage = slittingWastageData?.slitting_wastage || "0";
         }
       }

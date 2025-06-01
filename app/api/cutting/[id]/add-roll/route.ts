@@ -27,14 +27,31 @@ export async function POST(
       );
     }
 
+    const highestRollRecord = await prisma.hps_cutting_roll.findFirst({
+      orderBy: {
+        cutting_roll_id: "desc",
+      },
+      select: {
+        cutting_roll_id: true,
+      },
+    });
+
+    const nextId = (highestRollRecord?.cutting_roll_id || 0) + 1;
+
     // Generate a unique barcode for this cutting roll
-    const timestamp = Date.now().toString();
-    const randomDigits = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, "0");
-    const barcode = `${cutting_id}${timestamp.substring(
-      timestamp.length - 6
-    )}${randomDigits}`;
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = String(now.getFullYear()).slice(-2);
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+
+    const formattedDate = `${day}-${month}-${year}${hours}:${minutes}:${seconds}`;
+    // Remove non-numeric characters
+    const numericDate = formattedDate.replace(/[^0-9]/g, "");
+    // Create barcode by concatenating nextId and numericDate
+    const cuttingBarcode = `${nextId}${numericDate}`;
 
     // Create new cutting roll record
     const newCuttingRoll = await prisma.hps_cutting_roll.create({
@@ -44,7 +61,7 @@ export async function POST(
         cutting_roll_weight,
         no_of_bags,
         cutting_wastage,
-        cutting_barcode: barcode,
+        cutting_barcode: cuttingBarcode,
         add_date: new Date(),
         user_id: 1, // Replace with actual user ID from your auth system
         del_ind: 1,
