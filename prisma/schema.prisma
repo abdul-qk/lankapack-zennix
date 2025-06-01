@@ -102,9 +102,6 @@ model hps_cutting {
   update_date     DateTime? @db.Date
   user_id         Int
   del_ind         Int
-
-  jobcard         hps_jobcard @relation(fields: [job_card_id], references: [job_card_id])
-  cutting_rolls   hps_cutting_roll[]
 }
 
 model hps_cutting_roll {
@@ -120,12 +117,6 @@ model hps_cutting_roll {
   del_ind             Int
   
   bundles             hps_bundle_info[]
-  jobcard             hps_jobcard @relation(fields: [job_card_id], references: [job_card_id])
-  cutting             hps_cutting @relation(fields: [cutting_id], references: [cutting_id])
-
-  @@index([cutting_barcode])
-  @@index([job_card_id])
-  @@index([cutting_id])
 }
 
 model hps_cutting_type {
@@ -269,9 +260,6 @@ model hps_print {
   update_date      DateTime @db.Date
   user_id          Int
   del_ind          Int
-
-  jobcard          hps_jobcard @relation(fields: [job_card_id], references: [job_card_id])
-  print_packs      hps_print_pack[]
 }
 
 model hps_print_pack {
@@ -283,12 +271,6 @@ model hps_print_pack {
   add_date          DateTime @db.Date
   user_id           Int
   del_ind           Int
-
-  jobcard           hps_jobcard @relation(fields: [job_card_id], references: [job_card_id])
-  print             hps_print @relation(fields: [print_id], references: [print_id])
-
-  @@index([print_barcode])
-  @@index([print_id])
 }
 
 model hps_print_size {
