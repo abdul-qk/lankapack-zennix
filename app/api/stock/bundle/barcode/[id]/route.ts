@@ -17,28 +17,31 @@ export async function GET(
       );
     }
 
-    const result = await prisma.hps_cutting_roll.findFirst({
+    // Single optimized query to get cutting roll with related data
+    const cuttingRoll = await prisma.hps_cutting_roll.findFirst({
       where: {
         cutting_barcode: barcode,
       },
       select: {
+        cutting_roll_id: true,
         no_of_bags: true,
         job_card_id: true,
         cutting_wastage: true,
+        cutting_id: true,
       },
     });
 
-    if (!result) {
+    if (!cuttingRoll) {
       return NextResponse.json(
         { message: "Cutting roll not found" },
         { status: 404 }
       );
     }
 
-    // Get associated job card with bag type
+    // Get job card with bag type in one query
     const jobcard = await prisma.hps_jobcard.findUnique({
       where: {
-        job_card_id: result.job_card_id,
+        job_card_id: cuttingRoll.job_card_id,
       },
       select: {
         cut_bag_types: {
@@ -49,31 +52,110 @@ export async function GET(
       },
     });
 
-    // Get wastage data
-    const slittingWastage = await prisma.hps_slitting_wastage.findFirst({
+    // Get cutting details to trace back to print
+    const cutting = await prisma.hps_cutting.findFirst({
       where: {
-        job_card_id: result.job_card_id,
+        cutting_id: cuttingRoll.cutting_id,
       },
       select: {
-        slitting_wastage: true,
+        roll_barcode_no: true,
       },
     });
 
-    const printWastage = await prisma.hps_print_wastage.findFirst({
-      where: {
-        job_card_id: result.job_card_id,
-      },
-      select: {
-        print_wastage: true,
-      },
-    });
+    let slittingWastage = "0";
+    let printWastage = "0";
+
+    if (cutting?.roll_barcode_no) {
+      // Try to find print pack first
+      const printPack = await prisma.hps_print_pack.findFirst({
+        where: {
+          print_barcode: cutting.roll_barcode_no,
+        },
+        select: {
+          print_id: true,
+        },
+      });
+
+      if (printPack?.print_id) {
+        // Get print barcode
+        const print = await prisma.hps_print.findFirst({
+          where: {
+            print_id: printPack.print_id,
+          },
+          select: {
+            print_barcode_no: true,
+          },
+        });
+
+        if (print?.print_barcode_no) {
+          // Get slitting roll
+          const slittingRoll = await prisma.hps_slitting_roll.findFirst({
+            where: {
+              slitting_barcode: print.print_barcode_no,
+            },
+            select: {
+              slitting_id: true,
+            },
+          });
+
+          if (slittingRoll?.slitting_id) {
+            // Get slitting wastage
+            const slittingWastageData =
+              await prisma.hps_slitting_wastage.findFirst({
+                where: {
+                  slitting_id: slittingRoll.slitting_id,
+                },
+                select: {
+                  slitting_wastage: true,
+                },
+              });
+            slittingWastage = slittingWastageData?.slitting_wastage || "0";
+          }
+        }
+
+        // Get print wastage
+        const printWastageData = await prisma.hps_print_wastage.findFirst({
+          where: {
+            job_card_id: cuttingRoll.job_card_id,
+          },
+          select: {
+            print_wastage: true,
+          },
+        });
+        printWastage = printWastageData?.print_wastage || "0";
+      } else {
+        // Fallback: try to get slitting wastage by job_card_id
+        const slitting_id = await prisma.hps_slitting_roll.findFirst({
+          where: {
+            slitting_barcode: cutting.roll_barcode_no,
+          },
+          select: {
+            slitting_id: true,
+          },
+        });
+
+        if (slitting_id?.slitting_id) {
+          const slittingWastageData =
+            await prisma.hps_slitting_wastage.findFirst({
+              where: {
+                slitting_id: slitting_id?.slitting_id,
+              },
+              select: {
+                slitting_wastage: true,
+              },
+            });
+            
+          slittingWastage = slittingWastageData?.slitting_wastage || "0";
+        }
+      }
+    }
 
     const data = {
-      no_of_bags: result.no_of_bags,
+      no_of_bags: cuttingRoll.no_of_bags,
       bag_type: jobcard?.cut_bag_types?.bag_type || "",
-      slitting_wastage: slittingWastage?.slitting_wastage || "0",
-      print_wastage: printWastage?.print_wastage || "0",
-      cutting_wastage: result?.cutting_wastage || "0",
+      slitting_wastage: slittingWastage,
+      print_wastage: printWastage,
+      cutting_wastage: cuttingRoll.cutting_wastage || "0",
     };
 
     return NextResponse.json({

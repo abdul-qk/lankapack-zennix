@@ -9,7 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/co
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import Loading from "@/components/layouts/loading";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScanBarcode, Trash, Trash2 } from "lucide-react";
@@ -644,6 +644,21 @@ export default function EditSlittingInfo() {
                                             </TableRow>
                                         ))}
                                     </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-semibold">Total</TableCell>
+                                            <TableCell className="font-semibold">
+                                                {slittingData?.reduce((sum, item) => sum + (parseFloat(item.net_weight) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {slittingData?.reduce((sum, item) => sum + (parseFloat(item.wastage) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {slittingData?.reduce((sum, item) => sum + (parseFloat(item.wastage_width) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
                                 </Table>
                             </CardContent>
                         )}
@@ -822,6 +837,19 @@ export default function EditSlittingInfo() {
                                             </TableRow>
                                         ))}
                                     </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-semibold">Total</TableCell>
+                                            <TableCell className="font-semibold">
+                                                {slittingRollData?.reduce((sum, item) => sum + (parseFloat(item.slitting_roll_weight) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {slittingRollData?.reduce((sum, item) => sum + (parseFloat(item.slitting_roll_width) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
                                 </Table>
                             </CardContent>
                         )}

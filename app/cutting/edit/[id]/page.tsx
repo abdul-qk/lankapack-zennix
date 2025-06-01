@@ -9,7 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/co
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import Loading from "@/components/layouts/loading";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScanBarcode, Trash2, Trash2Icon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -560,6 +560,16 @@ export default function ViewSlittingInfo() {
                                             </TableRow>
                                         ))}
                                     </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-semibold">Total</TableCell>
+                                            <TableCell></TableCell>
+                                            <TableCell className="font-semibold">
+                                                {cuttingData?.reduce((sum, item) => sum + (Number(item.net_weight) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
                                 </Table>
                             </CardContent>
                         )}
@@ -712,6 +722,21 @@ export default function ViewSlittingInfo() {
                                             </TableRow>
                                         ))}
                                     </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-semibold">Total</TableCell>
+                                            <TableCell className="font-semibold">
+                                                {cuttingRollData?.reduce((sum, item) => sum + (Number(item.no_of_bags) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {cuttingRollData?.reduce((sum, item) => sum + (parseFloat(item.cutting_roll_weight) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {cuttingRollData?.reduce((sum, item) => sum + (parseFloat(item.cutting_wastage) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell colSpan={3}></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
                                 </Table>
                             </CardContent>
                         )}

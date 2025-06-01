@@ -9,7 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/co
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import Loading from "@/components/layouts/loading";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScanBarcode, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -692,6 +692,24 @@ export default function EditPrintingInfo() {
                                             </TableRow>
                                         ))}
                                     </TableBody>
+                                    <TableFooter>
+                                        <TableRow>
+                                            <TableCell className="font-semibold">Total</TableCell>
+                                            <TableCell className="font-semibold">
+                                                {printingData?.reduce((sum, item) => sum + (parseFloat(item.net_weight) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {printingData?.reduce((sum, item) => sum + (Number(item.balance_weight) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {printingData?.reduce((sum, item) => sum + (parseFloat(item.balance_width) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="font-semibold">
+                                                {printingData?.reduce((sum, item) => sum + (parseFloat(item.print_wastage) || 0), 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </TableFooter>
                                 </Table>
                             </CardContent>
                         )}
@@ -866,6 +884,15 @@ export default function EditPrintingInfo() {
                                                 </TableRow>
                                             ))}
                                         </TableBody>
+                                        <TableFooter>
+                                            <TableRow>
+                                                <TableCell className="font-semibold">Total</TableCell>
+                                                <TableCell className="font-semibold">
+                                                    {printingPackData?.reduce((sum, item) => sum + (parseFloat(item.print_pack_weight) || 0), 0).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell colSpan={3}></TableCell>
+                                            </TableRow>
+                                        </TableFooter>
                                     </Table>
                                 </div>
                             </CardContent>
