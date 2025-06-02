@@ -40,8 +40,7 @@ export async function POST(request: NextRequest) {
     if (
       !body.bundle_type ||
       !body.complete_item_weight ||
-      !body.complete_item_bags ||
-      !body.complete_item_info
+      !body.complete_item_bags
     ) {
       return NextResponse.json(
         { message: "Missing required fields" },
