@@ -17,9 +17,9 @@ export async function POST(
     if (
       !jobCardId ||
       !cutting_id ||
-      !cutting_roll_weight ||
-      !no_of_bags ||
-      !cutting_wastage
+      cutting_roll_weight === undefined || cutting_roll_weight === null ||
+      no_of_bags === undefined || no_of_bags === null ||
+      cutting_wastage === undefined || cutting_wastage === null
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },

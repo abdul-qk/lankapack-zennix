@@ -14,7 +14,7 @@ export async function POST(
       return Response.json({ error: "Print ID is required" }, { status: 400 });
     }
 
-    if (!print_pack_weight) {
+    if (print_pack_weight == undefined || print_pack_weight === null) {
       return Response.json(
         { error: "Print pack weight is required" },
         { status: 400 }

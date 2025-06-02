@@ -32,6 +32,16 @@ export async function POST(
       );
     }
 
+    const stockUpdate = await prisma.hps_stock.update({
+      where: {
+        stock_id: stockItem.stock_id,
+      },
+      data: {
+        material_status: 1,
+        material_used_buy: 3,
+      },
+    });
+
     // Extract weight information
     const rollWeight = stockItem.item_net_weight;
     const rollSize = stockItem.material_item_size;
@@ -140,6 +150,31 @@ export async function DELETE(
     await prisma.hps_print.delete({
       where: {
         print_id: print_id,
+      },
+    });
+
+    // Check if the barcode exists in stock and get item_net_weight
+    const stockItem = await prisma.hps_stock.findFirst({
+      where: {
+        stock_barcode: BigInt(printRecord.print_barcode_no),
+        // material_status: 1, // Assuming 1 means available/active
+      },
+    });
+
+    if (!stockItem) {
+      return Response.json(
+        { error: "Barcode not found in stock or unavailable" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.hps_stock.update({
+      where: {
+        stock_id: stockItem.stock_id,
+      },
+      data: {
+        material_status: 0,
+        material_used_buy: 1,
       },
     });
 
