@@ -109,6 +109,7 @@ export default function BundlesTable() {
         {
             accessorKey: "bundle_info_weight",
             header: "Total Weight",
+            cell: ({ row }) => row.original.bundle_info_weight? Number(row.original.bundle_info_weight).toFixed(2) : "-", // Handle empty values
         },
         {
             id: "actions",
