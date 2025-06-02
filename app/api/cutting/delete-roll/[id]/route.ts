@@ -9,9 +9,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    console.log("Input cuttingId:", params.id);
     const cuttingId = parseInt(params.id);
-    console.log("Received cuttingId:", cuttingId);
 
     if (isNaN(cuttingId)) {
       return NextResponse.json(
@@ -21,8 +19,8 @@ export async function DELETE(
     }
 
     // Hard delete the cutting record
-    await prisma.hps_cutting.delete({
-      where: { cutting_id: cuttingId },
+    await prisma.hps_cutting_roll.delete({
+      where: { cutting_roll_id: cuttingId },
     });
 
     return NextResponse.json(

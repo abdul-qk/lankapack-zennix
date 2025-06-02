@@ -223,27 +223,56 @@ export default function ViewSlittingInfo() {
         }
     };
 
-    const handleDeleteBarcode = (cuttingId: number) => {
-        return async () => {
-            try {
-                const response = await fetch(`/api/cutting/delete-barcode/${cuttingId}`, {
-                    method: "DELETE",
-                });
-                if (response.ok) {
-                    toast({
-                        title: "Barcode deleted",
-                        description: "The barcode has been deleted successfully.",
-                        variant: "default",
-                    })
-                }
-            } catch (error) {
-                console.error("Error deleting barcode:", error);
+    const handleDeleteRoll = async (cuttingRollId: number) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/cutting/delete-roll/${cuttingRollId}`, {
+                method: "DELETE",
+            });
+            if (response.ok) {
                 toast({
-                    title: "Error deleting barcode",
-                    description: "An error occurred while deleting the barcode.",
-                    variant: "destructive",
+                    title: "Roll deleted",
+                    description: "The roll has been deleted successfully.",
+                    variant: "default",
                 })
+                fetchData(Number(id));
             }
+        } catch (error) {
+            console.error("Error deleting roll:", error);
+            toast({
+                title: "Error deleting roll",
+                description: "An error occurred while deleting the roll.",
+                variant: "destructive",
+            })
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleDeleteBarcode = async (cuttingId: number) => {
+        console.log("Deleting barcode:", cuttingId);
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/cutting/delete-barcode/${cuttingId}`, {
+                method: "DELETE",
+            });
+            if (response.ok) {
+                toast({
+                    title: "Barcode deleted",
+                    description: "The barcode has been deleted successfully.",
+                    variant: "default",
+                })
+                fetchData(Number(id));
+            }
+        } catch (error) {
+            console.error("Error deleting barcode:", error);
+            toast({
+                title: "Error deleting barcode",
+                description: "An error occurred while deleting the barcode.",
+                variant: "destructive",
+            })
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -529,7 +558,7 @@ export default function ViewSlittingInfo() {
                                                         {item.roll_barcode_no}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>{item.net_weight}</TableCell>
+                                                <TableCell>{item.cutting_weight}</TableCell>
                                                 <TableCell>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
@@ -546,7 +575,7 @@ export default function ViewSlittingInfo() {
                                                                 <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
                                                                 <AlertDialogAction
                                                                     onClick={(e) => {
-                                                                        e.stopPropagation();
+                                                                        // e.stopPropagation();
                                                                         handleDeleteBarcode(item.cutting_id);
                                                                     }}
                                                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -565,7 +594,7 @@ export default function ViewSlittingInfo() {
                                             <TableCell className="font-semibold">Total</TableCell>
                                             <TableCell></TableCell>
                                             <TableCell className="font-semibold">
-                                                {cuttingData?.reduce((sum, item) => sum + (Number(item.net_weight) || 0), 0).toFixed(2)}
+                                                {cuttingData?.reduce((sum, item) => sum + (Number(item.cutting_weight) || 0), 0).toFixed(2)}
                                             </TableCell>
                                             <TableCell></TableCell>
                                         </TableRow>
@@ -708,15 +737,31 @@ export default function ViewSlittingInfo() {
                                                                 </DialogHeader>
                                                             </DialogContent>
                                                         </Dialog>
-                                                        <Trash2
-                                                            className="cursor-pointer"
-                                                            color="red"
-                                                            size={20}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation(); // Prevent row selection when deleting
-                                                                // handleDeleteRoll(item.roll_id);
-                                                            }}
-                                                        />
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Trash2 size={20} color="red" className="cursor-pointer" onClick={(e) => e.stopPropagation()} />
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Delete Roll Barcode</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Are you sure you want to delete this barcode roll? This action cannot be undone.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        onClick={(e) => {
+                                                                            // e.stopPropagation();
+                                                                            handleDeleteRoll(item.cutting_roll_id);
+                                                                        }}
+                                                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                                    >
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
