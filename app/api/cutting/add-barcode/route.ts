@@ -44,6 +44,17 @@ export async function POST(request: Request) {
       },
     });
 
+    // Update the stock status to indicate it has been used (status = 1)
+    await prisma.hps_stock.update({
+      where: {
+        stock_id: stockItem.stock_id,
+      },
+      data: {
+        material_status: 1, // Set status to 1 indicating the roll has been used
+        material_used_buy: 4,
+      },
+    });
+
     return NextResponse.json(
       { success: true, data: newCutting },
       { status: 201 }

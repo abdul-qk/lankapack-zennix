@@ -71,6 +71,7 @@ export async function POST(
         },
         data: {
           material_status: 1, // Set status to 1 indicating the roll has been used
+          material_used_buy: 2
         },
       });
 
@@ -193,6 +194,7 @@ export async function DELETE(
           },
           data: {
             material_status: 0, // Back to available status (0)
+            material_used_buy: 1, // Reset to default value
           },
         });
       }
