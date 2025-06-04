@@ -50,16 +50,22 @@ export async function GET(req: Request) {
             0
           );
 
+          // Only return items that have a valid bag_id
+          if (!bagType || !bagType.bag_id) {
+            return null;
+          }
+
           return {
-            bag_id: bagType?.bag_id ?? 0, // Ensure we have a number for sorting
-            bag_type: bagType?.bag_type ?? "",
+            bag_id: bagType.bag_id,
+            bag_type: bagType.bag_type,
             itemweight: totalWeight.toFixed(2),
             itembags: totalBags.toFixed(0),
           };
         })
       );
 
-      return groupResults;
+      // Filter out null values (items without valid bag_id)
+      return groupResults.filter(result => result !== null);
     });
 
 

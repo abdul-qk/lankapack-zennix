@@ -77,6 +77,7 @@ export default function StockInHandTable() {
         if (!debouncedSearch) return data;
         return data.filter(
             (item) =>
+                item.bag_id.toString().includes(debouncedSearch) ||
                 item.bag_type.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                 item.itembags.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
