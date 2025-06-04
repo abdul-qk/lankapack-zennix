@@ -48,7 +48,7 @@ export async function GET(
                 sales_info_id: salesItemId,
             },
             orderBy: {
-                sales_item_id: "asc",
+                bundle_type: "asc",
             },
         });
 
