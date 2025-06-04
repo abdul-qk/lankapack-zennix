@@ -52,7 +52,7 @@ export async function GET(req: Request) {
 
           return {
             bag_id: bagType?.bag_id ?? 0, // Ensure we have a number for sorting
-            bag_type: bagType?.bag_type,
+            bag_type: bagType?.bag_type ?? "",
             itemweight: totalWeight.toFixed(2),
             itembags: totalBags.toFixed(0),
           };
