@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         printing_size:
           printing.active && printing.cylinder_size
             ? parseInt(printing.cylinder_size)
-            : 1, // Default value to avoid NULL, adjust as needed
+            : 0, // Default value to avoid NULL, adjust as needed
         printing_color_type: printing.active ? printing.number_of_colors : null,
         printing_color_name:
           printing.active && printing.selected_colors

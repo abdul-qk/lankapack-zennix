@@ -380,8 +380,8 @@ export default function JobCardTable() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="info-card-content">
-                                        <InfoRow label="Cylinder Size" value={data.print_size.print_size || "Not specified"} />
-                                        <InfoRow label="Color Type" value={data.printing_color_type + ' Colour(s)' || "Not specified"} />
+                                        <InfoRow label="Cylinder Size" value={data.print_size ? data.print_size.print_size : "Not specified"} />
+                                        <InfoRow label="Color Type" value={data.printing_color_type ? data.printing_color_type + ' Colour(s)' : "Not specified"} />
                                         <InfoRow label="Color Name(s)" value={data.formattedColorNames || data.printing_color_name || "Not specified"} />
                                         <InfoRow label="No. of Bags" value={data.printing_no_of_bag || "Not specified"} />
                                         <InfoRow label="Remark" value={data.printing_remark || "Not specified"} />
