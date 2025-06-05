@@ -12,6 +12,16 @@ export async function GET(
     const uniqueValues = await prisma.hps_stock.findMany({
       where: {
         material_item_particular: itemId, // Filter by the provided ID
+        item_gsm: {
+          not: {
+            in: [""],
+          },
+        },
+        material_item_size: {
+          not: {
+            in: [""],
+          },
+        },
       },
       select: {
         item_gsm: true,
@@ -20,7 +30,7 @@ export async function GET(
       distinct: ["item_gsm", "material_item_size"], // Get unique combinations
     });
 
-    return new Response(JSON.stringify({ uniqueValues }), {
+    return new Response(JSON.stringify({ uniqueValues }), { 
       status: 200,
     });
   } catch (error) {
