@@ -25,7 +25,11 @@ export async function GET(req: Request) {
     });
 
     // Build where conditions
-    const whereConditions: any = {};
+    const whereConditions: any = {
+      main_id: {
+        not: 1,
+      },
+    };
 
     // Material ID filter
     if (materialId && materialId !== "" && materialId !== "all") {

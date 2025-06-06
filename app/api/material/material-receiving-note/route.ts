@@ -4,9 +4,13 @@ const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
-
-    // Fetch all filtered material info data
+    // Fetch all filtered material info data with valid suppliers
     const materialInfo = await prisma.hps_material_info.findMany({
+      where: {
+        material_supplier: {
+          not: 1,
+        },
+      },
       include: {
         supplier: true,
       },
