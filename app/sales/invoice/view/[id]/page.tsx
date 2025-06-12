@@ -322,7 +322,7 @@ export default function InvoiceView() {
                       <TableCell>{item.bag_type}</TableCell>
                       <TableCell>{item.bundel_qty}</TableCell>
                       <TableCell className="text-right">{item.item_price}</TableCell>
-                      <TableCell className="text-right">{item.item_total}</TableCell>
+                      <TableCell className="text-right">{Number(item.item_total).toFixed(3)}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="total-row">

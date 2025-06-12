@@ -309,7 +309,7 @@ export default function ReturnView() {
                       <TableCell className="text-right">{item.n_weight.toFixed(2)}</TableCell>
                       <TableCell className="text-right">{item.no_of_bags}</TableCell>
                       <TableCell className="text-right">{item.item_price}</TableCell>
-                      <TableCell className="text-right">{item.item_total}</TableCell>
+                      <TableCell className="text-right">{Number(item.item_total).toFixed(3)}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="total-row">

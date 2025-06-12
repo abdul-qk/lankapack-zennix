@@ -92,8 +92,35 @@ export async function PUT(
       .filter((item) => !itemsWithIds.includes(item.sales_item_id))
       .map((item) => item.sales_item_id);
 
-    // Delete removed items
+    // Delete removed items and update their complete items to be back in stock
     if (itemsToDelete.length > 0) {
+      // Get complete_item_ids for items being deleted
+      const deletedItems = await prisma.hps_sales_item.findMany({
+        where: {
+          sales_item_id: {
+            in: itemsToDelete,
+          },
+        },
+        select: {
+          complete_item_id: true,
+        },
+      });
+
+      // Update complete items to del_ind = 1 (back in stock)
+      await Promise.all(
+        deletedItems.map((item) =>
+          prisma.hps_complete_item.update({
+            where: {
+              complete_item_id: item.complete_item_id,
+            },
+            data: {
+              del_ind: 1,
+            },
+          })
+        )
+      );
+
+      // Delete the sales items
       await prisma.hps_sales_item.deleteMany({
         where: {
           sales_item_id: {
