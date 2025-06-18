@@ -82,8 +82,11 @@ export async function GET(
           },
           select: {
             print_barcode_no: true,
+            print_wastage: true,
           },
         });
+        // Get Print wastage data
+        printWastage = print?.print_wastage || '0';
 
         if (print?.print_barcode_no) {
           // Get slitting roll
@@ -110,17 +113,6 @@ export async function GET(
             slittingWastage = slittingWastageData?.slitting_wastage || "0";
           }
         }
-
-        // Get print wastage
-        const printWastageData = await prisma.hps_print_wastage.findFirst({
-          where: {
-            print_id: printPack.print_id,
-          },
-          select: {
-            print_wastage: true,
-          },
-        });
-        printWastage = printWastageData?.print_wastage || "0";
       } else {
         // Fallback: try to get slitting wastage by job_card_id
         const slitting_id = await prisma.hps_slitting_roll.findFirst({
