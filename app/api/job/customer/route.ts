@@ -30,41 +30,31 @@ export async function POST(req: Request) {
 
     if (
       !customer_full_name ||
-      customer_full_name.trim() === "" ||
-      !contact_person ||
-      contact_person.trim() === "" ||
-      !customer_address ||
-      customer_address.trim() === "" ||
-      !customer_tel ||
-      customer_tel.trim() === "" ||
-      !customer_mobile ||
-      customer_mobile.trim() === "" ||
-      !customer_email_address ||
-      customer_email_address.trim() === ""
+      customer_full_name.trim() === ""
     ) {
       return new Response(
-        JSON.stringify({ error: "All fields are required" }),
+        JSON.stringify({ error: "Customer name is required" }),
         {
           status: 400,
         }
       );
     }
 
-    const newColor = await prisma.hps_customer.create({
+    const newCustomer = await prisma.hps_customer.create({
       data: {
         customer_full_name,
-        contact_person,
-        customer_address,
-        customer_tel,
-        customer_mobile,
+        contact_person: contact_person,
+        customer_address: customer_address,
+        customer_tel: customer_tel,
+        customer_mobile: customer_mobile,
         customer_add_date: new Date(),
-        customer_email_address,
+        customer_email_address: customer_email_address,
         hps_user_id: 0,
         del_ind: 1,
       },
     });
 
-    return new Response(JSON.stringify(newColor), { status: 201 });
+    return new Response(JSON.stringify(newCustomer), { status: 201 });
   } catch (error) {
     console.error("Error adding new color:", error);
     return new Response(JSON.stringify({ error: "Failed to add color" }), {
@@ -85,17 +75,9 @@ export async function PATCH(req: Request) {
       customer_email_address,
     } = await req.json();
 
-    if (
-      !id ||
-      customer_full_name === undefined ||
-      contact_person === undefined ||
-      customer_address === undefined ||
-      customer_tel === undefined ||
-      customer_mobile === undefined ||
-      customer_email_address === undefined
-    ) {
+    if (!id || customer_full_name === undefined) {
       return new Response(
-        JSON.stringify({ error: "ID and colour_name are required" }),
+        JSON.stringify({ error: "ID and customer name are required" }),
         { status: 400 }
       );
     }

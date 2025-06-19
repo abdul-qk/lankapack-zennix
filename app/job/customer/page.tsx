@@ -176,7 +176,7 @@ export default function CustomerInfoTable() {
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Edit Roll Type {row.original.customer_full_name}</DialogTitle>
+                                    <DialogTitle>Edit Customer {row.original.customer_full_name}</DialogTitle>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
                                     <div className="flex flex-col justify-start items-center gap-4">
@@ -249,12 +249,12 @@ export default function CustomerInfoTable() {
 
     const validateForm = () => {
         const newErrors: typeof errors = {
-            customer_full_name: form.customer_full_name ? "" : "Full name is required",
-            customer_email_address: form.customer_email_address ? "" : "Email is required",
-            customer_tel: form.customer_tel ? "" : "Telephone is required",
-            customer_mobile: form.customer_mobile ? "" : "Mobile is required",
-            contact_person: form.contact_person ? "" : "Contact person is required",
-            customer_address: form.customer_address ? "" : "Address is required",
+            customer_full_name: form.customer_full_name ? "" : "Company name is required",
+            customer_email_address: "",
+            customer_tel: "",
+            customer_mobile: "",
+            contact_person: "",
+            customer_address: "",
         };
         setErrors(newErrors);
         // Return true if no errors
@@ -361,7 +361,7 @@ export default function CustomerInfoTable() {
                                     <div className="flex flex-col w-full items-start gap-2">
                                         <label >Email</label>
                                         <div className="flex flex-col w-full items-start gap-1">
-                                            <Input placeholder="Enter Email" value={form.customer_email_address}
+                                            <Input placeholder="Enter Email (Optional)" value={form.customer_email_address}
                                                 onChange={e => {
                                                     setForm({ ...form, customer_email_address: e.target.value });
                                                     if (errors.customer_email_address) setErrors({ ...errors, customer_email_address: "" });
@@ -373,7 +373,7 @@ export default function CustomerInfoTable() {
                                     <div className="flex flex-col w-full items-start gap-2">
                                         <label >Tel</label>
                                         <div className="flex flex-col w-full items-start gap-1">
-                                            <Input placeholder="Enter Tel" value={form.customer_tel}
+                                            <Input placeholder="Enter Tel (Optional)" value={form.customer_tel}
                                                 onChange={e => {
                                                     setForm({ ...form, customer_tel: e.target.value });
                                                     if (errors.customer_tel) setErrors({ ...errors, customer_tel: "" });
@@ -385,7 +385,7 @@ export default function CustomerInfoTable() {
                                     <div className="flex flex-col w-full items-start gap-2">
                                         <label >Mobile</label>
                                         <div className="flex flex-col w-full items-start gap-1">
-                                            <Input placeholder="Enter Mobile" value={form.customer_mobile}
+                                            <Input placeholder="Enter Mobile (Optional)" value={form.customer_mobile}
                                                 onChange={e => {
                                                     setForm({ ...form, customer_mobile: e.target.value });
                                                     if (errors.customer_mobile) setErrors({ ...errors, customer_mobile: "" });
@@ -397,7 +397,7 @@ export default function CustomerInfoTable() {
                                     <div className="flex flex-col w-full items-start gap-2">
                                         <label >Contact Person</label>
                                         <div className="flex flex-col w-full items-start gap-1">
-                                            <Input placeholder="Enter Contact Person" value={form.contact_person}
+                                            <Input placeholder="Enter Contact Person (Optional)" value={form.contact_person}
                                                 onChange={e => {
                                                     setForm({ ...form, contact_person: e.target.value });
                                                     if (errors.contact_person) setErrors({ ...errors, contact_person: "" });
@@ -409,7 +409,7 @@ export default function CustomerInfoTable() {
                                     <div className="flex flex-col w-full items-start gap-2">
                                         <label >Address</label>
                                         <div className="flex flex-col w-full items-start gap-1">
-                                            <Input placeholder="Enter Address" value={form.customer_address}
+                                            <Input placeholder="Enter Address (Optional)" value={form.customer_address}
                                                 onChange={e => {
                                                     setForm({ ...form, customer_address: e.target.value });
                                                     if (errors.customer_address) setErrors({ ...errors, customer_address: "" });
