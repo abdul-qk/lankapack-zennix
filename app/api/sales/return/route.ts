@@ -71,7 +71,7 @@ export async function DELETE(req: NextRequest) {
     // Soft delete by setting del_ind to 1
     await prisma.hps_return_info.update({
       where: { return_info_id: parseInt(id) },
-      data: { del_ind: 1 },
+      data: { del_ind: 0 },
     });
 
     return new Response(JSON.stringify({ success: true }), {
