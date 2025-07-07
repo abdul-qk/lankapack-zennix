@@ -12,7 +12,9 @@ export async function GET(req: NextRequest) {
     const statusFilter = searchParams.get("status");
 
     // Build the filter conditions
-    const whereConditions: any = {};
+    const whereConditions: any = {
+      complete_item_info: { not: 1 },
+    };
 
     if (sizeFilter && sizeFilter !== "all") {
       whereConditions.bundle_type = sizeFilter;
