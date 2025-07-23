@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // GET: Fetch all complete items
 export async function GET() {
@@ -26,8 +24,6 @@ export async function GET() {
       { message: "Error fetching complete items", error: String(error) },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -102,7 +98,5 @@ export async function POST(request: NextRequest) {
       { message: "Error creating complete item", error: String(error) },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

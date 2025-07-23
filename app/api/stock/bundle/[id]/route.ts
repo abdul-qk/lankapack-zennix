@@ -1,8 +1,6 @@
 // File: /app/api/stock/bundle/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -36,7 +34,5 @@ export async function GET(
       { error: "Failed to fetch bundle" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

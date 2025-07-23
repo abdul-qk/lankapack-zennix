@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   req: Request,
@@ -62,7 +60,6 @@ export async function DELETE(
         where: { material_item_id: itemId },
       });
     });
-
 
     return new Response(
       JSON.stringify({ message: "Item deleted successfully" }),

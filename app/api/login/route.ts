@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import * as crypto from "crypto";
 import * as jose from "jose";
-
-const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {

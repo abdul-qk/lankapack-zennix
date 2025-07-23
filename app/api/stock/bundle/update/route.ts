@@ -1,8 +1,6 @@
 // File: /app/api/stock/bundle/update/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -77,7 +75,5 @@ export async function PUT(request: NextRequest) {
       { error: "Failed to update bundle" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

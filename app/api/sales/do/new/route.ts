@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
-
-const prisma = new PrismaClient();
 
 // GET: Fetch customers for dropdown
 export async function GET() {

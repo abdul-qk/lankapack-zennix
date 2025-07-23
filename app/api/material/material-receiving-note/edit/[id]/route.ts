@@ -1,11 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient({
-  transactionOptions: {
-    maxWait: 5000, // default: 2000
-    timeout: 10000, // default: 5000
-  },
-});
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: Request,

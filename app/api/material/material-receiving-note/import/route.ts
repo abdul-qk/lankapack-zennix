@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "@/lib/prisma";
 import Papa from 'papaparse';
 import { Readable } from 'stream';
-
-const prisma = new PrismaClient({
-    transactionOptions: {
-      maxWait: 10000, // default: 2000
-      timeout: 20000, // default: 5000
-    },
-  });
 
 // Helper function to convert Node.js Readable stream to string
 async function streamToString(stream: Readable): Promise<string> {
@@ -236,7 +229,5 @@ export async function POST(req: NextRequest) {
         console.error('Import API Error:', error);
         // Check for Prisma-specific errors if needed
         return NextResponse.json({ message: 'Failed to import data.', error: error.message }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
-    }
+  }
 }

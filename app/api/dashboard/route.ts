@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
   try {
@@ -24,7 +22,5 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ error: "Failed to fetch data" }), {
       status: 500,
     });
-  } finally {
-    await prisma.$disconnect(); // Ensure the database connection is closed
   }
 }
