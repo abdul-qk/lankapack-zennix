@@ -11,7 +11,7 @@ export async function GET(req: Request) {
                 }
             },
         },
-        distinct: ['material_item_gsm'],
+        distinct: ['material_item_size'],
 
     });
     console.log(materialItems);
