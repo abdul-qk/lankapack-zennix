@@ -183,7 +183,7 @@ export default function EditReturnPage({ params }: PageProps) {
 
       const itemData = result.data;
       const priceValue = parseFloat(price);
-      const total = priceValue * itemData.bags;
+      const total = (priceValue * itemData.bags).toFixed(2);
 
       // Add item to the list
       const newItem: ReturnItem = {
@@ -193,7 +193,9 @@ export default function EditReturnPage({ params }: PageProps) {
         weight: itemData.weight,
         bags: itemData.bags,
         price: priceValue,
-        total: total,
+        total: parseFloat(total),
+
+
         complete_item_id: itemData.complete_item_id
       };
 

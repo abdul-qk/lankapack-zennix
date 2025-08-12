@@ -148,6 +148,24 @@ export async function PUT(
       });
     }
 
+    // Update hps_complete_item table to mark returned items as deleted (del_ind = 1)
+    const completeItemIds = items
+      .map((item: any) => item.complete_item_id)
+      .filter((id: number) => id && id > 0); // Filter out invalid IDs
+
+    if (completeItemIds.length > 0) {
+      await prisma.hps_complete_item.updateMany({
+        where: {
+          complete_item_id: {
+            in: completeItemIds,
+          },
+        },
+        data: {
+          del_ind: 1,
+        },
+      });
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
