@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -309,7 +309,7 @@ model hps_return_item {
   complete_item_id Int
   barcode_no       String @db.VarChar(255)
   bundle_type      String @db.VarChar(30)
-  n_weight         Float  @db.Float
+  n_weight         Float  @db.Real
   no_of_bags       Int
   item_price       String @db.VarChar(12)
   item_total       String @db.VarChar(12)
@@ -341,7 +341,7 @@ model hps_sales_item {
   complete_item_id Int
   barcode_no       String @db.VarChar(255)
   bundle_type      String @db.VarChar(30)
-  n_weight         Float  @db.Float
+  n_weight         Float  @db.Real
   no_of_bags       Int
   item_price       String @db.VarChar(12)
   item_total       String @db.VarChar(12)
