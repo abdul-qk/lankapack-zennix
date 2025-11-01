@@ -64,7 +64,7 @@ interface APIResponse {
 
 export default function EditMaterialReceivingNotePage() {
     const params = useParams();
-    const id = params.id;
+    const id = params?.id;
 
     const { toast } = useToast();
     const router = useRouter();

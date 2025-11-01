@@ -70,7 +70,7 @@ export default function DOView() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`/api/sales/do/${params.id}`);
+                const response = await fetch(`/api/sales/do/${params?.id}`);
                 const result = await response.json();
 
                 if (result.success && result.data) {
@@ -85,10 +85,10 @@ export default function DOView() {
             }
         };
 
-        if (params.id) {
+        if (params?.id) {
             fetchData();
         }
-    }, [params.id]);
+    }, [params?.id]);
 
     const handlePrint = () => {
         const printContent = printRef.current;

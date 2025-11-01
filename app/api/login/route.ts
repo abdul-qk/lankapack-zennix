@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import * as crypto from "crypto";
 import * as jose from "jose";
+import { withMonitoring, logUserActivity } from "@/lib/monitoring";
 
-export async function POST(request: Request) {
+async function loginHandler(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
@@ -69,6 +70,18 @@ export async function POST(request: Request) {
       maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     });
 
+    // Log successful login activity
+    await logUserActivity({
+      userId: user.he_user_id,
+      action: 'LOGIN',
+      resource: 'authentication',
+      details: {
+        username: user.he_username,
+        loginTime: new Date().toISOString(),
+      },
+      request,
+    });
+
     return NextResponse.json({
       message: "Login successful",
       user: {
@@ -86,3 +99,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+// Export the monitored POST handler
+export const POST = withMonitoring(loginHandler);

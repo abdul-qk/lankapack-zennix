@@ -1,0 +1,6 @@
+load database
+    from mysql://lankapack-admin:AVNS_x4vOFgFheCikrh0Qy_B@db-mysql-lankapack-do-user-11554958-0.f.db.ondigitalocean.com:25060/hakimipapers?useSSL=true
+    into postgresql://postgres.dawmkjmgqzhmlzifwvnn:jFNBI1xqOhRf7EJ3@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+    with quote identifiers, include drop, create tables, create indexes,
+         data only
+;

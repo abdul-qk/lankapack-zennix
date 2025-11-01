@@ -1,13 +1,40 @@
 // /app/api/cutting/add-barcode/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
+import { withMonitoring, logSystemEvent, logUserActivity } from "@/lib/monitoring";
+import appLogger from "@/lib/logger";
 
-export async function POST(request: Request) {
+export const POST = withMonitoring(async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const endpoint = "/api/cutting/add-barcode";
+  const method = "POST";
+  
   try {
     const { jobCardId, barcode, weight, userId } = await request.json();
 
+    // Log the API request start
+    appLogger.info("Adding cutting barcode", {
+      endpoint,
+      method,
+      jobCardId,
+      barcode,
+      weight,
+      userId,
+      timestamp: new Date().toISOString(),
+    });
+
     // Validate inputs
     if (!jobCardId || !barcode || !weight || !userId) {
+      const responseTime = Date.now() - startTime;
+      
+      appLogger.warn("Missing required fields for adding cutting barcode", {
+        endpoint,
+        method,
+        providedFields: { jobCardId: !!jobCardId, barcode: !!barcode, weight: !!weight, userId: !!userId },
+        responseTime,
+      });
+      
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -22,6 +49,15 @@ export async function POST(request: Request) {
     });
 
     if (!stockItem) {
+      const responseTime = Date.now() - startTime;
+      
+      appLogger.warn("Barcode not found in stock", {
+        endpoint,
+        method,
+        barcode,
+        responseTime,
+      });
+      
       return NextResponse.json(
         { error: "Barcode not found in stock or not available" },
         { status: 404 }
@@ -53,15 +89,83 @@ export async function POST(request: Request) {
       },
     });
 
+    const responseTime = Date.now() - startTime;
+    
+    // Log successful response
+    appLogger.logApiRequest({
+      method,
+      endpoint,
+      statusCode: 201,
+      responseTime,
+      requestId: request.headers.get('x-request-id') || undefined,
+    });
+
+    // Log user activity
+    await logUserActivity({
+      userId: parseInt(userId),
+      action: 'CREATE_CUTTING_BARCODE',
+      resource: newCutting.cutting_id.toString(),
+      details: {
+        jobCardId,
+        barcode,
+        weight,
+      },
+      request,
+    });
+
+    // Log system event for successful creation
+    await logSystemEvent({
+      level: 'INFO',
+      message: 'Successfully added cutting barcode',
+      context: {
+        endpoint,
+        cuttingId: newCutting.cutting_id,
+        jobCardId,
+        barcode,
+        weight,
+        userId,
+        responseTime,
+      },
+      source: 'cutting-api',
+      request,
+    });
+
     return NextResponse.json(
       { success: true, data: newCutting },
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("Error adding barcode:", error);
+    const responseTime = Date.now() - startTime;
+    
+    // Log error details
+    appLogger.error("Error adding cutting barcode", {
+      endpoint,
+      method,
+      responseTime,
+      error: error instanceof Error ? error.message : String(error),
+    }, error instanceof Error ? error : undefined);
+
+    // Log system event for error
+    await logSystemEvent({
+      level: 'ERROR',
+      message: 'Failed to add cutting barcode',
+      context: {
+        endpoint,
+        error: error instanceof Error ? error.message : String(error),
+        responseTime,
+      },
+      source: 'cutting-api',
+      request,
+    });
+
     return NextResponse.json(
       { error: "Failed to add barcode", details: error.message },
       { status: 500 }
     );
   }
-}
+}, {
+  logToDatabase: true,
+  logToFile: true,
+  trackPerformance: true,
+  trackUserActivity: true,
+});

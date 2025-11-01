@@ -97,7 +97,7 @@ interface CuttingRollInfo {
 
 export default function ViewCuttingInfo() {
     const params = useParams();
-    const id = params.id;
+    const id = params?.id;
 
     const [loading, setLoading] = React.useState(true);
     const [data, setData] = React.useState<JobCardData>();

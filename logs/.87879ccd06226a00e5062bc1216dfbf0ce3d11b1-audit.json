@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\webroot\\lankapack-zennix\\logs\\.87879ccd06226a00e5062bc1216dfbf0ce3d11b1-audit.json",
+    "files": [
+        {
+            "date": 1756673447895,
+            "name": "C:\\webroot\\lankapack-zennix\\logs\\application-2025-09-01.log",
+            "hash": "9c103614435078bbda366d04d694754016e9bc5ffd727a779535460a90f00e1c"
+        },
+        {
+            "date": 1757019726126,
+            "name": "C:\\webroot\\lankapack-zennix\\logs\\application-2025-09-05.log",
+            "hash": "09feb6d34a389a04e2969c6bb020225db1685b65d1315b22a3ddbc70e66e3c05"
+        }
+    ],
+    "hashType": "sha256"
+}

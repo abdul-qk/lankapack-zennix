@@ -66,7 +66,7 @@ interface APIResponse {
 
 export default function AddMaterialReceivingNotePage() {
     const params = useParams();
-    const id = params.id;
+    const id = params?.id;
     // Add toast
     const { toast } = useToast();
     const router = useRouter();

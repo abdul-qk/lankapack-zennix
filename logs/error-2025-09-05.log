@@ -1,0 +1,150 @@
+2025-09-05 02:32:07 [ERROR]: Failed to log system event to database
+Stack: TypeError: Cannot read properties of undefined (reading 'create')
+    at logSystemEvent (webpack-internal:///(rsc)/./lib/monitoring.ts:262:74)
+    at GET (webpack-internal:///(rsc)/./app/api/dashboard/route.ts:48:78)
+    at async monitoredHandler (webpack-internal:///(rsc)/./lib/monitoring.ts:87:24)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55831
+    at async eO.execute (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46527)
+    at async eO.handle (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57165)
+    at async doRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1352:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1574:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1482:28)
+    at async DevServer.renderPageComponent (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1908:24)
+    at async DevServer.renderToResponseImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1946:32)
+    at async DevServer.pipeImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:921:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:173:21)
+    at async handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:350:24)
+    at async requestHandlerImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:374:13)
+    at async Server.requestListener (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\start-server.js:141:13)
+Meta: {
+  "errorMessage": "Cannot read properties of undefined (reading 'create')"
+}
+2025-09-05 02:32:07 [ERROR]: Failed to log performance metrics to database
+Stack: TypeError: Cannot read properties of undefined (reading 'create')
+    at monitoredHandler (webpack-internal:///(rsc)/./lib/monitoring.ts:159:87)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55831
+    at async eO.execute (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46527)
+    at async eO.handle (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57165)
+    at async doRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1352:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1574:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1482:28)
+    at async DevServer.renderPageComponent (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1908:24)
+    at async DevServer.renderToResponseImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1946:32)
+    at async DevServer.pipeImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:921:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:173:21)
+    at async handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:350:24)
+    at async requestHandlerImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:374:13)
+    at async Server.requestListener (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\start-server.js:141:13)
+Meta: {
+  "errorMessage": "Cannot read properties of undefined (reading 'create')"
+}
+2025-09-05 02:32:33 [ERROR]: Failed to log system event to database
+Stack: TypeError: Cannot read properties of undefined (reading 'create')
+    at logSystemEvent (webpack-internal:///(rsc)/./lib/monitoring.ts:262:74)
+    at GET (webpack-internal:///(rsc)/./app/api/dashboard/route.ts:48:78)
+    at async monitoredHandler (webpack-internal:///(rsc)/./lib/monitoring.ts:87:24)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55831
+    at async eO.execute (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46527)
+    at async eO.handle (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57165)
+    at async doRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1352:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1574:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1482:28)
+    at async DevServer.renderPageComponent (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1908:24)
+    at async DevServer.renderToResponseImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1946:32)
+    at async DevServer.pipeImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:921:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:173:21)
+    at async handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:350:24)
+    at async requestHandlerImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:374:13)
+    at async Server.requestListener (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\start-server.js:141:13)
+Meta: {
+  "errorMessage": "Cannot read properties of undefined (reading 'create')"
+}
+2025-09-05 02:32:33 [ERROR]: Failed to log performance metrics to database
+Stack: TypeError: Cannot read properties of undefined (reading 'create')
+    at monitoredHandler (webpack-internal:///(rsc)/./lib/monitoring.ts:159:87)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55831
+    at async eO.execute (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46527)
+    at async eO.handle (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57165)
+    at async doRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1352:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1574:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1482:28)
+    at async DevServer.renderPageComponent (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1908:24)
+    at async DevServer.renderToResponseImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1946:32)
+    at async DevServer.pipeImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:921:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:173:21)
+    at async handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:350:24)
+    at async requestHandlerImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:374:13)
+    at async Server.requestListener (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\start-server.js:141:13)
+Meta: {
+  "errorMessage": "Cannot read properties of undefined (reading 'create')"
+}
+2025-09-05 22:41:10 [ERROR]: Failed to log system event to database
+Stack: TypeError: Cannot read properties of undefined (reading 'create')
+    at logSystemEvent (webpack-internal:///(rsc)/./lib/monitoring.ts:262:74)
+    at GET (webpack-internal:///(rsc)/./app/api/dashboard/route.ts:48:78)
+    at async monitoredHandler (webpack-internal:///(rsc)/./lib/monitoring.ts:87:24)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55831
+    at async eO.execute (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46527)
+    at async eO.handle (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57165)
+    at async doRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1352:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1574:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1482:28)
+    at async DevServer.renderPageComponent (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1908:24)
+    at async DevServer.renderToResponseImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1946:32)
+    at async DevServer.pipeImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:921:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:173:21)
+    at async handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:350:24)
+    at async requestHandlerImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:374:13)
+    at async Server.requestListener (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\start-server.js:141:13)
+Meta: {
+  "errorMessage": "Cannot read properties of undefined (reading 'create')"
+}
+2025-09-05 22:41:10 [ERROR]: Failed to log performance metrics to database
+Stack: TypeError: Cannot read properties of undefined (reading 'create')
+    at monitoredHandler (webpack-internal:///(rsc)/./lib/monitoring.ts:159:87)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55831
+    at async eO.execute (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46527)
+    at async eO.handle (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57165)
+    at async doRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1352:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1574:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1482:28)
+    at async DevServer.renderPageComponent (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1908:24)
+    at async DevServer.renderToResponseImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:1946:32)
+    at async DevServer.pipeImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:921:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:173:21)
+    at async handleRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:350:24)
+    at async requestHandlerImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\router-server.js:374:13)
+    at async Server.requestListener (C:\webroot\lankapack-zennix\node_modules\next\dist\server\lib\start-server.js:141:13)
+Meta: {
+  "errorMessage": "Cannot read properties of undefined (reading 'create')"
+}

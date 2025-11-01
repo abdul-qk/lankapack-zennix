@@ -89,7 +89,7 @@ const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
 export default function ViewSlittingInfo() {
     const params = useParams();
-    const id = params.id;
+    const id = params?.id;
 
     const [loading, setLoading] = React.useState(true);
     const [data, setData] = React.useState<JobCardData>();

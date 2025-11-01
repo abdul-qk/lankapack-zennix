@@ -1,0 +1,106 @@
+2025-09-01 02:31:40 [ERROR]: Failed to fetch monitoring metrics
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.hps_system_log.findMany()` invocation:
+
+
+The table `hps_system_log` does not exist in the current database.
+    at Vn.handleRequestError (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:7339)
+    at Vn.handleAndLogRequestError (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:6663)
+    at Vn.request (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:6370)
+    at async l (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:130:9617)
+    at async Promise.all (index 3)
+    at async getMonitoringMetrics (webpack-internal:///(api)/./lib/monitoring.ts:302:79)
+    at async getDashboardData (webpack-internal:///(api)/./pages/api/monitoring/dashboard.ts:32:31)
+    at async handler (webpack-internal:///(api)/./pages/api/monitoring/dashboard.ts:248:31)
+    at async K (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\pages-api.runtime.dev.js:21:2871)
+    at async U.render (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\pages-api.runtime.dev.js:21:3955)
+    at async DevServer.runApi (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:598:9)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:269:37)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+Meta: {
+  "errorMessage": "\nInvalid `prisma.hps_system_log.findMany()` invocation:\n\n\nThe table `hps_system_log` does not exist in the current database."
+}
+2025-09-01 02:31:40 [ERROR]: Failed to get dashboard data
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.hps_system_log.findMany()` invocation:
+
+
+The table `hps_system_log` does not exist in the current database.
+    at Vn.handleRequestError (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:7339)
+    at Vn.handleAndLogRequestError (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:6663)
+    at Vn.request (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:6370)
+    at async l (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:130:9617)
+    at async Promise.all (index 3)
+    at async getMonitoringMetrics (webpack-internal:///(api)/./lib/monitoring.ts:302:79)
+    at async getDashboardData (webpack-internal:///(api)/./pages/api/monitoring/dashboard.ts:32:31)
+    at async handler (webpack-internal:///(api)/./pages/api/monitoring/dashboard.ts:248:31)
+    at async K (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\pages-api.runtime.dev.js:21:2871)
+    at async U.render (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\pages-api.runtime.dev.js:21:3955)
+    at async DevServer.runApi (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:598:9)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:269:37)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+Meta: {
+  "timeRange": "24h",
+  "errorMessage": "\nInvalid `prisma.hps_system_log.findMany()` invocation:\n\n\nThe table `hps_system_log` does not exist in the current database."
+}
+2025-09-01 02:31:40 [ERROR]: Dashboard API error
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.hps_system_log.findMany()` invocation:
+
+
+The table `hps_system_log` does not exist in the current database.
+    at Vn.handleRequestError (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:7339)
+    at Vn.handleAndLogRequestError (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:6663)
+    at Vn.request (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:121:6370)
+    at async l (C:\webroot\lankapack-zennix\node_modules\@prisma\client\runtime\library.js:130:9617)
+    at async Promise.all (index 3)
+    at async getMonitoringMetrics (webpack-internal:///(api)/./lib/monitoring.ts:302:79)
+    at async getDashboardData (webpack-internal:///(api)/./pages/api/monitoring/dashboard.ts:32:31)
+    at async handler (webpack-internal:///(api)/./pages/api/monitoring/dashboard.ts:248:31)
+    at async K (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\pages-api.runtime.dev.js:21:2871)
+    at async U.render (C:\webroot\lankapack-zennix\node_modules\next\dist\compiled\next-server\pages-api.runtime.dev.js:21:3955)
+    at async DevServer.runApi (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:598:9)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\webroot\lankapack-zennix\node_modules\next\dist\server\next-server.js:269:37)
+    at async DevServer.handleRequestImpl (C:\webroot\lankapack-zennix\node_modules\next\dist\server\base-server.js:817:17)
+    at async C:\webroot\lankapack-zennix\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\webroot\lankapack-zennix\node_modules\next\dist\trace\trace.js:154:20)
+Meta: {
+  "query": {},
+  "errorMessage": "\nInvalid `prisma.hps_system_log.findMany()` invocation:\n\n\nThe table `hps_system_log` does not exist in the current database."
+}
+2025-09-01 02:36:26 [INFO]: Incoming POST request to /api/login
+Meta: {
+  "requestId": "3ecb2f4d-e52d-4707-b143-122ce9b9fa52",
+  "ipAddress": "::1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+  "endpoint": "/api/login",
+  "method": "POST"
+}
+2025-09-01 02:36:26 [INFO]: User Activity: LOGIN
+Meta: {
+  "type": "user_activity",
+  "userId": 1,
+  "action": "LOGIN",
+  "resource": "authentication",
+  "details": {
+    "username": "admin",
+    "loginTime": "2025-08-31T21:06:26.938Z"
+  },
+  "ipAddress": "::1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+}
+2025-09-01 02:36:26 [INFO]: API Request: POST /api/login
+Meta: {
+  "type": "api_request",
+  "method": "POST",
+  "endpoint": "/api/login",
+  "statusCode": 200,
+  "responseTime": 25,
+  "ipAddress": "::1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+  "requestId": "3ecb2f4d-e52d-4707-b143-122ce9b9fa52"
+}

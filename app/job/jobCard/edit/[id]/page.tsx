@@ -116,7 +116,7 @@ interface JobCardData {
 
 export default function EditJobCard() {
     const params = useParams();
-    const jobCardId = params.id as string;
+    const jobCardId = params?.id as string;
     const [loading, setLoading] = React.useState(true);
     const [jobCard, setJobCard] = React.useState<JobCardData | null>(null);
     const [customer, setCustomer] = React.useState<CustomerInfo[]>([]);

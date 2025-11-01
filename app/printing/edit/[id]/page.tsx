@@ -91,7 +91,7 @@ const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
 export default function EditPrintingInfo() {
     const params = useParams();
-    const id = params.id;
+    const id = params?.id;
 
     const [loading, setLoading] = React.useState(true);
     const [barcode, setBarcode] = React.useState("");
