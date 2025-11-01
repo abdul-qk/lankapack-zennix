@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: Request) {
   try {
@@ -8,7 +9,7 @@ export async function GET(req: Request) {
     const searchFilter = search
       ? {
           OR: [
-            { particular_name: { contains: search, mode: "insensitive" } },
+            { particular_name: { contains: search, mode: Prisma.QueryMode.insensitive } },
             { particular_status: { equals: parseInt(search, 10) || 0 } },
           ],
         }
