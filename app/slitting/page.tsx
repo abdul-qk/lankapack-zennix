@@ -99,9 +99,9 @@ export default function SlitingTable() {
         return data.filter(
             (item) =>
                 item.job_card_id.toString().includes(debouncedSearch) ||
-                item.customer.customer_full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.particular.particular_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.slitting_size.toLowerCase().includes(debouncedSearch.toLowerCase())
+                item.customer.customer_full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.particular.particular_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.slitting_size?.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
     }, [data, debouncedSearch]);
 
