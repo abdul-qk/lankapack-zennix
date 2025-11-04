@@ -107,11 +107,11 @@ export default function CustomerInfoTable() {
         return data.filter(
             (item) =>
                 item.customer_full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.customer_email_address.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.customer_address.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.contact_person.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.customer_mobile.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.customer_tel.toLowerCase().includes(debouncedSearch.toLowerCase())
+                item.customer_email_address?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.customer_address?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.contact_person?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.customer_mobile?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.customer_tel?.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
     }, [data, debouncedSearch]);
 
