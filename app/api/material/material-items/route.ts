@@ -28,7 +28,7 @@ export async function GET(req: Request) {
                 }
             },
         },
-        distinct: ['material_item_size'],
+        distinct: ['material_item_size', 'material_item_particular'],
 
     });
     console.log(materialItems);
