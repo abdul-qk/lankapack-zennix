@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
@@ -19,6 +20,11 @@ export async function GET(req: Request) {
 
     return new Response(JSON.stringify({ data: materialItems }), {
       status: 200,
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      },
     });
   } catch (error) {
     console.error("Error fetching material items:", error);
