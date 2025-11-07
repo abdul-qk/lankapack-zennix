@@ -7,6 +7,9 @@ export async function GET(req: Request) {
       include: {
         customer: true,
       },
+      orderBy: {
+        job_card_id: "asc",
+      },
     });
 
     return new Response(JSON.stringify({ data: materialInfo }), {
