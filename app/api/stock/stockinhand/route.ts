@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         const items = await prisma.hps_complete_item.findMany({
           where: {
             bundle_type: group.bundle_type,
-            del_ind: 1,
+            // del_ind: 1,
           },
           select: {
             complete_item_weight: true,
