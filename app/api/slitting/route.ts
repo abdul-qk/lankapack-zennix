@@ -17,6 +17,9 @@ export async function GET(req: Request) {
           { section_list: { contains: ",1," } },
         ],
       },
+      orderBy: {
+        job_card_id: "asc",
+      },
     });
 
     return new Response(JSON.stringify({ data: slittingInfo }), {

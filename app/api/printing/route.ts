@@ -17,6 +17,9 @@ export async function GET(req: Request) {
           { section_list: { contains: ",2," } },
         ],
       },
+      orderBy: {
+        job_card_id: "asc",
+      },
     });
 
     return new Response(JSON.stringify({ data: printingInfo }), {
