@@ -9,6 +9,9 @@ export async function GET(req: Request) {
           not: 1,
         },
       },
+      orderBy: {
+        material_info_id: "asc",
+      },
       include: {
         supplier: true,
       },

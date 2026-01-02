@@ -42,9 +42,9 @@ const data = {
   },
   teams:
   {
-    name: "Lankapack Inc",
-    logo: GalleryVerticalEnd,
-    plan: "Zeecode Solutions",
+    name: "Lankapack",
+    logo: "/logo.png",
+    plan: "Zennix",
   },
   navMain: [
     {
