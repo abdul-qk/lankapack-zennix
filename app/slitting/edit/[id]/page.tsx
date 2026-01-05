@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScanBarcode, Trash, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
+import ProcessNavigation from "@/app/components/ProcessNavigation";
 
 const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
@@ -556,6 +557,13 @@ export default function EditSlittingInfo() {
                                 <InfoRow label="Delivery Date" value={formatDate(data.delivery_date)} />
                                 <InfoRow label="Paper GSM" value={data.slitting_paper_gsm} />
                                 <InfoRow label="Paper Size" value={data.slitting_paper_size} />
+                                <div className="mt-6 pt-6 border-t">
+                                    <ProcessNavigation
+                                        jobCardId={data.job_card_id}
+                                        currentProcess="slitting"
+                                        currentPageType="edit"
+                                    />
+                                </div>
                             </CardContent>
                         )}
                     </Card>

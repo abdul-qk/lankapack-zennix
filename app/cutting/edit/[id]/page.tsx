@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import ProcessNavigation from "@/app/components/ProcessNavigation";
 
 const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 
@@ -459,6 +460,13 @@ export default function ViewSlittingInfo() {
                                 <InfoRow label="Delivery Date" value={formatDate(data.delivery_date)} />
                                 <InfoRow label="Paper GSM" value={data.slitting_paper_gsm} />
                                 <InfoRow label="Paper Size" value={data.slitting_paper_size} />
+                                <div className="mt-6 pt-6 border-t">
+                                    <ProcessNavigation
+                                        jobCardId={data.job_card_id}
+                                        currentProcess="cutting"
+                                        currentPageType="edit"
+                                    />
+                                </div>
                             </CardContent>
                         )}
                     </Card>

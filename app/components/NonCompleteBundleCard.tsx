@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Barcode, Printer, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
 import { NonCompleteItem, RollData } from '../types/bundleTypes';
@@ -34,6 +35,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
     const [nonCompleteWeight, setNonCompleteWeight] = useState<string>("");
     const [nonCompleteBags, setNonCompleteBags] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
     const { toast } = useToast();
 
@@ -125,6 +127,220 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
         }
     };
 
+    const handleItemSelection = (itemId: number, checked: boolean) => {
+        setSelectedItems(prev => {
+            const newSet = new Set(prev);
+            if (checked) {
+                newSet.add(itemId);
+            } else {
+                newSet.delete(itemId);
+            }
+            return newSet;
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedItems(new Set(nonCompleteItems.map(item => item.non_complete_id)));
+        } else {
+            setSelectedItems(new Set());
+        }
+    };
+
+    const isAllSelected = nonCompleteItems.length > 0 && selectedItems.size === nonCompleteItems.length;
+
+    const handleBulkPrint = () => {
+        if (selectedItems.size === 0) {
+            toast({ description: "Please select at least one item to print.", variant: "destructive" });
+            return;
+        }
+
+        const selectedItemsArray = Array.from(selectedItems);
+        const itemsToPrint = nonCompleteItems.filter(item => selectedItemsArray.includes(item.non_complete_id));
+
+        if (itemsToPrint.length === 0) {
+            toast({ description: "No items found to print.", variant: "destructive" });
+            return;
+        }
+
+        setTimeout(() => {
+            const printContentDiv = document.createElement('div');
+            let allBarcodesHTML = '';
+
+            itemsToPrint.forEach((item, index) => {
+                let barcodeContainer = document.getElementById(`hidden-barcode-container-${item.non_complete_id}`);
+                if (!barcodeContainer) {
+                    barcodeContainer = document.getElementById(`barcode-container-${item.non_complete_barcode}`);
+                }
+                const barcodeSvgElement = barcodeContainer ? barcodeContainer.querySelector('svg') : null;
+                
+                let barcodeHTML = '<p style="color:red;">Barcode image not found.</p>';
+                if (barcodeSvgElement) {
+                    const clonedSvg = barcodeSvgElement.cloneNode(true) as SVGElement;
+                    clonedSvg.setAttribute('style', 'max-width: 90%; height: auto;');
+                    barcodeHTML = clonedSvg.outerHTML;
+                }
+
+                const itemHTML = `
+                    <div class="page-wrapper">
+                        <div class="label-container">
+                            <div class="barcode-section">
+                                ${barcodeHTML}
+                            </div>
+                            <hr class="divider"/>
+                            <table class="details-table">
+                                <tr><td><strong>Bundle ID:</strong></td><td>${item.non_complete_id}</td></tr>
+                                <tr><td><strong>Type:</strong></td><td>${bundleType || 'N/A'}</td></tr>
+                                <tr><td><strong>Weight:</strong></td><td>${item.non_complete_weight}</td></tr>
+                                <tr><td><strong>Bags:</strong></td><td>${item.non_complete_bags}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                allBarcodesHTML += itemHTML;
+            });
+
+            printContentDiv.innerHTML = allBarcodesHTML;
+
+            const printWindow = window.open('', '_blank', 'width=500,height=400');
+            if (printWindow) {
+                printWindow.document.write('<html><head><title>Print Bundle Labels</title>');
+                printWindow.document.write(`
+                    <style>
+                        @page {
+                            size: 4in 3in;
+                            margin: 0.15in;
+                        }
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        body { 
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            font-size: 9pt;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .page-wrapper {
+                            width: 3.7in;
+                            min-height: 2.7in;
+                            max-height: 2.7in;
+                            margin: 0;
+                            padding: 0;
+                            display: block;
+                            page-break-after: always;
+                            page-break-inside: avoid;
+                            overflow: hidden;
+                        }
+                        .page-wrapper:last-child {
+                            page-break-after: auto;
+                        }
+                        .label-container {
+                            width: 100%;
+                            min-height: 2.7in;
+                            max-height: 2.7in;
+                            padding: 8px 10px;
+                            border: 1px solid #ccc;
+                            text-align: center;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                            align-items: center;
+                            overflow: hidden;
+                        }
+                        .barcode-section {
+                            margin: 3px 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            flex-shrink: 0;
+                            width: 100%;
+                        }
+                        .barcode-section svg {
+                            max-width: 95%;
+                            width: auto;
+                            height: auto;
+                            max-height: 0.7in;
+                        }
+                        .barcode-value {
+                            font-size: 14pt;
+                            color: #555;
+                            margin-top: 2px;
+                            margin-bottom: 4px;
+                            word-break: break-all;
+                        }
+                        .divider {
+                            border: none;
+                            border-top: 1px dashed #ddd;
+                            margin: 0;
+                            width: 100%;
+                            flex-shrink: 0;
+                        }
+                        .details-table {
+                            width: 100%;
+                            margin-top: 5px;
+                            border-collapse: collapse;
+                            text-align: left;
+                            flex-shrink: 0;
+                        }
+                        .details-table tr {
+                            line-height: 1.2;
+                        }
+                        .details-table td {
+                            padding: 1px 4px;
+                            vertical-align: middle;
+                            font-size: 14pt;
+                        }
+                        .details-table td:first-child {
+                            font-weight: bold;
+                            white-space: nowrap;
+                            color: #444;
+                            width: 35%;
+                        }
+                        @media print {
+                            body { 
+                                font-size: 9pt;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            .page-wrapper {
+                                width: 3.7in;
+                                min-height: 2.7in;
+                                max-height: 2.7in;
+                                margin: 0;
+                            }
+                            .label-container {
+                                border: 1px solid #666;
+                                box-shadow: none;
+                                min-height: 2.7in;
+                                max-height: 2.7in;
+                            }
+                        }
+                    </style>
+                `);
+                printWindow.document.write('</head><body>');
+                printWindow.document.write(printContentDiv.innerHTML);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.onload = () => {
+                    printWindow.focus();
+                    printWindow.print();
+                };
+            } else {
+                toast({
+                    title: "Error",
+                    description: "Unable to open print window. Please check pop-up blocker settings.",
+                    variant: "destructive",
+                });
+            }
+        }, 100);
+    };
+
     return (
         <Card className="shadow-md mt-6">
             <CardHeader className="bg-amber-700 text-white">
@@ -166,20 +382,66 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                 </form>
 
                 {nonCompleteItems.length > 0 ? (
-                    <div className="mt-6 overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[100px]">#</TableHead>
-                                    <TableHead>Weight</TableHead>
-                                    <TableHead>No of Bags</TableHead>
-                                    <TableHead>Barcode</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
+                    <div className="mt-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <Button
+                                onClick={handleBulkPrint}
+                                disabled={selectedItems.size === 0}
+                                variant="default"
+                                className="flex gap-2 items-center"
+                            >
+                                <Printer className="h-4 w-4" />
+                                Bulk Print {selectedItems.size > 0 && `(${selectedItems.size})`}
+                            </Button>
+                        </div>
+                        {/* Hidden barcode containers for bulk printing */}
+                        <div className="hidden">
+                            {nonCompleteItems.map(item => (
+                                <div
+                                    key={`hidden-barcode-${item.non_complete_id}`}
+                                    id={`hidden-barcode-container-${item.non_complete_id}`}
+                                    className="flex justify-center my-4"
+                                >
+                                    <ReactBarcode
+                                        value={item.non_complete_barcode || "NO BARCODE"}
+                                        width={1.5}
+                                        height={40}
+                                        margin={5}
+                                        background="#ffffff"
+                                        lineColor="#000000"
+                                        displayValue={true}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-12">
+                                            <Checkbox
+                                                checked={isAllSelected}
+                                                onCheckedChange={handleSelectAll}
+                                                aria-label="Select all"
+                                            />
+                                        </TableHead>
+                                        <TableHead className="w-[100px]">#</TableHead>
+                                        <TableHead>Weight</TableHead>
+                                        <TableHead>No of Bags</TableHead>
+                                        <TableHead>Barcode</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
                             <TableBody>
                                 {nonCompleteItems.map((item) => (
                                     <TableRow key={item.non_complete_id}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedItems.has(item.non_complete_id)}
+                                                onCheckedChange={(checked) => handleItemSelection(item.non_complete_id, checked === true)}
+                                                aria-label={`Select item ${item.non_complete_id}`}
+                                            />
+                                        </TableCell>
                                         <TableCell className="font-medium">{item.non_complete_id}</TableCell>
                                         <TableCell>{item.non_complete_weight}</TableCell>
                                         <TableCell>{item.non_complete_bags}</TableCell>
@@ -403,6 +665,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                 </TableRow>
                             </tfoot>
                         </Table>
+                        </div>
                     </div>
                 ) : (
                     <div className="text-center py-8 text-gray-500">

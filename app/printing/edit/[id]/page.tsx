@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScanBarcode, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import ProcessNavigation from "@/app/components/ProcessNavigation";
 
 interface CustomerInfo {
     customer_id: number;
@@ -600,6 +601,13 @@ export default function EditPrintingInfo() {
                                 <InfoRow label="Delivery Date" value={formatDate(data.delivery_date)} />
                                 <InfoRow label="Paper GSM" value={data.slitting_paper_gsm} />
                                 <InfoRow label="Paper Size" value={data.slitting_paper_size} />
+                                <div className="mt-6 pt-6 border-t">
+                                    <ProcessNavigation
+                                        jobCardId={data.job_card_id}
+                                        currentProcess="printing"
+                                        currentPageType="edit"
+                                    />
+                                </div>
                             </CardContent>
                         )}
                     </Card>

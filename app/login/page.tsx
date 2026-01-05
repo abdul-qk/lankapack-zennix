@@ -3,14 +3,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Image from 'next/image';
 
 import LoginImage from '../../public/login.jpg';
 import Logo from '../../public/logo.png';
-import { Separator } from '@/components/ui/separator';
-import { Github, Twitter } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export default function LoginPage() {
@@ -52,9 +50,9 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex flex-col lg:flex-row">
             {/* Left side - Image */}
-            <div className="lg:flex lg:w-1/2 bg-gray-100 items-center justify-center relative">
+            <div className="hidden lg:flex lg:w-1/2 bg-gray-100 items-center justify-center relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20" />
                 <Image
                     src={LoginImage}
@@ -66,23 +64,29 @@ export default function LoginPage() {
             </div>
 
             {/* Right side - Login form */}
-            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 bg-white">
-                <div className="w-full max-w-md space-y-8">
+            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 bg-white">
+                <div className="w-full max-w-md space-y-6 sm:space-y-8">
                     {/* Logo */}
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-full h-full pb-4 rounded-xl flex items-center justify-center">
-                            <Image src={Logo} width={175} height={0} alt="Logo" />
+                    <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                        <div className="w-full h-full pb-2 sm:pb-4 rounded-xl flex items-center justify-center">
+                            <Image 
+                                src={Logo} 
+                                width={175} 
+                                height={0} 
+                                alt="Logo" 
+                                className="w-32 sm:w-40 lg:w-[175px] h-auto"
+                            />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-                        <p className="text-gray-500">Please enter your details to sign in</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back</h2>
+                        <p className="text-sm sm:text-base text-gray-500 text-center px-2">Please enter your details to sign in</p>
                     </div>
 
                     <Card className="border-none shadow-none">
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-4 sm:space-y-6 pt-6">
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {error && (
                                     <Alert variant="destructive">
-                                        <AlertDescription>{error}</AlertDescription>
+                                        <AlertDescription className="text-sm">{error}</AlertDescription>
                                     </Alert>
                                 )}
 
@@ -97,7 +101,7 @@ export default function LoginPage() {
                                                 username: e.target.value,
                                             }))
                                         }
-                                        className="h-11"
+                                        className="h-11 text-sm sm:text-base"
                                         required
                                     />
                                 </div>
@@ -113,7 +117,7 @@ export default function LoginPage() {
                                                 password: e.target.value,
                                             }))
                                         }
-                                        className="h-11"
+                                        className="h-11 text-sm sm:text-base"
                                         required
                                     />
                                 </div>
@@ -121,13 +125,13 @@ export default function LoginPage() {
                                 <div className="flex items-center justify-between">
                                     <label className="flex items-center space-x-2 cursor-pointer">
                                         <Checkbox />
-                                        <span className="text-sm text-gray-600">Remember me</span>
+                                        <span className="text-xs sm:text-sm text-gray-600">Remember me</span>
                                     </label>
                                 </div>
 
                                 <Button
                                     type="submit"
-                                    className="w-full h-11 text-base"
+                                    className="w-full h-11 text-sm sm:text-base"
                                     disabled={loading}
                                 >
                                     {loading ? 'Signing in...' : 'Sign in'}
