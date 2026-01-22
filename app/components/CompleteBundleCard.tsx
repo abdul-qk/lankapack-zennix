@@ -651,6 +651,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                             </TableBody>
                             <tfoot className="bg-slate-100">
                                 <TableRow>
+                                    <TableCell className="font-bold">Totals</TableCell>
                                     <TableCell className="font-bold">
                                         {completeItems.length}
                                     </TableCell>

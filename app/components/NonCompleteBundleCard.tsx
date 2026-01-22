@@ -653,6 +653,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                             </TableBody>
                             <tfoot className="bg-slate-100">
                                 <TableRow>
+                                    <TableCell className="font-bold">Totals</TableCell>
                                     <TableCell className="font-bold">
                                         {nonCompleteItems.length}
                                     </TableCell>
