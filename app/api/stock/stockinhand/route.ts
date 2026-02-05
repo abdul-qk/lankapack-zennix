@@ -12,11 +12,12 @@ export async function GET(req: Request) {
 
     const bagTypeMap = new Map(bagTypes.map((bt) => [bt.bag_type, bt]));
 
-    // Get grouped stock data with aggregations
+    // Get grouped stock data with aggregations (same filter as finishingGoods: exclude complete_item_info=1)
     const stockInHand = await prisma.hps_complete_item.groupBy({
       by: ["bundle_type"],
       where: {
         del_ind: 1,
+        complete_item_info: { not: 1 },
       },
       _count: true,
     });
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
           where: {
             bundle_type: group.bundle_type,
             del_ind: 1,
+            complete_item_info: { not: 1 },
           },
           select: {
             complete_item_weight: true,
