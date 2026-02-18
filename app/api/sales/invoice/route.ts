@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { safeParseInt, safeParseFloat } from "@/lib/validation";
 
 export async function GET() {
   try {
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     // Calculate total from items
     const total = body.items.reduce(
-      (sum: number, item: any) => sum + parseFloat(item.total || "0"),
+      (sum: number, item: any) => sum + safeParseFloat(item.total, 0),
       0
     );
 
@@ -112,8 +113,8 @@ export async function POST(req: NextRequest) {
       prisma.hps_bill_item.create({
         data: {
           bill_info_id: invoiceInfo.bill_info_id,
-          de_number: parseInt(body.doId), // Sales info ID
-          bundel_type: parseInt(item.bagTypeId),
+          de_number: safeParseInt(body.doId), // Sales info ID
+          bundel_type: safeParseInt(item.bagTypeId),
           bundel_qty: item.quantity.toString(),
           item_price: item.price,
           item_total: item.total,
@@ -159,7 +160,7 @@ export async function DELETE(req: NextRequest) {
     // Soft delete by setting del_ind to 1
     const updatedRecord = await prisma.hps_bill_info.update({
       where: {
-        bill_info_id: parseInt(id),
+        bill_info_id: safeParseInt(id),
       },
       data: {
         del_ind: 0,

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { safeParseFloat } from "@/lib/validation";
 
 export async function GET(req: Request) {
   try {
@@ -12,62 +13,57 @@ export async function GET(req: Request) {
 
     const bagTypeMap = new Map(bagTypes.map((bt) => [bt.bag_type, bt]));
 
-    // Get grouped stock data with aggregations (same filter as finishingGoods: exclude complete_item_info=1)
-    const stockInHand = await prisma.hps_complete_item.groupBy({
-      by: ["bundle_type"],
+    // Fetch all items in a single query instead of one per bundle type
+    const allItems = await prisma.hps_complete_item.findMany({
       where: {
         del_ind: 1,
         complete_item_info: { not: 1 },
       },
-      _count: true,
+      select: {
+        bundle_type: true,
+        complete_item_weight: true,
+        complete_item_bags: true,
+      },
     });
 
-    // Get detailed records for each bundle type to calculate totals
-    const result = await Promise.all(
-      stockInHand.map(async (group) => {
-        const bagType = bagTypeMap.get(group.bundle_type);
+    // Group and sum in memory by bundle_type
+    const groupedData = new Map<
+      string,
+      { totalWeight: number; totalBags: number }
+    >();
+
+    for (const item of allItems) {
+      const bundleType = item.bundle_type;
+      if (!groupedData.has(bundleType)) {
+        groupedData.set(bundleType, { totalWeight: 0, totalBags: 0 });
+      }
+
+      const group = groupedData.get(bundleType)!;
+      group.totalWeight += safeParseFloat(item.complete_item_weight, 0);
+      group.totalBags += safeParseFloat(item.complete_item_bags, 0);
+    }
+
+    // Map to result format with bag type information
+    const result = Array.from(groupedData.entries())
+      .map(([bundleType, totals]) => {
+        const bagType = bagTypeMap.get(bundleType);
 
         // Only process items that have a valid bag_id
         if (!bagType || !bagType.bag_id) {
           return null;
         }
 
-        // Fetch all records for this bundle type to calculate totals
-        const items = await prisma.hps_complete_item.findMany({
-          where: {
-            bundle_type: group.bundle_type,
-            del_ind: 1,
-            complete_item_info: { not: 1 },
-          },
-          select: {
-            complete_item_weight: true,
-            complete_item_bags: true,
-          },
-        });
-
-        // Calculate totals manually since fields are strings
-        const totalWeight = items.reduce((sum, item) => {
-          return sum + parseFloat(item.complete_item_weight || "0");
-        }, 0);
-
-        const totalBags = items.reduce((sum, item) => {
-          return sum + parseFloat(item.complete_item_bags || "0");
-        }, 0);
-
         return {
           bag_id: bagType.bag_id,
           bag_type: bagType.bag_type,
-          itemweight: totalWeight.toFixed(2),
-          itembags: totalBags.toFixed(0),
+          itemweight: totals.totalWeight.toFixed(2),
+          itembags: totals.totalBags.toFixed(0),
         };
       })
-    );
-
-    // Filter out null results
-    const filteredResult = result.filter((item) => item !== null);
+      .filter((item): item is NonNullable<typeof item> => item !== null);
 
     // Sort the final result by bag_id
-    const sortedResult = filteredResult.sort((a, b) => a.bag_id - b.bag_id);
+    const sortedResult = result.sort((a, b) => a.bag_id - b.bag_id);
 
     return new Response(JSON.stringify({ data: sortedResult }), {
       status: 200,

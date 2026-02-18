@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { safeParseInt } from "@/lib/validation";
 
 export async function GET(req: Request) {
   //   Get all customers from hps_customer table
@@ -56,14 +57,19 @@ export async function POST(req: Request) {
       const parts = dateStr.split('/');
       if (parts.length !== 3) return null;
       
-      const month = parseInt(parts[0], 10) - 1; // JS months are 0-indexed
-      const day = parseInt(parts[1], 10);
-      const year = parseInt(parts[2], 10);
-      
-      // Create date in UTC to avoid timezone issues
-      const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
-      console.log(`Parsed date: ${dateStr} -> ${date.toISOString()}`);
-      return date;
+      try {
+        const month = safeParseInt(parts[0], 1) - 1; // JS months are 0-indexed, default to 1 if invalid
+        const day = safeParseInt(parts[1], 1); // Default to 1 if invalid
+        const year = safeParseInt(parts[2], new Date().getFullYear()); // Default to current year if invalid
+        
+        // Create date in UTC to avoid timezone issues
+        const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+        console.log(`Parsed date: ${dateStr} -> ${date.toISOString()}`);
+        return date;
+      } catch (error) {
+        console.error(`Failed to parse date: ${dateStr}`, error);
+        return null;
+      }
     };
     
     const formattedAddDate = parseDate(job_card_date) || new Date();
@@ -72,7 +78,7 @@ export async function POST(req: Request) {
     // Create the job card with the appropriate fields from the schema
     const newJobCard = await prisma.hps_jobcard.create({
       data: {
-        customer_id: parseInt(customer_id),
+        customer_id: safeParseInt(customer_id),
         section_list: [
           slitting.active ? "1" : null,
           printing.active ? "2" : null,
@@ -81,16 +87,16 @@ export async function POST(req: Request) {
           .filter(Boolean)
           .join(","),
         unit_price: unit_price.toString(),
-        slitting_roll_type: parseInt(paper_roll_id), // Maps to particular_id
+        slitting_roll_type: safeParseInt(paper_roll_id), // Maps to particular_id
         slitting_paper_gsm: gsm,
-        slitting_paper_size: parseInt(size),
+        slitting_paper_size: safeParseInt(size),
         slitting_size: slitting.active ? slitting.value : null,
         slitting_remark: slitting.active ? slitting.remark : "",
 
         // Printing data
         printing_size:
           printing.active && printing.cylinder_size
-            ? parseInt(printing.cylinder_size)
+            ? safeParseInt(printing.cylinder_size, 0)
             : 0, // Default value to avoid NULL, adjust as needed
         printing_color_type: printing.active ? printing.number_of_colors : null,
         printing_color_name:
@@ -107,11 +113,11 @@ export async function POST(req: Request) {
         // Cutting data
         cutting_type:
           cutting.active && cutting.cutting_type
-            ? parseInt(cutting.cutting_type)
+            ? safeParseInt(cutting.cutting_type, 1)
             : 1, // Default value to avoid NULL
         cutting_bags_select: cutting.active ? cutting.selected_type : null,
         cutting_bag_type:
-          cutting.active && cutting.bag_type ? parseInt(cutting.bag_type) : 1, // Default value
+          cutting.active && cutting.bag_type ? safeParseInt(cutting.bag_type, 1) : 1, // Default value
         cutting_print_name: cutting.active ? cutting.print_name : null,
         cuting_no_of_bag: cutting.active ? cutting.number_of_bags : null,
         cuting_remark: cutting.active ? cutting.remark : "",
