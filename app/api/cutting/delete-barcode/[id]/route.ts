@@ -65,7 +65,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting barcode:", error);
     return NextResponse.json(
-      { error: "Failed to delete barcode", details: error },
+      { error: "Failed to delete barcode" },
       { status: 500 }
     );
   }

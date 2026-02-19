@@ -89,10 +89,7 @@ export async function POST(
     }
 
     return Response.json(
-      {
-        error: "Failed to update print record and add wastage",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to update print record and add wastage" },
       { status: 500 }
     );
   }

@@ -112,10 +112,7 @@ export async function POST(
     }
 
     return Response.json(
-      {
-        error: "Failed to add barcode",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to add barcode" },
       { status: 500 }
     );
   }
@@ -220,10 +217,7 @@ export async function DELETE(
     console.error("Error deleting slitting record:", error);
 
     return Response.json(
-      {
-        error: "Failed to delete slitting record",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to delete slitting record" },
       { status: 500 }
     );
   }

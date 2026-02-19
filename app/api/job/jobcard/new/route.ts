@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { safeParseInt } from "@/lib/validation";
+import { sanitizeString } from "@/lib/sanitize";
 
 export async function GET(req: Request) {
   //   Get all customers from hps_customer table
@@ -33,18 +34,19 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const body = await req.json();
     const {
       customer_id,
       paper_roll_id,
       gsm,
       size,
-      job_card_date,
-      delivery_date,
       unit_price,
       slitting,
       printing,
       cutting,
-    } = await req.json();
+    } = body;
+    const job_card_date = sanitizeString(body.job_card_date ?? "");
+    const delivery_date = sanitizeString(body.delivery_date ?? "");
 
     console.log('Received job_card_date:', job_card_date);
     console.log('Received delivery_date:', delivery_date);
@@ -146,10 +148,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error adding new job card:", error);
     return new Response(
-      JSON.stringify({
-        error: "Failed to add job card",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
+      JSON.stringify({ error: "Failed to add job card" }),
       {
         status: 500,
       }

@@ -73,7 +73,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error adding cutting roll:", error);
     return NextResponse.json(
-      { error: "Failed to add cutting roll", details: error.message },
+      { error: "Failed to add cutting roll" },
       { status: 500 }
     );
   }

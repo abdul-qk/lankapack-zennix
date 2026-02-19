@@ -166,10 +166,7 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error("Error fetching stock data:", error);
     return new Response(
-      JSON.stringify({
-        error: "Failed to fetch stock data",
-        details: error instanceof Error ? error.message : String(error),
-      }),
+      JSON.stringify({ error: "Failed to fetch stock data" }),
       {
         status: 500,
         headers: {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
+import { sanitizeString } from "@/lib/sanitize";
 import Papa from 'papaparse';
 import { Readable } from 'stream';
 
@@ -122,15 +123,15 @@ export async function POST(req: NextRequest) {
             }
 
             const itemDataForDb = {
-                material_item_reel_no: String(item.material_item_reel_no),
+                material_item_reel_no: sanitizeString(item.material_item_reel_no),
                 material_colour: color.colour_name,
                 material_item_particular: particularId, // Use parsed ID or null
-                material_item_variety: String(item.material_item_variety), // Use lowercase key directly
-                material_item_gsm: String(item.material_item_gsm),
-                material_item_size: String(item.material_item_size),
+                material_item_variety: sanitizeString(item.material_item_variety),
+                material_item_gsm: sanitizeString(item.material_item_gsm),
+                material_item_size: sanitizeString(item.material_item_size),
                 // Store weights as strings as per schema
-                material_item_net_weight: String(netWeight),
-                material_item_gross_weight: String(grossWeight),
+                material_item_net_weight: sanitizeString(netWeight),
+                material_item_gross_weight: sanitizeString(grossWeight),
                 // Default values or values not in CSV
                 material_item_barcode: '0', // Example default
                 added_date: new Date(),
@@ -228,6 +229,6 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error('Import API Error:', error);
         // Check for Prisma-specific errors if needed
-        return NextResponse.json({ message: 'Failed to import data.', error: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Failed to import data." }, { status: 500 });
   }
 }

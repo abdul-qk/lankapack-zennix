@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { sanitizeString } from "@/lib/sanitize";
 import * as crypto from "crypto";
 import * as jose from "jose";
 
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const username = sanitizeString(body.username ?? "");
+    const password = body.password;
 
     // Hash the password using MD5
     const hashedPassword = crypto

@@ -91,12 +91,6 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Error adding material item:", error);
-    // Provide more specific error messages if possible
-    let errorMessage = "Failed to add item";
-    if (error instanceof Error) {
-        // Check for specific Prisma errors if needed
-        errorMessage = error.message;
-    }
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: "Failed to add item" }, { status: 500 });
   }
 }

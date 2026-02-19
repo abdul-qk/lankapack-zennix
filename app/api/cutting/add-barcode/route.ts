@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error adding barcode:", error);
     return NextResponse.json(
-      { error: "Failed to add barcode", details: error.message },
+      { error: "Failed to add barcode" },
       { status: 500 }
     );
   }

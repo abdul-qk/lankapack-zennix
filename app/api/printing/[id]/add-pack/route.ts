@@ -135,10 +135,7 @@ export async function POST(
     }
 
     return Response.json(
-      {
-        error: "Failed to add print pack",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to add print pack" },
       { status: 500 }
     );
   }

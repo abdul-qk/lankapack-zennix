@@ -74,10 +74,7 @@ export async function POST(
     console.error("Error updating wastage information:", error);
 
     return Response.json(
-      {
-        error: "Failed to update wastage information",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to update wastage information" },
       { status: 500 }
     );
   }

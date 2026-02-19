@@ -139,10 +139,7 @@ export async function POST(
     console.error("Error adding slitting roll:", error);
 
     return Response.json(
-      {
-        error: "Failed to add slitting roll",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to add slitting roll" },
       { status: 500 }
     );
   }

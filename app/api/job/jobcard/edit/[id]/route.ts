@@ -162,10 +162,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating job card:", error);
     return new Response(
-      JSON.stringify({
-        error: "Failed to update job card",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
+      JSON.stringify({ error: "Failed to update job card" }),
       {
         status: 500,
       }

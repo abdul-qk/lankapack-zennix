@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { safeParseInt, safeParseFloat } from "@/lib/validation";
+import { sanitizeString } from "@/lib/sanitize";
+import { runWithTimeout } from "@/lib/requestTimeout";
 
 export async function GET() {
   try {
@@ -62,9 +64,12 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    
+
+    // Sanitize user-provided strings (XSS mitigation)
+    const doNumber = sanitizeString(body.doNumber ?? "");
+
     // Validate required fields
-    if (!body.customerId || !body.doNumber || !body.items || body.items.length === 0) {
+    if (!body.customerId || !doNumber || !body.items || body.items.length === 0) {
       return new Response(
         JSON.stringify({
           error: "Missing required fields: customerId, doNumber, or items",
@@ -96,35 +101,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create invoice record
-    const invoiceInfo = await prisma.hps_bill_info.create({
-      data: {
-        customer_name: body.customerId,
-        bill_do: body.doNumber,
-        bill_total: total.toFixed(2),
-        add_date: new Date(),
-        user_id: body.userId || 1, // Default to 1 if not provided
-        del_ind: 1, // Not deleted
-      },
-    });
+    // Create invoice and items in a single transaction (all-or-nothing), with timeout
+    const { invoiceInfo, invoiceItems } = await runWithTimeout(
+      prisma.$transaction(async (tx) => {
+        const invoiceInfo = await tx.hps_bill_info.create({
+          data: {
+            customer_name: body.customerId,
+            bill_do: doNumber,
+            bill_total: total.toFixed(2),
+            add_date: new Date(),
+            user_id: body.userId || 1, // Default to 1 if not provided
+            del_ind: 1, // Not deleted
+          },
+        });
 
-    // Create invoice items
-    const invoiceItemPromises = body.items.map((item: any) =>
-      prisma.hps_bill_item.create({
-        data: {
-          bill_info_id: invoiceInfo.bill_info_id,
-          de_number: safeParseInt(body.doId), // Sales info ID
-          bundel_type: safeParseInt(item.bagTypeId),
-          bundel_qty: item.quantity.toString(),
-          item_price: item.price,
-          item_total: item.total,
-          user_id: body.userId || 1, // Default to 1 if not provided
-          del_ind: 1, // Not deleted
-        },
-      })
+        const invoiceItems = await Promise.all(
+          body.items.map((item: any) =>
+            tx.hps_bill_item.create({
+              data: {
+                bill_info_id: invoiceInfo.bill_info_id,
+                de_number: safeParseInt(body.doId), // Sales info ID
+                bundel_type: safeParseInt(item.bagTypeId),
+                bundel_qty: item.quantity.toString(),
+                item_price: item.price,
+                item_total: item.total,
+                user_id: body.userId || 1, // Default to 1 if not provided
+                del_ind: 1, // Not deleted
+              },
+            })
+          )
+        );
+
+        return { invoiceInfo, invoiceItems };
+      }),
+      30_000
     );
-
-    const invoiceItems = await Promise.all(invoiceItemPromises);
 
     return new Response(
       JSON.stringify({
@@ -137,8 +148,14 @@ export async function POST(req: NextRequest) {
       }),
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating invoice:", error);
+    if (error?.name === "RequestTimeoutError") {
+      return new Response(
+        JSON.stringify({ error: "Request timed out" }),
+        { status: 408 }
+      );
+    }
     return new Response(
       JSON.stringify({ error: "Failed to create invoice" }),
       { status: 500 }
@@ -198,13 +215,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     return new Response(
-      JSON.stringify({
-        error: "Failed to delete invoice",
-        details: error.message,
-      }),
-      {
-        status: 500,
-      }
+      JSON.stringify({ error: "Failed to delete invoice" }),
+      { status: 500 }
     );
   }
 }

@@ -15,10 +15,7 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     return new Response(
-      JSON.stringify({
-        error: "Failed to fetch stock gsm and size data",
-        details: error instanceof Error ? error.message : String(error),
-      }),
+      JSON.stringify({ error: "Failed to fetch stock gsm and size data" }),
       {
         status: 500,
       }

@@ -95,12 +95,6 @@ export async function DELETE(
       statusCode = 404;
     }
 
-    return Response.json(
-      {
-        error: errorMessage,
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: statusCode }
-    );
+    return Response.json({ error: errorMessage }, { status: statusCode });
   }
 }

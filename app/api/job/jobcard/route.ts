@@ -57,10 +57,7 @@ export async function DELETE(req: Request) {
   } catch (error) {
     console.error("Error deleting job card:", error);
     return new Response(
-      JSON.stringify({
-        error: "Failed to delete job card",
-        details: error instanceof Error ? error.message : "Unknown error",
-      }),
+      JSON.stringify({ error: "Failed to delete job card" }),
       {
         status: 500,
       }

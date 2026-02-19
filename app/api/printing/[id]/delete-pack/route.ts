@@ -46,10 +46,7 @@ export async function DELETE(
     console.error("Error deleting print pack record:", error);
 
     return Response.json(
-      {
-        error: "Failed to delete print pack record",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to delete print pack record" },
       { status: 500 }
     );
   }

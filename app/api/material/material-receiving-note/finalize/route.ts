@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from 'next/server';
+import { runWithTimeout } from "@/lib/requestTimeout";
 
 export async function POST(req: Request) {
   try {
@@ -9,8 +10,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing or invalid supplier ID or item IDs" }, { status: 400 });
     }
 
-    // Execute all database operations within a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    // Execute all database operations within a transaction, with timeout
+    const result = await runWithTimeout(prisma.$transaction(async (tx) => {
       // 1. Fetch the items added with the temporary ID (1) using the provided itemIds
       const itemsToUpdate = await tx.hps_material_item.findMany({
         where: {
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
       });
 
       return { newMaterialInfoId, itemCount: itemsToUpdate.length };
-    });
+    }), 30_000);
 
     return NextResponse.json({
       message: "Material Receiving Note finalized successfully",
@@ -94,12 +95,14 @@ export async function POST(req: Request) {
       items_processed: result.itemCount
     }, { status: 200 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error finalizing material receiving note:", error);
-    let errorMessage = "Failed to finalize material receiving note";
-    if (error instanceof Error) {
-        errorMessage = error.message;
+    if (error?.name === "RequestTimeoutError") {
+      return NextResponse.json({ error: "Request timed out" }, { status: 408 });
     }
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to finalize material receiving note" },
+      { status: 500 }
+    );
   }
 }

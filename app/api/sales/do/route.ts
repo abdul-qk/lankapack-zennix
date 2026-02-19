@@ -136,10 +136,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     return new Response(
-      JSON.stringify({
-        error: "Failed to delete delivery order",
-        details: error.message,
-      }),
+      JSON.stringify({ error: "Failed to delete delivery order" }),
       {
         status: 500,
       }
