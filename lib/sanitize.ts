@@ -1,4 +1,18 @@
-import DOMPurify from "isomorphic-dompurify";
+/**
+ * Server-safe HTML sanitizer (no jsdom/DOMPurify) to avoid ERR_REQUIRE_ESM
+ * in serverless/API routes where isomorphic-dompurify pulls in html-encoding-sniffer
+ * and @exodus/bytes (ESM-only).
+ * Strips HTML/scripts; use for user-provided text that may be rendered in the UI.
+ */
+function stripHtml(html: string): string {
+  let s = html;
+  // Remove script and style tags with their content (case-insensitive)
+  s = s.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
+  s = s.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+  // Remove all remaining HTML tags
+  s = s.replace(/<[^>]*>/g, "");
+  return s;
+}
 
 /**
  * Sanitizes a string for safe storage and display (XSS mitigation).
@@ -7,7 +21,7 @@ import DOMPurify from "isomorphic-dompurify";
 export function sanitizeString(value: unknown): string {
   if (value == null) return "";
   const s = typeof value === "string" ? value : String(value);
-  return DOMPurify.sanitize(s, { ALLOWED_TAGS: [] });
+  return stripHtml(s);
 }
 
 /**
