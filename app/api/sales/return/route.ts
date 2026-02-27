@@ -7,7 +7,10 @@ export async function GET() {
     const returnInfo = await prisma.hps_return_info.findMany({
       where: {
         del_ind: 1,
-      }
+      },
+      orderBy: {
+        return_info_id: "asc",
+      },
     });
 
     // Get customer IDs from the return info records
