@@ -43,24 +43,21 @@ export async function GET(req: Request) {
       group.totalBags += safeParseFloat(item.complete_item_bags, 0);
     }
 
-    // Map to result format with bag type information
-    const result = Array.from(groupedData.entries())
-      .map(([bundleType, totals]) => {
+    // Map to result format with bag type information.
+    // If a matching bag_type record doesn't exist, still include the row
+    // using the bundle_type as the display label and a fallback ID of 0.
+    const result = Array.from(groupedData.entries()).map(
+      ([bundleType, totals]) => {
         const bagType = bagTypeMap.get(bundleType);
 
-        // Only process items that have a valid bag_id
-        if (!bagType || !bagType.bag_id) {
-          return null;
-        }
-
         return {
-          bag_id: bagType.bag_id,
-          bag_type: bagType.bag_type,
+          bag_id: bagType?.bag_id ?? 0,
+          bag_type: bagType?.bag_type ?? bundleType,
           itemweight: totals.totalWeight.toFixed(2),
           itembags: totals.totalBags.toFixed(0),
         };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
+      }
+    );
 
     // Sort the final result by bag_id
     const sortedResult = result.sort((a, b) => a.bag_id - b.bag_id);
