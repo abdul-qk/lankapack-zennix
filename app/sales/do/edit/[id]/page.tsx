@@ -26,6 +26,17 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/co
 import { useToast } from "@/hooks/use-toast";
 import Loading from "@/components/layouts/loading";
 import { Trash } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import Link from "next/link";
 
 type Customer = {
@@ -414,15 +425,35 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
                                                 <TableCell className="text-right">{item.price.toFixed(2)}</TableCell>
                                                 <TableCell className="text-right">{item.total.toFixed(2)}</TableCell>
                                                 <TableCell>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => handleRemoveItem(item.id)}
-                                                        disabled={submitting}
-                                                    >
-                                                        <Trash color="#ff0000" className="h-4 w-4" />
-                                                        <span className="sr-only">Delete</span>
-                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                disabled={submitting}
+                                                            >
+                                                                <Trash color="#ff0000" className="h-4 w-4" />
+                                                                <span className="sr-only">Delete</span>
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Are you sure you want to remove this item? This action cannot be undone.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    onClick={() => handleRemoveItem(item.id)}
+                                                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                                >
+                                                                    Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
