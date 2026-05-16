@@ -94,6 +94,7 @@ export async function GET(
       where: {
         job_card_id: jobCardId,
       },
+      orderBy: [{ add_date: "asc" }, { pack_id: "asc" }],
     });
 
     return new Response(

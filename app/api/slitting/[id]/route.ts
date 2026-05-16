@@ -60,6 +60,7 @@ export async function GET(
       where: {
         job_card_id: jobCardId,
       },
+      orderBy: [{ add_date: "asc" }, { roll_id: "asc" }],
     });
 
     if (!slittingInfo) {
