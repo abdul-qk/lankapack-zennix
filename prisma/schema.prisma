@@ -12,7 +12,7 @@ model hps_bag_type {
   bag_id      Int    @id @default(autoincrement())
   bags_select Int
   bag_type    String @db.VarChar(120)
-  bag_price   String @default(dbgenerated("(0)")) @db.VarChar(5)
+  bag_price   String @default(dbgenerated("(0)")) @db.VarChar(12)
 
   jobcard                hps_jobcard[]
 }

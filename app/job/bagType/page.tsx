@@ -131,10 +131,10 @@ export default function BagTypeTable() {
                                 </DialogHeader>
                                 <div className="flex flex-col gap-4">
                                     <div className="flex w-full gap-4">
-                                        <Input id="bag_type" name="bag_type" value={bag_type} onChange={(e) => setBagType(e.target.value)} />
+                                        <Input id="bag_type" name="bag_type" maxLength={120} value={bag_type} onChange={(e) => setBagType(e.target.value)} />
                                     </div>
                                     <div className="flex w-full gap-4">
-                                        <Input id="bag_price" name="bag_price" value={bag_price} onChange={(e) => setBagPrice(e.target.value)} />
+                                        <Input id="bag_price" name="bag_price" maxLength={12} value={bag_price} onChange={(e) => setBagPrice(e.target.value)} />
                                     </div>
                                     <Select value={bags_select.toString()} onValueChange={(e) => setBagsSelect(Number(e))}>
                                         <SelectTrigger className="w-full">
@@ -205,11 +205,16 @@ export default function BagTypeTable() {
 
     const handleEdit = async (id: number, bag_type: string, bags_select: number, bag_price: string) => {
         try {
-            await fetch(`/api/job/bagtype/`, {
+            const response = await fetch(`/api/job/bagtype/`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id, bag_type, bags_select, bag_price }),
             });
+            const result = await response.json();
+            if (!response.ok) {
+                toast({ description: result.error || "Failed to update entry", variant: "destructive" });
+                return;
+            }
             toast({ description: "Entry updated successfully!" });
             fetchData(); // Refresh data
         } catch (error) {
@@ -220,11 +225,16 @@ export default function BagTypeTable() {
 
     const handleAdd = async (bag_type: string, bags_select: number, bag_price: string) => {
         try {
-            await fetch(`/api/job/bagtype/`, {
+            const response = await fetch(`/api/job/bagtype/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ bag_type, bags_select, bag_price }),
             });
+            const result = await response.json();
+            if (!response.ok) {
+                toast({ description: result.error || "Failed to add entry", variant: "destructive" });
+                return;
+            }
             toast({ description: "Entry added successfully!" });
             fetchData(); // Refresh data
         } catch (error) {
@@ -273,11 +283,11 @@ export default function BagTypeTable() {
                                 <div className="flex gap-4 py-4">
                                     <div className="flex flex-col w-full items-start gap-4">
                                         <label htmlFor="new_bag_type">Bag Type</label>
-                                        <Input id="new_bag_type" name="new_bag_type" placeholder="Enter Bag Type" value={new_bag_type} onChange={(e) => setNewBagType(e.target.value)} />
+                                        <Input id="new_bag_type" name="new_bag_type" maxLength={120} placeholder="Enter Bag Type" value={new_bag_type} onChange={(e) => setNewBagType(e.target.value)} />
                                     </div>
                                     <div className="flex flex-col w-full items-start gap-4">
                                         <label htmlFor="new_bag_price">Bag Price</label>
-                                        <Input id="new_bag_price" name="new_bag_price" placeholder="Enter Bag Price" value={new_bag_price} onChange={(e) => setNewBagPrice(e.target.value)} />
+                                        <Input id="new_bag_price" name="new_bag_price" maxLength={12} placeholder="Enter Bag Price" value={new_bag_price} onChange={(e) => setNewBagPrice(e.target.value)} />
                                     </div>
                                     <div className="flex flex-col w-full items-start gap-4">
                                         <label htmlFor="new_bag_price">Select Type</label>

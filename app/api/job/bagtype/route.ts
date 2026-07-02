@@ -1,5 +1,34 @@
 import { prisma } from "@/lib/prisma";
 
+const BAG_TYPE_MAX_LENGTH = 120;
+const BAG_PRICE_MAX_LENGTH = 12;
+
+function validateBagTypeFields(bag_type: string, bag_price: string) {
+  const trimmedType = bag_type.trim();
+  const trimmedPrice = bag_price.trim();
+
+  if (!trimmedType) {
+    return { error: "Bag type name is required" };
+  }
+
+  if (trimmedType.length > BAG_TYPE_MAX_LENGTH) {
+    return {
+      error: `Bag type name must be ${BAG_TYPE_MAX_LENGTH} characters or fewer (currently ${trimmedType.length})`,
+    };
+  }
+
+  if (trimmedPrice.length > BAG_PRICE_MAX_LENGTH) {
+    return {
+      error: `Bag price must be ${BAG_PRICE_MAX_LENGTH} characters or fewer (currently ${trimmedPrice.length})`,
+    };
+  }
+
+  return {
+    bag_type: trimmedType,
+    bag_price: trimmedPrice,
+  };
+}
+
 export async function GET(req: Request) {
   try {
     // Fetch all filtered material info data
@@ -20,15 +49,19 @@ export async function POST(req: Request) {
   try {
     const { bag_type, bags_select, bag_price } = await req.json();
 
-    if (!bag_type || bag_type.trim() === "") {
-      return new Response(
-        JSON.stringify({ error: "Particular name is required" }),
-        { status: 400 }
-      );
+    const validated = validateBagTypeFields(bag_type, bag_price ?? "");
+    if ("error" in validated) {
+      return new Response(JSON.stringify({ error: validated.error }), {
+        status: 400,
+      });
     }
 
     const newBag = await prisma.hps_bag_type.create({
-      data: { bags_select, bag_type, bag_price },
+      data: {
+        bags_select,
+        bag_type: validated.bag_type,
+        bag_price: validated.bag_price,
+      },
     });
 
     return new Response(JSON.stringify(newBag), { status: 201 });
@@ -41,9 +74,6 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  console.log("PATCH function called"); // Add this logging
-  console.log("Request method:", req.method); // And this
-  console.log("Request URL:", req.url);
   try {
     const { id, bag_type, bags_select, bag_price } = await req.json();
 
@@ -59,12 +89,19 @@ export async function PATCH(req: Request) {
       );
     }
 
+    const validated = validateBagTypeFields(bag_type, bag_price);
+    if ("error" in validated) {
+      return new Response(JSON.stringify({ error: validated.error }), {
+        status: 400,
+      });
+    }
+
     const updated = await prisma.hps_bag_type.update({
       where: { bag_id: id },
       data: {
-        bag_type: bag_type,
+        bag_type: validated.bag_type,
         bags_select: bags_select,
-        bag_price: bag_price,
+        bag_price: validated.bag_price,
       },
     });
 
