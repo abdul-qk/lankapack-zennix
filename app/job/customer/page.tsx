@@ -278,13 +278,19 @@ export default function CustomerInfoTable() {
     };
 
     const handleEdit = async (id: number, customer_full_name: string, customer_email_address: string, customer_tel: string, customer_mobile: string, contact_person: string, customer_address: string) => {
-        if (!validateForm()) return;
+        if (!customer_full_name?.trim()) {
+            toast({ description: "Company name is required", variant: "destructive" });
+            return;
+        }
         try {
-            await fetch(`/api/job/customer/`, {
+            const response = await fetch(`/api/job/customer/`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id, customer_full_name, customer_email_address, customer_tel, customer_mobile, contact_person, customer_address }),
             });
+            if (!response.ok) {
+                throw new Error("Update failed");
+            }
             toast({ description: "Entry updated successfully!", variant: "default" });
             fetchData(); // Refresh data
         } catch (error) {
