@@ -109,6 +109,8 @@ interface JobCardData {
     cuting_no_of_bag: string | null;
     cuting_remark: string | null;
     cutting_fold: string | null;
+    sheeting_barcode?: string | null;
+    sheeting_weight?: string | null;
     add_date: string;
     updated_date: string;
     delivery_date: string;
