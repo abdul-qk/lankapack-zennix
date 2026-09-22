@@ -128,6 +128,7 @@ export default function EditJobCard() {
     const [slitting, setSlitting] = React.useState(false);
     const [cutting, setCutting] = React.useState(false);
     const [printing, setPrinting] = React.useState(false);
+    const [sheeting, setSheeting] = React.useState(false);
     const [jobCardDate, setJobCardDate] = React.useState<Date | undefined>(undefined);
     const [deliveryDate, setDeliveryDate] = React.useState<Date | undefined>(undefined);
     const [selectedPaperRollId, setSelectedPaperRollId] = React.useState<string>("");
@@ -161,6 +162,10 @@ export default function EditJobCard() {
     const [cuttingPrintName, setCuttingPrintName] = React.useState<string>("");
     const [cuttingFold, setCuttingFold] = React.useState<string>("");
     const [cuttingRemark, setCuttingRemark] = React.useState<string>("");
+
+    // Sheeting section
+    const [sheetingBarcode, setSheetingBarcode] = React.useState<string>("");
+    const [sheetingWeight, setSheetingWeight] = React.useState<string>("");
 
     React.useEffect(() => {
         fetchJobCardData();
@@ -233,6 +238,7 @@ export default function EditJobCard() {
         setSlitting(sectionList.includes('1'));
         setPrinting(sectionList.includes('2'));
         setCutting(sectionList.includes('3'));
+        setSheeting(sectionList.includes('4'));
 
         // Slitting section
         if (jobCard.slitting_size) {
@@ -286,6 +292,14 @@ export default function EditJobCard() {
         }
         if (jobCard.cuting_remark) {
             setCuttingRemark(jobCard.cuting_remark);
+        }
+
+        // Sheeting section
+        if (jobCard.sheeting_barcode) {
+            setSheetingBarcode(jobCard.sheeting_barcode);
+        }
+        if (jobCard.sheeting_weight) {
+            setSheetingWeight(jobCard.sheeting_weight);
         }
     };
 
@@ -396,6 +410,11 @@ export default function EditJobCard() {
                 print_name: cutting ? cuttingPrintName : null,
                 fold: cutting ? cuttingFold : null,
                 remark: cutting ? cuttingRemark : null,
+            },
+            sheeting: {
+                active: sheeting,
+                barcode: sheeting ? sheetingBarcode : null,
+                weight: sheeting ? sheetingWeight : null,
             },
         };
 
@@ -620,6 +639,13 @@ export default function EditJobCard() {
                                         />
                                         <label className="text-sm font-medium">Cutting</label>
                                     </div>
+                                    <div className="flex gap-2 items-center">
+                                        <Checkbox
+                                            checked={sheeting}
+                                            onCheckedChange={() => setSheeting(!sheeting)}
+                                        />
+                                        <label className="text-sm font-medium">Sheeting</label>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -841,6 +867,33 @@ export default function EditJobCard() {
                                         value={cuttingRemark}
                                         onChange={(e) => setCuttingRemark(e.target.value)}
                                     />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Sheeting Section */}
+                    {sheeting && (
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <h2 className="text-xl font-semibold">Sheeting</h2>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">Barcode</label>
+                                        <Input
+                                            value={sheetingBarcode}
+                                            onChange={(e) => setSheetingBarcode(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">Weight</label>
+                                        <Input
+                                            value={sheetingWeight}
+                                            onChange={(e) => setSheetingWeight(e.target.value)}
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

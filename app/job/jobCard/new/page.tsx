@@ -97,6 +97,7 @@ export default function JobCardTable() {
     const [slitting, setSlitting] = React.useState(false);
     const [cutting, setCutting] = React.useState(false);
     const [printing, setPrinting] = React.useState(false);
+    const [sheeting, setSheeting] = React.useState(false);
     const [jobCardDate, setJobCardDate] = React.useState<Date>();
     const [deliveryDate, setDeliveryDate] = React.useState<Date>();
     const [selectedPaperRollId, setSelectedPaperRollId] = React.useState<null | string>(null);
@@ -132,6 +133,10 @@ export default function JobCardTable() {
     const [cuttingPrintName, setCuttingPrintName] = React.useState<string>("");
     const [cuttingFold, setCuttingFold] = React.useState<string>("");
     const [cuttingRemark, setCuttingRemark] = React.useState<string>("");
+
+    // Sheeting section
+    const [sheetingBarcode, setSheetingBarcode] = React.useState<string>("");
+    const [sheetingWeight, setSheetingWeight] = React.useState<string>("");
 
     React.useEffect(() => {
         fetchData();
@@ -279,6 +284,11 @@ export default function JobCardTable() {
                 print_name: cutting ? cuttingPrintName : null,
                 fold: cutting ? cuttingFold : null,
                 remark: cutting ? cuttingRemark : null,
+            },
+            sheeting: {
+                active: sheeting,
+                barcode: sheeting ? sheetingBarcode : null,
+                weight: sheeting ? sheetingWeight : null,
             },
         };
 
@@ -495,6 +505,13 @@ export default function JobCardTable() {
                                             onCheckedChange={() => setCutting(!cutting)}
                                         />
                                         <label className="text-sm font-medium">Cutting</label>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <Checkbox
+                                            checked={sheeting}
+                                            onCheckedChange={() => setSheeting(!sheeting)}
+                                        />
+                                        <label className="text-sm font-medium">Sheeting</label>
                                     </div>
                                 </div>
                             </div>
@@ -721,6 +738,32 @@ export default function JobCardTable() {
                                         <Textarea
                                             value={cuttingRemark}
                                             onChange={(e) => setCuttingRemark(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {/* Sheeting Section */}
+                    {sheeting && (
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <h2 className="text-xl font-semibold">Sheeting</h2>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">Barcode</label>
+                                        <Input
+                                            value={sheetingBarcode}
+                                            onChange={(e) => setSheetingBarcode(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">Weight</label>
+                                        <Input
+                                            value={sheetingWeight}
+                                            onChange={(e) => setSheetingWeight(e.target.value)}
                                         />
                                     </div>
                                 </div>

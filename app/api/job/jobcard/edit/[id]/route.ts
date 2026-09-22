@@ -92,6 +92,7 @@ export async function PUT(
       slitting,
       printing,
       cutting,
+      sheeting,
     } = await req.json();
 
     // Parse and format dates properly
@@ -109,6 +110,7 @@ export async function PUT(
           slitting.active ? "1" : null,
           printing.active ? "2" : null,
           cutting.active ? "3" : null,
+          sheeting?.active ? "4" : null,
         ]
           .filter(Boolean)
           .join(","),
@@ -150,6 +152,10 @@ export async function PUT(
         cuting_no_of_bag: cutting.active ? cutting.number_of_bags : null,
         cuting_remark: cutting.active ? cutting.remark : "",
         cutting_fold: cutting.active && cutting.fold ? cutting.fold : "",
+
+        // Sheeting data
+        sheeting_barcode: sheeting?.active ? sheeting.barcode || null : null,
+        sheeting_weight: sheeting?.active ? sheeting.weight || null : null,
 
         // Dates
         updated_date: formattedUpdatedDate,

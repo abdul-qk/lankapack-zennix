@@ -6,6 +6,11 @@ export async function GET(req: Request) {
     const materialInfo = await prisma.hps_jobcard.findMany({
       include: {
         customer: true,
+        cut_bag_types: {
+          select: {
+            bag_type: true,
+          },
+        },
       },
       orderBy: {
         job_card_id: "asc",

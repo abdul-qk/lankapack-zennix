@@ -121,6 +121,9 @@ export async function GET(req: Request) {
         case 4:
           departmentText = "CUTTING";
           break;
+        case 5:
+          departmentText = "SHEETING";
+          break;
         default:
           departmentText = "UNKNOWN";
       }

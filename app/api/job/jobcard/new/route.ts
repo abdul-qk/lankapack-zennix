@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       slitting,
       printing,
       cutting,
+      sheeting,
     } = body;
     const job_card_date = sanitizeString(body.job_card_date ?? "");
     const delivery_date = sanitizeString(body.delivery_date ?? "");
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
           slitting.active ? "1" : null,
           printing.active ? "2" : null,
           cutting.active ? "3" : null,
+          sheeting?.active ? "4" : null,
         ]
           .filter(Boolean)
           .join(","),
@@ -125,6 +127,10 @@ export async function POST(req: Request) {
         cuting_remark: cutting.active ? cutting.remark : "",
         cutting_fold: cutting.active && cutting.fold ? cutting.fold : "",
 
+        // Sheeting data
+        sheeting_barcode: sheeting?.active ? sheeting.barcode || null : null,
+        sheeting_weight: sheeting?.active ? sheeting.weight || null : null,
+
         // Dates
         add_date: formattedAddDate,
         updated_date: formattedUpdatedDate,
@@ -140,6 +146,7 @@ export async function POST(req: Request) {
         card_slitting: 0,
         card_printting: 0,
         card_cutting: 0,
+        card_sheeting: 0,
         del_ind: 0, // Not deleted
       },
     });

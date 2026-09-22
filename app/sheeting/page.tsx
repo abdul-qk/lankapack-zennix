@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import {
@@ -20,37 +20,41 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Eye, CircleCheckBig, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, EyeIcon, PencilIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
 import Link from "next/link";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
 import Loading from "@/components/layouts/loading";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-type CustomerInfo = {
+type JobCardInfo = {
+    job_card_id: number;
+    customer_id: number;
+    section_list: string;
+    unit_price: string;
+    customer: CustomerInfo;
+    particular: ParticularInfo;
+    sheeting_barcode: string | null;
+    sheeting_weight: string | null;
+    add_date: string;
+    updated_date: string;
+    card_sheeting: number;
+};
+
+interface CustomerInfo {
     customer_id: number;
     customer_full_name: string;
 }
 
-type JobCardInfo = {
-    job_card_id: number;
-    customer: CustomerInfo;
-    add_date: string;
-    updated_date: string;
-    section_list: string;
-    card_slitting: number;
-    card_printting: number;
-    card_cutting: number;
-    card_sheeting: number;
-    cut_bag_types?: {
-        bag_type: string;
-    } | null;
-};
+interface ParticularInfo {
+    particular_id: number;
+    particular_name: string;
+}
 
-export default function JobCardTable() {
+export default function SlitingTable() {
     const [data, setData] = React.useState<JobCardInfo[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [search, setSearch] = React.useState("");            // Immediate search input state
@@ -75,7 +79,7 @@ export default function JobCardTable() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/job/jobcard`);
+            const response = await fetch(`/api/sheeting/`);
             const result = await response.json();
             setData(result.data);
         } catch (error) {
@@ -88,15 +92,12 @@ export default function JobCardTable() {
     // Filter data based on the debounced search input
     const filteredData = React.useMemo(() => {
         if (!debouncedSearch) return data;
-        const query = debouncedSearch.toLowerCase();
         return data.filter(
             (item) =>
-                item.customer.customer_full_name.toLowerCase().includes(query) ||
                 item.job_card_id.toString().includes(debouncedSearch) ||
-                item.updated_date.toString().includes(debouncedSearch) ||
-                new Date(item.add_date).toLocaleDateString().includes(debouncedSearch) ||
-                new Date(item.updated_date).toLocaleDateString().includes(debouncedSearch) ||
-                (item.cut_bag_types?.bag_type?.toLowerCase().includes(query) ?? false)
+                item.customer.customer_full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.particular.particular_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.sheeting_barcode?.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
     }, [data, debouncedSearch]);
 
@@ -107,17 +108,19 @@ export default function JobCardTable() {
         },
         {
             accessorKey: "customer.customer_full_name",
-            header: "Customer Name",
+            header: "Customer",
         },
         {
-            id: "bag_type",
-            header: "Bag Type",
-            cell: ({ row }) => {
-                const item = row.original;
-                const hasCutting = item.section_list?.split(",").includes("3");
-                const bagType = item.cut_bag_types?.bag_type;
-                return hasCutting && bagType ? bagType : null;
-            },
+            accessorKey: "particular.particular_name",
+            header: "Paper Roll",
+        },
+        {
+            accessorKey: "sheeting_barcode",
+            header: "Barcode",
+        },
+        {
+            accessorKey: "sheeting_weight",
+            header: "Weight",
         },
         {
             accessorKey: "add_date",
@@ -130,78 +133,23 @@ export default function JobCardTable() {
             cell: ({ row }) => new Date(row.original.updated_date).toLocaleDateString(),
         },
         {
-            accessorKey: "card_slitting",
-            header: "Slitting",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_slitting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
-            accessorKey: "card_printting",
-            header: "Printing",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_printting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
-            accessorKey: "card_cutting",
-            header: "Cutting",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_cutting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
-            accessorKey: "card_sheeting",
-            header: "Sheeting",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_sheeting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
             id: "actions",
             header: "Actions",
             cell: ({ row }) => {
                 const item = row.original;
+
                 return (
                     <div className="flex space-x-2">
-                        <Link href={`/job/jobCard/view/${item.job_card_id}`}>
-                            <Button variant="outline" size="sm">
-                                <Eye size={16} />
+                        <Link href={`/sheeting/view/${item.job_card_id}`}>
+                            <Button variant="default" size="sm">
+                                <EyeIcon size={16} />
                             </Button>
                         </Link>
-                        <Link href={`/job/jobCard/edit/${item.job_card_id}`}>
-                            <Button variant="outline" size="sm">
-                                <Pencil size={16} />
+                        <Link href={`/sheeting/edit/${item.job_card_id}`} onClick={(e) => item.card_sheeting === 1 && e.preventDefault()} style={{ pointerEvents: item.card_sheeting === 1 ? 'none' : 'auto' }}>
+                            <Button variant="outline" size="sm" disabled={item.card_sheeting === 1}>
+                                <PencilIcon size={16} />
                             </Button>
                         </Link>
-                        {/* <Link href={`/job/jobCard/edit/${item.job_card_id}`}>
-                            <Button className="bg-green-600 text-white" variant="outline" size="sm">
-                                <CircleCheckBig size={16} />
-                            </Button>
-                        </Link> */}
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(item.job_card_id)}>
-                            <Trash2 size={16} />
-                        </Button>
                     </div>
                 );
             },
@@ -235,22 +183,6 @@ export default function JobCardTable() {
         return pageNumbers;
     }, [currentPage, totalPages]);
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this entry?")) return;
-
-        try {
-            await fetch(`/api/job/jobcard/`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
-            });
-            toast({ description: "Entry deleted successfully!" });
-            fetchData(); // Refresh data
-        } catch (error) {
-            toast({ description: "Failed to delete entry", variant: "destructive" });
-        }
-    };
-
     if (loading) { return <Loading /> }
 
     return (
@@ -264,7 +196,7 @@ export default function JobCardTable() {
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage className="text-2xl font-bold">Job Card</BreadcrumbPage>
+                                    <BreadcrumbPage className="text-2xl font-bold">Sheeting</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
@@ -278,12 +210,6 @@ export default function JobCardTable() {
                             onChange={(e) => setSearch(e.target.value)}
                             className="max-w-sm"
                         />
-                        <Link href="/job/jobCard/new">
-                            <Button variant={'primary'}>
-                                <PlusCircle />
-                                Add New Job
-                            </Button>
-                        </Link>
                     </div>
 
                     <Table>

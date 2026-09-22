@@ -65,6 +65,23 @@ export async function GET(req: Request) {
       }
     });
 
+    const pendingSheeting = await prisma.hps_jobcard.count({
+      where: {
+        del_ind: 0,
+        card_sheeting: 0,
+        OR: [
+          { section_list: "4" },
+          { section_list: { startsWith: "4," } },
+          { section_list: { endsWith: ",4" } },
+          { section_list: { contains: ",4," } }
+        ]
+      }
+    });
+
+    const sheetingCount = await prisma.hps_sheeting.count({
+      where: { del_ind: 0 }
+    });
+
     const completedJobCards = await prisma.hps_jobcard.count({
       where: {
         del_ind: 0,
@@ -193,12 +210,14 @@ export async function GET(req: Request) {
       cuttingCount,
       slittingCount,
       printingCount,
+      sheetingCount,
       customerCount,
       
       // Job card status
       pendingSlitting,
       pendingPrinting,
       pendingCutting,
+      pendingSheeting,
       completedJobCards,
       jobCardsThisMonth,
       
@@ -225,7 +244,8 @@ export async function GET(req: Request) {
         status: {
           slitting: jc.card_slitting === 1,
           printing: jc.card_printting === 1,
-          cutting: jc.card_cutting === 1
+          cutting: jc.card_cutting === 1,
+          sheeting: jc.card_sheeting === 1
         }
       })),
       
@@ -236,7 +256,8 @@ export async function GET(req: Request) {
         status: {
           slitting: jc.card_slitting === 1,
           printing: jc.card_printting === 1,
-          cutting: jc.card_cutting === 1
+          cutting: jc.card_cutting === 1,
+          sheeting: jc.card_sheeting === 1
         }
       }))
     };

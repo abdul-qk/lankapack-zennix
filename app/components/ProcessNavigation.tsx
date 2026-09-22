@@ -8,7 +8,7 @@ import { ArrowRight } from "lucide-react";
 
 interface ProcessNavigationProps {
   jobCardId: number;
-  currentProcess: "slitting" | "cutting" | "printing";
+  currentProcess: "slitting" | "cutting" | "printing" | "sheeting";
   currentPageType: "edit" | "view";
 }
 
@@ -21,6 +21,7 @@ export default function ProcessNavigation({
     hasSlitting: boolean;
     hasCutting: boolean;
     hasPrinting: boolean;
+    hasSheeting: boolean;
   } | null>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -78,6 +79,14 @@ export default function ProcessNavigation({
     });
   }
 
+  if (relatedProcesses.hasSheeting && currentProcess !== "sheeting") {
+    availableProcesses.push({
+      name: "Sheeting",
+      path: `/sheeting/${currentPageType}/${jobCardId}`,
+      exists: true,
+    });
+  }
+
   // Don't render if no related processes
   if (availableProcesses.length === 0) {
     return null;
@@ -104,4 +113,3 @@ export default function ProcessNavigation({
     </div>
   );
 }
-

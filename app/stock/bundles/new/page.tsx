@@ -28,6 +28,11 @@ const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 interface BarcodeOption {
     cutting_roll_id: number;
     cutting_barcode: string;
+    source?: "cutting" | "sheeting";
+    roll_id?: number;
+    barcode?: string;
+    sheeting_roll_id?: number;
+    sheeting_barcode?: string;
 }
 
 interface RollData {
@@ -36,6 +41,9 @@ interface RollData {
     slitting_wastage: string;
     print_wastage: string;
     cutting_wastage: string;
+    sheeting_wastage?: string;
+    source?: "cutting" | "sheeting";
+    roll_id?: number;
 }
 
 interface CompleteItem {
@@ -431,33 +439,58 @@ export default function AddBundlePage() {
                 ? ((totals.totalWeight / totals.totalBags) * 1000).toFixed(2)
                 : "0";
 
-            // Calculate wastage bags: 1000/average * cutting_wastage
-            const wastage_weight = rollData.cutting_wastage || "0";
+            // Calculate wastage bags from process wastage (cutting or sheeting)
+            const processWastage =
+                rollData.source === "sheeting"
+                    ? rollData.sheeting_wastage || "0"
+                    : rollData.cutting_wastage || "0";
+            const wastage_weight = processWastage;
             const wastage_bags = average !== "0"
                 ? ((1000 / parseFloat(average)) * parseFloat(wastage_weight)).toFixed(2)
                 : "0";
 
-            // Use the cutting_roll_id from the selected barcode
-            const barcode = selectedBarcodeData?.cutting_roll_id || 0;
-            console.log(selectedBarcodeData);
-            console.log(barcode);
+            const isSheeting = selectedBarcodeData?.source === "sheeting" || rollData.source === "sheeting";
+            const rollId =
+                selectedBarcodeData?.roll_id ||
+                selectedBarcodeData?.cutting_roll_id ||
+                rollData.roll_id ||
+                0;
 
-            const bundleData = {
-                bundle_barcode: barcode,
-                bundle_type: rollData.bag_type,
-                bundle_qty: totals.totalBags,
-                bundle_info_weight: totals.totalWeight.toString(),
-                bundle_info_bags: totals.totalBags.toString(),
-                // bundle_info_bags: rollData.no_of_bags.toString(),
-                bundle_info_average: average,
-                bundle_slitt_wastage: rollData.slitting_wastage || "0",
-                bundle_print_wastage: rollData.print_wastage || "0",
-                bundle_cutting_wastage: rollData.cutting_wastage || "0",
-                bundle_info_wastage_bags: wastage_bags,
-                bundle_info_wastage_weight: wastage_weight,
-                user_id: 1, // Default user ID
-                bundle_info_status: 1 // Active status
-            };
+            const bundleData = isSheeting
+                ? {
+                    bundle_barcode: null,
+                    sheeting_roll_id: rollId,
+                    bundle_type: rollData.bag_type,
+                    bundle_qty: totals.totalBags,
+                    bundle_info_weight: totals.totalWeight.toString(),
+                    bundle_info_bags: totals.totalBags.toString(),
+                    bundle_info_average: average,
+                    bundle_slitt_wastage: rollData.slitting_wastage || "0",
+                    bundle_print_wastage: rollData.print_wastage || "0",
+                    bundle_cutting_wastage: "0",
+                    bundle_sheeting_wastage: processWastage,
+                    bundle_info_wastage_bags: wastage_bags,
+                    bundle_info_wastage_weight: wastage_weight,
+                    user_id: 1,
+                    bundle_info_status: 1,
+                }
+                : {
+                    bundle_barcode: rollId,
+                    sheeting_roll_id: null,
+                    bundle_type: rollData.bag_type,
+                    bundle_qty: totals.totalBags,
+                    bundle_info_weight: totals.totalWeight.toString(),
+                    bundle_info_bags: totals.totalBags.toString(),
+                    bundle_info_average: average,
+                    bundle_slitt_wastage: rollData.slitting_wastage || "0",
+                    bundle_print_wastage: rollData.print_wastage || "0",
+                    bundle_cutting_wastage: processWastage,
+                    bundle_sheeting_wastage: "0",
+                    bundle_info_wastage_bags: wastage_bags,
+                    bundle_info_wastage_weight: wastage_weight,
+                    user_id: 1,
+                    bundle_info_status: 1,
+                };
 
             // Get all item IDs to update later
             const completeItemIds = completeItems.map(item => item.complete_item_id);
@@ -551,7 +584,7 @@ export default function AddBundlePage() {
                                     </Select>
                                 </div> */}
                                 <div className="mb-6 w-full">
-                                    <Label htmlFor="barcode-select" className="mb-2 block">Cutting Roll Barcode</Label>
+                                    <Label htmlFor="barcode-select" className="mb-2 block">Cutting / Sheeting Roll Barcode</Label>
                                     <Select value={selectedBarcode} onValueChange={handleBarcodeChange}>
                                         <SelectTrigger id="barcode-select" className="w-full">
                                             <SelectValue placeholder="Select a barcode" />
@@ -600,7 +633,14 @@ export default function AddBundlePage() {
                                 <InfoBox label="Number of Bags" value={rollData.no_of_bags} />
                                 <InfoBox label="Slitting Wastage" value={rollData.slitting_wastage} />
                                 <InfoBox label="Printing Wastage" value={rollData.print_wastage} />
-                                <InfoBox label="Cutting Wastage" value={rollData.cutting_wastage} />
+                                <InfoBox
+                                    label={rollData.source === "sheeting" ? "Sheeting Wastage" : "Cutting Wastage"}
+                                    value={
+                                        rollData.source === "sheeting"
+                                            ? rollData.sheeting_wastage || "0"
+                                            : rollData.cutting_wastage
+                                    }
+                                />
                             </CardContent>
                         </Card>
                     ) : selectedBarcode ? (

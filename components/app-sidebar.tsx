@@ -19,6 +19,7 @@ import {
   Settings2,
   SquareActivity,
   SquareTerminal,
+  Layers,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -122,6 +123,11 @@ const data = {
       title: "Cutting",
       url: "/cutting",
       icon: Scissors,
+    },
+    {
+      title: "Sheeting",
+      url: "/sheeting",
+      icon: Layers,
     },
     {
       title: "Stock Management",

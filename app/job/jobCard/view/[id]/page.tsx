@@ -81,6 +81,8 @@ interface JobCardData {
     cuting_no_of_bag: string;
     cuting_remark: string;
     cutting_fold: string;
+    sheeting_barcode?: string | null;
+    sheeting_weight?: string | null;
     add_date: string;
     updated_date: string;
     delivery_date: string;
@@ -88,6 +90,7 @@ interface JobCardData {
     card_slitting: number;
     card_printting: number;
     card_cutting: number;
+    card_sheeting?: number;
     del_ind: number;
     customer: CustomerInfo;
 }
@@ -349,6 +352,9 @@ export default function JobCardTable() {
                                                 <div className={`status-item ${data.section_list.includes('3') ? 'status-yes' : 'status-no'}`}>
                                                     Cutting: {data.section_list.includes('3') ? 'Yes' : 'No'}
                                                 </div>
+                                                <div className={`status-item ${data.section_list.includes('4') ? 'status-yes' : 'status-no'}`}>
+                                                    Sheeting: {data.section_list.includes('4') ? 'Yes' : 'No'}
+                                                </div>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -406,6 +412,21 @@ export default function JobCardTable() {
                                         <InfoRow label="Print Name" value={data.cutting_print_name || "Not specified"} />
                                         <InfoRow label="Fold" value={data.cutting_fold || "Not specified"} />
                                         <InfoRow label="Remark" value={data.cuting_remark || "Not specified"} />
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Sheeting Information Card */}
+                            {data && data.section_list.includes('4') && (
+                                <Card className="shadow-md info-card">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg font-semibold text-orange-600 info-card-title">
+                                            Sheeting Information
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="info-card-content">
+                                        <InfoRow label="Barcode" value={data.sheeting_barcode || "Not specified"} />
+                                        <InfoRow label="Weight" value={data.sheeting_weight || "Not specified"} />
                                     </CardContent>
                                 </Card>
                             )}
