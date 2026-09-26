@@ -20,6 +20,29 @@ const BundleInfoCard: React.FC<BundleInfoCardProps> = ({
     selectedBarcode,
     barcodeOptions,
     onBarcodeChange }) => {
+    const isSheeting = rollData?.source === "sheeting" || !!bundleData.sheeting_roll_id;
+    const processWastageLabel = isSheeting ? "Sheeting Wastage" : "Cutting Wastage";
+    const processWastageValue = isSheeting
+        ? (rollData?.sheeting_wastage || bundleData.bundle_sheeting_wastage || "0")
+        : (rollData?.cutting_wastage || "0");
+
+    // Ensure the currently selected barcode appears even if not in the options list
+    const options = React.useMemo(() => {
+        if (!selectedBarcode) return barcodeOptions;
+        const exists = barcodeOptions.some(
+            (o) => o.cutting_barcode === selectedBarcode || o.barcode === selectedBarcode
+        );
+        if (exists) return barcodeOptions;
+        return [
+            {
+                cutting_roll_id: -1,
+                cutting_barcode: selectedBarcode,
+                barcode: selectedBarcode,
+            },
+            ...barcodeOptions,
+        ];
+    }, [barcodeOptions, selectedBarcode]);
+
     return (
         <Card className="shadow-md mb-6">
             <CardHeader>
@@ -29,15 +52,18 @@ const BundleInfoCard: React.FC<BundleInfoCardProps> = ({
             </CardHeader>
             <CardContent>
                 <div className="mb-6">
-                    <Label htmlFor="barcode-select" className="mb-2 block">Cutting Roll Barcode</Label>
-                    <Select disabled value={selectedBarcode} onValueChange={onBarcodeChange}>
+                    <Label htmlFor="barcode-select" className="mb-2 block">Roll Barcode</Label>
+                    <Select disabled value={selectedBarcode || undefined} onValueChange={onBarcodeChange}>
                         <SelectTrigger id="barcode-select" className="w-full">
                             <SelectValue placeholder="Select a barcode" />
                         </SelectTrigger>
                         <SelectContent>
-                            {barcodeOptions.length > 0 ? (
-                                barcodeOptions.map((option) => (
-                                    <SelectItem key={option.cutting_roll_id} value={option.cutting_barcode}>
+                            {options.length > 0 ? (
+                                options.map((option) => (
+                                    <SelectItem
+                                        key={`${option.source || "roll"}-${option.cutting_roll_id}-${option.cutting_barcode}`}
+                                        value={option.cutting_barcode}
+                                    >
                                         {option.cutting_barcode}
                                     </SelectItem>
                                 ))
@@ -57,7 +83,7 @@ const BundleInfoCard: React.FC<BundleInfoCardProps> = ({
                         <>
                             <InfoBox label="Printing Wastage" value={rollData.print_wastage} />
                             <InfoBox label="Slitting Wastage" value={rollData.slitting_wastage} />
-                            <InfoBox label="Cutting Wastage" value={rollData.cutting_wastage} />
+                            <InfoBox label={processWastageLabel} value={processWastageValue} />
                         </>
                     )}
                 </div>

@@ -22,6 +22,7 @@ export async function GET(
       },
       include: {
         cutting_roll: true,
+        sheeting_roll: true,
       },
     });
 

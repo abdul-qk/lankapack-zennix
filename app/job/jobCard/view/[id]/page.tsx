@@ -83,6 +83,7 @@ interface JobCardData {
     cutting_fold: string;
     sheeting_barcode?: string | null;
     sheeting_weight?: string | null;
+    sheetTypeName?: string | null;
     add_date: string;
     updated_date: string;
     delivery_date: string;
@@ -362,7 +363,7 @@ export default function JobCardTable() {
                             </Card>
                             {/* Apply similar structure (PrintInfoRow, print-specific classes) to other cards */}
                             {/* Slitting Information Card */}
-                            {data && (
+                            {data && data.section_list.includes('1') && (
                                 <Card className="shadow-md info-card">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-green-600 info-card-title">
@@ -378,7 +379,7 @@ export default function JobCardTable() {
                             )}
 
                             {/* Printing Information Card */}
-                            {data && (
+                            {data && data.section_list.includes('2') && (
                                 <Card className="shadow-md info-card">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-purple-600 info-card-title">
@@ -397,7 +398,7 @@ export default function JobCardTable() {
                             )}
 
                             {/* Cutting Information Card */}
-                            {data && (
+                            {data && data.section_list.includes('3') && (
                                 <Card className="shadow-md info-card">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-blue-600 info-card-title">
@@ -425,8 +426,8 @@ export default function JobCardTable() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="info-card-content">
-                                        <InfoRow label="Barcode" value={data.sheeting_barcode || "Not specified"} />
-                                        <InfoRow label="Weight" value={data.sheeting_weight || "Not specified"} />
+                                        <InfoRow label="Sheet Type" value={data.sheetTypeName || data.sheeting_barcode || "Not specified"} />
+                                        <InfoRow label="No of sheets" value={data.sheeting_weight || "Not specified"} />
                                     </CardContent>
                                 </Card>
                             )}

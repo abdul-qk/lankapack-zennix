@@ -92,6 +92,10 @@ const data = {
           url: "/job/bagType",
         },
         {
+          title: "Sheet Types",
+          url: "/job/sheetType",
+        },
+        {
           title: "Print Sizes",
           url: "/job/printSizes",
         },

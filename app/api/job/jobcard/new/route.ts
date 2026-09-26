@@ -127,9 +127,13 @@ export async function POST(req: Request) {
         cuting_remark: cutting.active ? cutting.remark : "",
         cutting_fold: cutting.active && cutting.fold ? cutting.fold : "",
 
-        // Sheeting data
-        sheeting_barcode: sheeting?.active ? sheeting.barcode || null : null,
-        sheeting_weight: sheeting?.active ? sheeting.weight || null : null,
+        // Sheeting data — sheeting_barcode stores sheet_type_id; sheeting_weight stores no_of_sheets
+        sheeting_barcode: sheeting?.active
+          ? sheeting.sheet_type_id || sheeting.barcode || null
+          : null,
+        sheeting_weight: sheeting?.active
+          ? sheeting.no_of_sheets || sheeting.weight || null
+          : null,
 
         // Dates
         add_date: formattedAddDate,

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
   try {
-    const slittingInfo = await prisma.hps_jobcard.findMany({
+    const sheetingInfo = await prisma.hps_jobcard.findMany({
       include: {
         customer: true,
         particular: true,
@@ -22,7 +22,19 @@ export async function GET(req: Request) {
       },
     });
 
-    return new Response(JSON.stringify({ data: slittingInfo }), {
+    const sheetTypes = await prisma.hps_sheet_type.findMany();
+    const sheetTypeMap = new Map(
+      sheetTypes.map((st) => [st.sheet_id.toString(), st.sheet_type])
+    );
+
+    const data = sheetingInfo.map((item) => ({
+      ...item,
+      sheetTypeName: item.sheeting_barcode
+        ? sheetTypeMap.get(item.sheeting_barcode) || item.sheeting_barcode
+        : null,
+    }));
+
+    return new Response(JSON.stringify({ data }), {
       status: 200,
     });
   } catch (error) {

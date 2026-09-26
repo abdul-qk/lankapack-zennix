@@ -28,9 +28,21 @@ interface CuttingRollInfo {
     add_date: string;
 }
 
+interface SheetingRollInfo {
+    sheeting_roll_id: number;
+    job_card_id: number;
+    sheeting_id: number;
+    sheeting_roll_weight: string;
+    no_of_bags: number;
+    sheeting_wastage: string;
+    sheeting_barcode: string | null;
+    add_date: string;
+}
+
 interface BundleInfo {
     bundle_info_id: number;
-    bundle_barcode: number;
+    bundle_barcode: number | null;
+    sheeting_roll_id?: number | null;
     bundle_type: string;
     bundle_info_weight: string;
     bundle_info_bags: string;
@@ -41,10 +53,12 @@ interface BundleInfo {
     bundle_slitt_wastage: string;
     bundle_print_wastage: string;
     bundle_cutting_wastage: string;
+    bundle_sheeting_wastage?: string;
     bundle_date: string;
     user_id: number;
     bundle_info_status: number;
-    cutting_roll: CuttingRollInfo;
+    cutting_roll: CuttingRollInfo | null;
+    sheeting_roll?: SheetingRollInfo | null;
 }
 
 export default function ViewBundleInfo() {
@@ -85,6 +99,18 @@ export default function ViewBundleInfo() {
         if (dateString === "0000-00-00") return "Not Set";
         return new Date(dateString).toLocaleDateString();
     };
+
+    const getBundleBarcode = (bundle?: BundleInfo) => {
+        if (!bundle) return "Not specified";
+        return (
+            bundle.cutting_roll?.cutting_barcode ||
+            bundle.sheeting_roll?.sheeting_barcode ||
+            "Not specified"
+        );
+    };
+
+    const isSheetingBundle = (bundle?: BundleInfo) =>
+        !!bundle?.sheeting_roll_id || !!bundle?.sheeting_roll;
 
     const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
         <div className="flex justify-between py-2 border-b border-gray-100 last:border-0">
@@ -135,13 +161,14 @@ export default function ViewBundleInfo() {
                         <div class="card-title">Bundle Information</div>
                         ${bundleData ? `
                             <div class="info-row"><span class="label">Bundle ID:</span><span class="value">${bundleData.bundle_info_id}</span></div>
+                            <div class="info-row"><span class="label">Roll Barcode:</span><span class="value">${getBundleBarcode(bundleData)}</span></div>
                             <div class="info-row"><span class="label">Bag Type:</span><span class="value">${bundleData.bundle_type || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Total Weight (Kg):</span><span class="value">${Number(bundleData.bundle_info_weight).toFixed(2) || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Total No. of Bags:</span><span class="value">${bundleData.bundle_info_bags || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Average Weight of 1000 Bags:</span><span class="value">${bundleData.bundle_info_average || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Slitting Wastage:</span><span class="value">${bundleData.bundle_slitt_wastage || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Printing Wastage:</span><span class="value">${bundleData.bundle_print_wastage || 'Not specified'}</span></div>
-                            <div class="info-row"><span class="label">Cutting Wastage:</span><span class="value">${bundleData.bundle_cutting_wastage || 'Not specified'}</span></div>
+                            <div class="info-row"><span class="label">${isSheetingBundle(bundleData) ? "Sheeting Wastage" : "Cutting Wastage"}:</span><span class="value">${isSheetingBundle(bundleData) ? (bundleData.bundle_sheeting_wastage || 'Not specified') : (bundleData.bundle_cutting_wastage || 'Not specified')}</span></div>
                             <div class="info-row"><span class="label">Wastage Bags Weight:</span><span class="value">${bundleData.bundle_info_wastage_weight || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">No of Wastage Bags:</span><span class="value">${bundleData.bundle_info_wastage_bags || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Bundle Date:</span><span class="value">${formatDate(bundleData.bundle_date)}</span></div>
@@ -198,13 +225,21 @@ export default function ViewBundleInfo() {
                         {bundleData && (
                             <CardContent>
                                 <InfoRow label="Bundle ID" value={bundleData.bundle_info_id} />
+                                <InfoRow label="Roll Barcode" value={getBundleBarcode(bundleData)} />
                                 <InfoRow label="Bag Type" value={bundleData.bundle_type} />
                                 <InfoRow label="Total Weight (Kg)" value={Number(bundleData.bundle_info_weight).toFixed(2)} />
                                 <InfoRow label="Total No. of Bags" value={bundleData.bundle_info_bags} />
                                 <InfoRow label="Average Weight of 1000 Bags" value={bundleData.bundle_info_average} />
                                 <InfoRow label="Slitting Wastage" value={bundleData.bundle_slitt_wastage} />
                                 <InfoRow label="Printing Wastage" value={bundleData.bundle_print_wastage} />
-                                <InfoRow label="Cutting Wastage" value={bundleData.bundle_cutting_wastage} />
+                                <InfoRow
+                                    label={isSheetingBundle(bundleData) ? "Sheeting Wastage" : "Cutting Wastage"}
+                                    value={
+                                        isSheetingBundle(bundleData)
+                                            ? (bundleData.bundle_sheeting_wastage || "0")
+                                            : bundleData.bundle_cutting_wastage
+                                    }
+                                />
                                 <InfoRow label="Wastage Bags Weight" value={bundleData.bundle_info_wastage_weight} />
                                 <InfoRow label="No of Wastage Bags" value={bundleData.bundle_info_wastage_bags} />
                                 <InfoRow label="Bundle Date" value={formatDate(bundleData.bundle_date)} />

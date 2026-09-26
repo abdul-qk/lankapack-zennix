@@ -17,6 +17,12 @@ model hps_bag_type {
   jobcard                hps_jobcard[]
 }
 
+model hps_sheet_type {
+  sheet_id    Int    @id @default(autoincrement())
+  sheet_type  String @db.VarChar(120)
+  sheet_price String @default("0") @db.VarChar(12)
+}
+
 model hps_bill_info {
   bill_info_id  Int      @id @default(autoincrement())
   customer_name Int

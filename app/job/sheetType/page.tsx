@@ -20,55 +20,40 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Eye, CircleCheckBig, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
-import Link from "next/link";
+import { Pencil, Trash2, PlusCircle, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
 import Loading from "@/components/layouts/loading";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-type CustomerInfo = {
-    customer_id: number;
-    customer_full_name: string;
-}
-
-type JobCardInfo = {
-    job_card_id: number;
-    customer: CustomerInfo;
-    add_date: string;
-    updated_date: string;
-    section_list: string;
-    card_slitting: number;
-    card_printting: number;
-    card_cutting: number;
-    card_sheeting: number;
-    cut_bag_types?: {
-        bag_type: string;
-    } | null;
-    sheetTypeName?: string | null;
+type SheetTypeInfo = {
+    sheet_id: number;
+    sheet_type: string;
+    sheet_price: string;
 };
 
-export default function JobCardTable() {
-    const [data, setData] = React.useState<JobCardInfo[]>([]);
+export default function SheetTypeTable() {
+    const [data, setData] = React.useState<SheetTypeInfo[]>([]);
     const [loading, setLoading] = React.useState(true);
-    const [search, setSearch] = React.useState("");            // Immediate search input state
-    const [debouncedSearch, setDebouncedSearch] = React.useState("");  // Debounced search state
+    const [search, setSearch] = React.useState("");
+    const [debouncedSearch, setDebouncedSearch] = React.useState("");
     const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [new_sheet_type, setNewSheetType] = React.useState("");
+    const [new_sheet_price, setNewSheetPrice] = React.useState("");
+    const [addOpen, setAddOpen] = React.useState(false);
     const { toast } = useToast();
 
-    // Debounce search input to optimize filtering
     React.useEffect(() => {
         const timer = setTimeout(() => {
-            setDebouncedSearch(search);  // Update the debounced state after 300ms
+            setDebouncedSearch(search);
         }, 300);
 
-        return () => clearTimeout(timer);  // Clear the timeout on cleanup
+        return () => clearTimeout(timer);
     }, [search]);
 
-    // Fetch data on component mount (or when search state changes)
     React.useEffect(() => {
         fetchData();
     }, []);
@@ -76,9 +61,9 @@ export default function JobCardTable() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/job/jobcard`);
+            const response = await fetch(`/api/job/sheettype`);
             const result = await response.json();
-            setData(result.data);
+            setData(result.data || []);
         } catch (error) {
             console.error("Error fetching data:", error);
             alert("Failed to fetch data");
@@ -86,131 +71,78 @@ export default function JobCardTable() {
         setLoading(false);
     };
 
-    // Filter data based on the debounced search input
     const filteredData = React.useMemo(() => {
         if (!debouncedSearch) return data;
-        const query = debouncedSearch.toLowerCase();
         return data.filter(
             (item) =>
-                item.customer.customer_full_name.toLowerCase().includes(query) ||
-                item.job_card_id.toString().includes(debouncedSearch) ||
-                item.updated_date.toString().includes(debouncedSearch) ||
-                new Date(item.add_date).toLocaleDateString().includes(debouncedSearch) ||
-                new Date(item.updated_date).toLocaleDateString().includes(debouncedSearch) ||
-                (item.cut_bag_types?.bag_type?.toLowerCase().includes(query) ?? false) ||
-                (item.sheetTypeName?.toLowerCase().includes(query) ?? false)
+                item.sheet_price.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.sheet_type.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
     }, [data, debouncedSearch]);
 
-    const columns: ColumnDef<JobCardInfo>[] = [
+    const columns: ColumnDef<SheetTypeInfo>[] = [
         {
-            accessorKey: "job_card_id",
+            accessorKey: "sheet_id",
             header: "ID",
         },
         {
-            accessorKey: "customer.customer_full_name",
-            header: "Customer Name",
-        },
-        {
-            id: "bag_type",
-            header: "Bag Type",
-            cell: ({ row }) => {
-                const item = row.original;
-                const hasCutting = item.section_list?.split(",").includes("3");
-                const bagType = item.cut_bag_types?.bag_type;
-                return hasCutting && bagType ? bagType : null;
-            },
-        },
-        {
-            id: "sheet_type",
+            accessorKey: "sheet_type",
             header: "Sheet Type",
-            cell: ({ row }) => {
-                const item = row.original;
-                const hasSheeting = item.section_list?.split(",").includes("4");
-                return hasSheeting && item.sheetTypeName ? item.sheetTypeName : null;
-            },
         },
         {
-            accessorKey: "add_date",
-            header: "Added Date",
-            cell: ({ row }) => new Date(row.original.add_date).toLocaleDateString(),
-        },
-        {
-            accessorKey: "updated_date",
-            header: "Updated Date",
-            cell: ({ row }) => new Date(row.original.updated_date).toLocaleDateString(),
-        },
-        {
-            accessorKey: "card_slitting",
-            header: "Slitting",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_slitting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
-            accessorKey: "card_printting",
-            header: "Printing",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_printting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
-            accessorKey: "card_cutting",
-            header: "Cutting",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_cutting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
-        },
-        {
-            accessorKey: "card_sheeting",
-            header: "Sheeting",
-            cell: ({ row }) => {
-                const item = row.original;
-                return item.card_sheeting === 1 ? (
-                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
-                        Completed
-                    </Button>
-                ) : null;
-            }
+            accessorKey: "sheet_price",
+            header: "Price",
         },
         {
             id: "actions",
             header: "Actions",
             cell: ({ row }) => {
                 const item = row.original;
+                const [sheet_type, setSheetType] = React.useState(row.original.sheet_type);
+                const [sheet_price, setSheetPrice] = React.useState(row.original.sheet_price);
+
                 return (
                     <div className="flex space-x-2">
-                        <Link href={`/job/jobCard/view/${item.job_card_id}`}>
-                            <Button variant="outline" size="sm">
-                                <Eye size={16} />
-                            </Button>
-                        </Link>
-                        <Link href={`/job/jobCard/edit/${item.job_card_id}`}>
-                            <Button variant="outline" size="sm">
-                                <Pencil size={16} />
-                            </Button>
-                        </Link>
-                        {/* <Link href={`/job/jobCard/edit/${item.job_card_id}`}>
-                            <Button className="bg-green-600 text-white" variant="outline" size="sm">
-                                <CircleCheckBig size={16} />
-                            </Button>
-                        </Link> */}
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(item.job_card_id)}>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Pencil size={16} />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Edit Sheet Type</DialogTitle>
+                                </DialogHeader>
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor={`sheet_type_${item.sheet_id}`}>Sheet Type</label>
+                                        <Input
+                                            id={`sheet_type_${item.sheet_id}`}
+                                            maxLength={120}
+                                            value={sheet_type}
+                                            onChange={(e) => setSheetType(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor={`sheet_price_${item.sheet_id}`}>Price</label>
+                                        <Input
+                                            id={`sheet_price_${item.sheet_id}`}
+                                            maxLength={12}
+                                            value={sheet_price}
+                                            onChange={(e) => setSheetPrice(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => handleEdit(item.sheet_id, sheet_type, sheet_price)}
+                                >
+                                    Update
+                                </Button>
+                            </DialogContent>
+                        </Dialog>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(item.sheet_id)}>
                             <Trash2 size={16} />
                         </Button>
                     </div>
@@ -250,19 +182,62 @@ export default function JobCardTable() {
         if (!confirm("Are you sure you want to delete this entry?")) return;
 
         try {
-            await fetch(`/api/job/jobcard/`, {
+            await fetch(`/api/job/sheettype/`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id }),
             });
             toast({ description: "Entry deleted successfully!" });
-            fetchData(); // Refresh data
+            fetchData();
         } catch (error) {
             toast({ description: "Failed to delete entry", variant: "destructive" });
         }
     };
 
-    if (loading) { return <Loading /> }
+    const handleEdit = async (id: number, sheet_type: string, sheet_price: string) => {
+        try {
+            const response = await fetch(`/api/job/sheettype/`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, sheet_type, sheet_price }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                toast({ description: result.error || "Failed to update entry", variant: "destructive" });
+                return;
+            }
+            toast({ description: "Entry updated successfully!" });
+            fetchData();
+        } catch (error) {
+            toast({ description: "Failed to update entry", variant: "destructive" });
+        }
+    };
+
+    const handleAdd = async (sheet_type: string, sheet_price: string) => {
+        try {
+            const response = await fetch(`/api/job/sheettype/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sheet_type, sheet_price }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                toast({ description: result.error || "Failed to add entry", variant: "destructive" });
+                return;
+            }
+            toast({ description: "Entry added successfully!" });
+            setNewSheetType("");
+            setNewSheetPrice("");
+            setAddOpen(false);
+            fetchData();
+        } catch (error) {
+            toast({ description: "Failed to add entry", variant: "destructive" });
+        }
+    };
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
         <SidebarProvider>
@@ -275,7 +250,7 @@ export default function JobCardTable() {
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage className="text-2xl font-bold">Job Card</BreadcrumbPage>
+                                    <BreadcrumbPage className="text-2xl font-bold">Sheet Type</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
@@ -289,12 +264,48 @@ export default function JobCardTable() {
                             onChange={(e) => setSearch(e.target.value)}
                             className="max-w-sm"
                         />
-                        <Link href="/job/jobCard/new">
-                            <Button variant={'primary'}>
-                                <PlusCircle />
-                                Add New Job
-                            </Button>
-                        </Link>
+                        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="primary">
+                                    <PlusCircle />
+                                    Add New Sheet Type
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Add Sheet Type</DialogTitle>
+                                </DialogHeader>
+                                <div className="flex gap-4 py-4">
+                                    <div className="flex flex-col w-full items-start gap-4">
+                                        <label htmlFor="new_sheet_type">Sheet Type</label>
+                                        <Input
+                                            id="new_sheet_type"
+                                            maxLength={120}
+                                            placeholder="Enter Sheet Type"
+                                            value={new_sheet_type}
+                                            onChange={(e) => setNewSheetType(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col w-full items-start gap-4">
+                                        <label htmlFor="new_sheet_price">Price</label>
+                                        <Input
+                                            id="new_sheet_price"
+                                            maxLength={12}
+                                            placeholder="Enter Price"
+                                            value={new_sheet_price}
+                                            onChange={(e) => setNewSheetPrice(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => handleAdd(new_sheet_type, new_sheet_price)}
+                                >
+                                    Add
+                                </Button>
+                            </DialogContent>
+                        </Dialog>
                     </div>
 
                     <Table>
@@ -333,17 +344,12 @@ export default function JobCardTable() {
                     </Table>
 
                     <div className="flex items-center justify-end space-x-2 pt-8">
-                        {/* First Page */}
                         <Button variant="outline" size="sm" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
                             <ChevronsLeft size={16} />
                         </Button>
-
-                        {/* Previous Page */}
                         <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
                             <ChevronLeft size={16} />
                         </Button>
-
-                        {/* Page Numbers */}
                         {visiblePageNumbers.map((page) => (
                             <Button
                                 key={page}
@@ -354,13 +360,9 @@ export default function JobCardTable() {
                                 {page}
                             </Button>
                         ))}
-
-                        {/* Next Page */}
                         <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
                             <ChevronRight size={16} />
                         </Button>
-
-                        {/* Last Page */}
                         <Button variant="outline" size="sm" onClick={() => table.setPageIndex(totalPages - 1)} disabled={!table.getCanNextPage()}>
                             <ChevronsRight size={16} />
                         </Button>

@@ -64,6 +64,7 @@ interface JobCardData {
     sheeting_fold: string;
     sheeting_barcode?: string | null;
     sheeting_weight?: string | null;
+    sheetTypeName?: string | null;
     add_date: string;
     updated_date: string;
     delivery_date: string;
@@ -483,8 +484,8 @@ export default function ViewSlittingInfo() {
                         {data && (
                             <CardContent>
                                 {/* <InfoRow label="Roll Type" value={data.slitting_roll_type} /> */}
-                                <InfoRow label="Barcode" value={data.sheeting_barcode || "Not specified"} />
-                                <InfoRow label="Weight" value={data.sheeting_weight || "Not specified"} />
+                                <InfoRow label="Sheet Type" value={data.sheetTypeName || data.sheeting_barcode || "Not specified"} />
+                                <InfoRow label="No of sheets" value={data.sheeting_weight || "Not specified"} />
                             </CardContent>
                         )}
                     </Card>

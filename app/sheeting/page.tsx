@@ -39,6 +39,7 @@ type JobCardInfo = {
     particular: ParticularInfo;
     sheeting_barcode: string | null;
     sheeting_weight: string | null;
+    sheetTypeName?: string | null;
     add_date: string;
     updated_date: string;
     card_sheeting: number;
@@ -97,7 +98,8 @@ export default function SlitingTable() {
                 item.job_card_id.toString().includes(debouncedSearch) ||
                 item.customer.customer_full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                 item.particular.particular_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                item.sheeting_barcode?.toLowerCase().includes(debouncedSearch.toLowerCase())
+                item.sheetTypeName?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.sheeting_weight?.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
     }, [data, debouncedSearch]);
 
@@ -115,12 +117,14 @@ export default function SlitingTable() {
             header: "Paper Roll",
         },
         {
-            accessorKey: "sheeting_barcode",
-            header: "Barcode",
+            accessorKey: "sheetTypeName",
+            header: "Sheet Type",
+            cell: ({ row }) =>
+                row.original.sheetTypeName || row.original.sheeting_barcode || "—",
         },
         {
             accessorKey: "sheeting_weight",
-            header: "Weight",
+            header: "No of Sheets",
         },
         {
             accessorKey: "add_date",

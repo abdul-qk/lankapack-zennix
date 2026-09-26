@@ -87,17 +87,21 @@ export default function EditBundlePage() {
             }
             
             const data = await response.json();
-            console.log(data);
 
             if (data && data.bundle) {
                 setBundleData(data.bundle);
 
-                // Set barcode from bundle data
-                setSelectedBarcode(data.bundle.cutting_roll.cutting_barcode);
+                // Cutting bundles use cutting_roll; sheeting bundles use sheeting_roll
+                const barcode =
+                    data.bundle.cutting_roll?.cutting_barcode ||
+                    data.bundle.sheeting_roll?.sheeting_barcode ||
+                    "";
 
-                // Find matching barcode option and set selected data
-                const barcode = data.bundle.bundle_barcode;
-                await fetchRollData(barcode);
+                setSelectedBarcode(barcode);
+
+                if (barcode) {
+                    await fetchRollData(barcode);
+                }
 
                 // Fetch associated items
                 await fetchCompleteItems();
@@ -167,8 +171,8 @@ export default function EditBundlePage() {
             const response = await fetch('/api/stock/bundle/barcode');
             const data = await response.json();
 
-            if (data && data.barcodes) {
-                setBarcodeOptions(data.barcodes);
+            if (data && data.data) {
+                setBarcodeOptions(data.data);
             }
         } catch (error) {
             console.error("Error fetching barcodes:", error);
@@ -180,20 +184,38 @@ export default function EditBundlePage() {
         }
     };
 
-    // Fetch roll data for selected barcode
+    // Fetch roll data for selected barcode (supports cutting + sheeting)
     const fetchRollData = async (barcode: string) => {
         try {
             setIsLoadingData(true);
-            const response = await fetch(`/api/stock/bundle/cutting_roll/${barcode}`);
+            const response = await fetch(`/api/stock/bundle/barcode/${barcode}`);
             const result = await response.json();
 
             if (result && result.data) {
                 setRollData(result.data);
 
                 // Find and set the selected barcode data
-                const selectedOption = barcodeOptions.find(option => option.cutting_barcode === barcode);
+                const selectedOption = barcodeOptions.find(
+                    (option) =>
+                        option.cutting_barcode === barcode ||
+                        option.barcode === barcode
+                );
                 if (selectedOption) {
                     setSelectedBarcodeData(selectedOption);
+                } else {
+                    setSelectedBarcodeData({
+                        cutting_roll_id: result.data.roll_id,
+                        cutting_barcode: barcode,
+                        roll_id: result.data.roll_id,
+                        barcode,
+                        source: result.data.source,
+                        sheeting_roll_id:
+                            result.data.source === "sheeting"
+                                ? result.data.roll_id
+                                : undefined,
+                        sheeting_barcode:
+                            result.data.source === "sheeting" ? barcode : undefined,
+                    });
                 }
             } else {
                 setRollData(null);
@@ -218,47 +240,17 @@ export default function EditBundlePage() {
 
     // Fetch roll data for changed barcode
     const fetchNewRollData = async (barcode: string) => {
-        try {
-            setIsLoadingData(true);
-            const response = await fetch(`/api/stock/bundle/roll_data/${barcode}`);
-            const result = await response.json();
-
-            if (result && result.data) {
-                setRollData(result.data);
-
-                // Find and set the selected barcode data
-                const selectedOption = barcodeOptions.find(option => option.cutting_barcode === barcode);
-                if (selectedOption) {
-                    setSelectedBarcodeData(selectedOption);
-                }
-            } else {
-                setRollData(null);
-                toast({
-                    title: "No Data",
-                    description: "No data found for this barcode",
-                    variant: "default",
-                });
-            }
-        } catch (error) {
-            console.error("Error fetching roll data:", error);
-            setRollData(null);
-            toast({
-                title: "Error",
-                description: "Failed to fetch roll data",
-                variant: "destructive",
-            });
-        } finally {
-            setIsLoadingData(false);
-        }
+        await fetchRollData(barcode);
     };
 
     // Handle barcode selection change
     const handleBarcodeChange = (value: string) => {
         setSelectedBarcode(value);
-        console.log(value);
         if (value) {
-            const selectedOption = barcodeOptions.find(option => option.cutting_barcode === value);
-            console.log("Selected option:", selectedOption);
+            const selectedOption = barcodeOptions.find(
+                (option) =>
+                    option.cutting_barcode === value || option.barcode === value
+            );
             setSelectedBarcodeData(selectedOption || null);
             fetchNewRollData(value);
         } else {
@@ -312,29 +304,65 @@ export default function EditBundlePage() {
                 ? ((totals.totalWeight / totals.totalBags) * 1000).toFixed(2)
                 : "0";
 
-            // Calculate wastage bags: 1000/average * cutting_wastage
-            const wastage_weight = rollData.cutting_wastage || "0";
+            // Calculate wastage from process wastage (cutting or sheeting)
+            const isSheeting =
+                selectedBarcodeData?.source === "sheeting" ||
+                rollData.source === "sheeting" ||
+                !!bundleData.sheeting_roll_id;
+
+            const processWastage = isSheeting
+                ? rollData.sheeting_wastage || "0"
+                : rollData.cutting_wastage || "0";
+
+            const wastage_weight = processWastage;
             const wastage_bags = average !== "0"
                 ? ((1000 / parseFloat(average)) * parseFloat(wastage_weight)).toFixed(2)
                 : "0";
 
+            const rollId =
+                selectedBarcodeData?.roll_id ||
+                selectedBarcodeData?.cutting_roll_id ||
+                rollData.roll_id ||
+                0;
+
             // Create updated bundle data
-            const updatedBundleData = {
-                bundle_info_id: parseInt(bundleId),
-                bundle_barcode: selectedBarcodeData?.cutting_roll_id.toString() || bundleData.bundle_barcode,
-                bundle_type: rollData.bag_type,
-                bundle_qty: totals.totalBags,
-                bundle_info_weight: totals.totalWeight.toString(),
-                bundle_info_bags: totals.totalBags.toString(),
-                bundle_info_average: average,
-                bundle_slitt_wastage: rollData.slitting_wastage || "0",
-                bundle_print_wastage: rollData.print_wastage || "0",
-                bundle_cutting_wastage: rollData.cutting_wastage || "0",
-                bundle_info_wastage_bags: wastage_bags,
-                bundle_info_wastage_weight: wastage_weight,
-                user_id: 1, // Default user ID
-                bundle_info_status: bundleData.bundle_info_status // Keep existing status
-            };
+            const updatedBundleData = isSheeting
+                ? {
+                    bundle_info_id: parseInt(bundleId),
+                    bundle_barcode: null,
+                    sheeting_roll_id: rollId,
+                    bundle_type: rollData.bag_type,
+                    bundle_qty: totals.totalBags,
+                    bundle_info_weight: totals.totalWeight.toString(),
+                    bundle_info_bags: totals.totalBags.toString(),
+                    bundle_info_average: average,
+                    bundle_slitt_wastage: rollData.slitting_wastage || "0",
+                    bundle_print_wastage: rollData.print_wastage || "0",
+                    bundle_cutting_wastage: "0",
+                    bundle_sheeting_wastage: processWastage,
+                    bundle_info_wastage_bags: wastage_bags,
+                    bundle_info_wastage_weight: wastage_weight,
+                    user_id: 1,
+                    bundle_info_status: bundleData.bundle_info_status,
+                }
+                : {
+                    bundle_info_id: parseInt(bundleId),
+                    bundle_barcode: rollId,
+                    sheeting_roll_id: null,
+                    bundle_type: rollData.bag_type,
+                    bundle_qty: totals.totalBags,
+                    bundle_info_weight: totals.totalWeight.toString(),
+                    bundle_info_bags: totals.totalBags.toString(),
+                    bundle_info_average: average,
+                    bundle_slitt_wastage: rollData.slitting_wastage || "0",
+                    bundle_print_wastage: rollData.print_wastage || "0",
+                    bundle_cutting_wastage: processWastage,
+                    bundle_sheeting_wastage: "0",
+                    bundle_info_wastage_bags: wastage_bags,
+                    bundle_info_wastage_weight: wastage_weight,
+                    user_id: 1,
+                    bundle_info_status: bundleData.bundle_info_status,
+                };
 
             // Get all item IDs
             const completeItemIds = completeItems.map(item => item.complete_item_id);
@@ -361,7 +389,10 @@ export default function EditBundlePage() {
                 });
 
                 // Update the bundle data state
-                setBundleData(updatedBundleData);
+                setBundleData({
+                    ...bundleData,
+                    ...updatedBundleData,
+                });
 
                 // Redirect to bundle list after successful update
                 setTimeout(() => {

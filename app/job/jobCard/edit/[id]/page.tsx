@@ -86,6 +86,12 @@ interface BagTypeInfo {
     bags_select: string;
 }
 
+interface SheetTypeInfo {
+    sheet_id: number;
+    sheet_type: string;
+    sheet_price: string;
+}
+
 interface JobCardData {
     jobcard_id: number;
     customer_id: number;
@@ -166,12 +172,14 @@ export default function EditJobCard() {
     const [cuttingRemark, setCuttingRemark] = React.useState<string>("");
 
     // Sheeting section
-    const [sheetingBarcode, setSheetingBarcode] = React.useState<string>("");
-    const [sheetingWeight, setSheetingWeight] = React.useState<string>("");
+    const [sheetTypes, setSheetTypes] = React.useState<SheetTypeInfo[]>([]);
+    const [sheetingSheetTypeId, setSheetingSheetTypeId] = React.useState<string>("");
+    const [sheetingNoOfSheets, setSheetingNoOfSheets] = React.useState<string>("");
 
     React.useEffect(() => {
         fetchJobCardData();
         fetchBagTypeData();
+        fetchSheetTypeData();
     }, [jobCardId]);
 
     const fetchJobCardData = async () => {
@@ -216,6 +224,19 @@ export default function EditJobCard() {
         } catch (error) {
             console.error("Error fetching bag type data:", error);
             return [];
+        }
+    };
+
+    const fetchSheetTypeData = async () => {
+        try {
+            const response = await fetch(`/api/job/sheettype/`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setSheetTypes(data.data || []);
+        } catch (error) {
+            console.error("Error fetching sheet type data:", error);
         }
     };
 
@@ -298,10 +319,10 @@ export default function EditJobCard() {
 
         // Sheeting section
         if (jobCard.sheeting_barcode) {
-            setSheetingBarcode(jobCard.sheeting_barcode);
+            setSheetingSheetTypeId(jobCard.sheeting_barcode);
         }
         if (jobCard.sheeting_weight) {
-            setSheetingWeight(jobCard.sheeting_weight);
+            setSheetingNoOfSheets(jobCard.sheeting_weight);
         }
     };
 
@@ -415,8 +436,8 @@ export default function EditJobCard() {
             },
             sheeting: {
                 active: sheeting,
-                barcode: sheeting ? sheetingBarcode : null,
-                weight: sheeting ? sheetingWeight : null,
+                sheet_type_id: sheeting ? sheetingSheetTypeId : null,
+                no_of_sheets: sheeting ? sheetingNoOfSheets : null,
             },
         };
 
@@ -883,17 +904,32 @@ export default function EditJobCard() {
                             <CardContent>
                                 <div className="grid grid-cols-2 gap-4 w-full">
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Barcode</label>
-                                        <Input
-                                            value={sheetingBarcode}
-                                            onChange={(e) => setSheetingBarcode(e.target.value)}
-                                        />
+                                        <label className="text-sm font-medium">Sheet Type</label>
+                                        <Select
+                                            value={sheetingSheetTypeId}
+                                            onValueChange={setSheetingSheetTypeId}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Sheet Type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {sheetTypes.map((sheetType) => (
+                                                    <SelectItem
+                                                        key={sheetType.sheet_id}
+                                                        value={sheetType.sheet_id.toString()}
+                                                    >
+                                                        {sheetType.sheet_type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Weight</label>
+                                        <label className="text-sm font-medium">No of sheets</label>
                                         <Input
-                                            value={sheetingWeight}
-                                            onChange={(e) => setSheetingWeight(e.target.value)}
+                                            value={sheetingNoOfSheets}
+                                            onChange={(e) => setSheetingNoOfSheets(e.target.value)}
+                                            placeholder="Enter number of sheets"
                                         />
                                     </div>
                                 </div>

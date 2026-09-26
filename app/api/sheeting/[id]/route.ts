@@ -69,8 +69,23 @@ export async function GET(
       });
     }
 
+    let sheetTypeName: string | null = null;
+    if (sheetingInfo.sheeting_barcode) {
+      const sheetTypeId = parseInt(sheetingInfo.sheeting_barcode, 10);
+      if (!isNaN(sheetTypeId)) {
+        const sheetType = await prisma.hps_sheet_type.findUnique({
+          where: { sheet_id: sheetTypeId },
+        });
+        sheetTypeName = sheetType?.sheet_type || null;
+      }
+    }
+
     return new Response(
-      JSON.stringify({ data: sheetingInfo, sheetingData, sheetingRollData }),
+      JSON.stringify({
+        data: { ...sheetingInfo, sheetTypeName },
+        sheetingData,
+        sheetingRollData,
+      }),
       {
         status: 200,
       }
