@@ -594,7 +594,7 @@ export default function JobCardTable() {
                                         </Select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Number Of Bags</label>
+                                        <label className="text-sm font-medium">Number Of Bags/Sheets</label>
                                         <Input
                                             value={printingNumberOfBags}
                                             onChange={(e) => setPrintingNumberOfBags(e.target.value)}

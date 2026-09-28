@@ -36,6 +36,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
     const [nonCompleteBags, setNonCompleteBags] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+    const quantityLabel = rollData.source === "sheeting" ? "No of Sheets" : "No of Bags";
 
     const { toast } = useToast();
 
@@ -73,7 +74,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
         if (!nonCompleteWeight || !nonCompleteBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -362,10 +363,10 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                             />
                         </div>
                         <div>
-                            <Label htmlFor="non-complete-bags">No of Bags</Label>
+                            <Label htmlFor="non-complete-bags">{quantityLabel}</Label>
                             <Input
                                 id="non-complete-bags"
-                                placeholder="No of Bags"
+                                placeholder={quantityLabel}
                                 className="mt-1"
                                 value={nonCompleteBags}
                                 onChange={(e) => setNonCompleteBags(e.target.value)}
@@ -427,7 +428,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                         </TableHead>
                                         <TableHead className="w-[100px]">#</TableHead>
                                         <TableHead>Weight</TableHead>
-                                        <TableHead>No of Bags</TableHead>
+                                        <TableHead>{quantityLabel}</TableHead>
                                         <TableHead>Barcode</TableHead>
                                         <TableHead className="text-right">Action</TableHead>
                                     </TableRow>

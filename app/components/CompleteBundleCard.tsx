@@ -34,6 +34,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
     const [noOfBags, setNoOfBags] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+    const quantityLabel = rollData.source === "sheeting" ? "No of Sheets" : "No of Bags";
 
     const { toast } = useToast();
 
@@ -71,7 +72,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
         if (!bundleWeight || !noOfBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -360,10 +361,10 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                             />
                         </div>
                         <div>
-                            <Label htmlFor="no-of-bags">No of Bags</Label>
+                            <Label htmlFor="no-of-bags">{quantityLabel}</Label>
                             <Input
                                 id="no-of-bags"
-                                placeholder="No of Bags"
+                                placeholder={quantityLabel}
                                 className="mt-1"
                                 value={noOfBags}
                                 onChange={(e) => setNoOfBags(e.target.value)}
@@ -425,7 +426,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                         </TableHead>
                                         <TableHead className="w-[100px]">#</TableHead>
                                         <TableHead>Weight</TableHead>
-                                        <TableHead>No of Bags</TableHead>
+                                        <TableHead>{quantityLabel}</TableHead>
                                         <TableHead>Barcode</TableHead>
                                         <TableHead className="text-right">Action</TableHead>
                                     </TableRow>

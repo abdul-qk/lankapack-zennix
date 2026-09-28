@@ -162,7 +162,7 @@ export default function ViewBundleInfo() {
                         ${bundleData ? `
                             <div class="info-row"><span class="label">Bundle ID:</span><span class="value">${bundleData.bundle_info_id}</span></div>
                             <div class="info-row"><span class="label">Roll Barcode:</span><span class="value">${getBundleBarcode(bundleData)}</span></div>
-                            <div class="info-row"><span class="label">Bag Type:</span><span class="value">${bundleData.bundle_type || 'Not specified'}</span></div>
+                            <div class="info-row"><span class="label">${isSheetingBundle(bundleData) ? "Sheeting Type" : "Bag Type"}:</span><span class="value">${bundleData.bundle_type || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Total Weight (Kg):</span><span class="value">${Number(bundleData.bundle_info_weight).toFixed(2) || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Total No. of Bags:</span><span class="value">${bundleData.bundle_info_bags || 'Not specified'}</span></div>
                             <div class="info-row"><span class="label">Average Weight of 1000 Bags:</span><span class="value">${bundleData.bundle_info_average || 'Not specified'}</span></div>
@@ -226,7 +226,10 @@ export default function ViewBundleInfo() {
                             <CardContent>
                                 <InfoRow label="Bundle ID" value={bundleData.bundle_info_id} />
                                 <InfoRow label="Roll Barcode" value={getBundleBarcode(bundleData)} />
-                                <InfoRow label="Bag Type" value={bundleData.bundle_type} />
+                                <InfoRow
+                                    label={isSheetingBundle(bundleData) ? "Sheeting Type" : "Bag Type"}
+                                    value={bundleData.bundle_type}
+                                />
                                 <InfoRow label="Total Weight (Kg)" value={Number(bundleData.bundle_info_weight).toFixed(2)} />
                                 <InfoRow label="Total No. of Bags" value={bundleData.bundle_info_bags} />
                                 <InfoRow label="Average Weight of 1000 Bags" value={bundleData.bundle_info_average} />

@@ -77,8 +77,14 @@ const BundleInfoCard: React.FC<BundleInfoCardProps> = ({
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <InfoBox label="Bundle ID" value={bundleData.bundle_info_id} />
-                    <InfoBox label="Bundle Type" value={bundleData.bundle_type} />
-                    <InfoBox label="Number of Bags" value={rollData?.no_of_bags.toString() || '0'} />
+                    <InfoBox
+                        label={isSheeting ? "Sheeting Type" : "Bundle Type"}
+                        value={rollData?.bag_type || bundleData.bundle_type}
+                    />
+                    <InfoBox
+                        label={isSheeting ? "Number of Sheets" : "Number of Bags"}
+                        value={rollData?.no_of_bags.toString() || '0'}
+                    />
                     {rollData && (
                         <>
                             <InfoBox label="Printing Wastage" value={rollData.print_wastage} />

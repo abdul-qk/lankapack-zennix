@@ -13,6 +13,25 @@ async function getJobCardBagType(jobCardId: number) {
   return jobcard?.cut_bag_types?.bag_type || "";
 }
 
+async function getJobCardSheetType(jobCardId: number) {
+  const jobcard = await prisma.hps_jobcard.findUnique({
+    where: { job_card_id: jobCardId },
+    select: { sheeting_barcode: true },
+  });
+
+  if (!jobcard?.sheeting_barcode) return "";
+
+  const sheetTypeId = parseInt(jobcard.sheeting_barcode, 10);
+  if (isNaN(sheetTypeId)) return "";
+
+  const sheetType = await prisma.hps_sheet_type.findUnique({
+    where: { sheet_id: sheetTypeId },
+    select: { sheet_type: true },
+  });
+
+  return sheetType?.sheet_type || "";
+}
+
 async function getSlittingPrintWastage(jobCardId: number) {
   const slittingWastage = await prisma.hps_slitting_wastage.findFirst({
     where: { job_card_id: jobCardId },
@@ -139,7 +158,7 @@ export async function GET(
       );
     }
 
-    const bag_type = await getJobCardBagType(sheetingRoll.job_card_id);
+    const bag_type = await getJobCardSheetType(sheetingRoll.job_card_id);
     const wastage = await getSlittingPrintWastage(sheetingRoll.job_card_id);
 
     return NextResponse.json({

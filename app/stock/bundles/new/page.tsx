@@ -86,6 +86,8 @@ export default function AddBundlePage() {
     const [isSubmittingNonComplete, setIsSubmittingNonComplete] = React.useState(false);
 
     const { toast } = useToast();
+    const quantityLabel = rollData?.source === "sheeting" ? "No of Sheets" : "No of Bags";
+    const quantityInfoLabel = rollData?.source === "sheeting" ? "Number of Sheets" : "Number of Bags";
 
     // React.useEffect(() => {
     //     const fetchJobCards = async () => {
@@ -215,7 +217,7 @@ export default function AddBundlePage() {
         if (!bundleWeight || !noOfBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -308,7 +310,7 @@ export default function AddBundlePage() {
         if (!nonCompleteWeight || !nonCompleteBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -629,8 +631,11 @@ export default function AddBundlePage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <InfoBox label="Bag Type" value={rollData.bag_type} />
-                                <InfoBox label="Number of Bags" value={rollData.no_of_bags} />
+                                <InfoBox
+                                    label={rollData.source === "sheeting" ? "Sheeting Type" : "Bag Type"}
+                                    value={rollData.bag_type}
+                                />
+                                <InfoBox label={quantityInfoLabel} value={rollData.no_of_bags} />
                                 <InfoBox label="Slitting Wastage" value={rollData.slitting_wastage} />
                                 <InfoBox label="Printing Wastage" value={rollData.print_wastage} />
                                 <InfoBox
@@ -673,10 +678,10 @@ export default function AddBundlePage() {
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="no-of-bags">No of Bags</Label>
+                                                <Label htmlFor="no-of-bags">{quantityLabel}</Label>
                                                 <Input
                                                     id="no-of-bags"
-                                                    placeholder="No of Bags"
+                                                    placeholder={quantityLabel}
                                                     className="mt-1"
                                                     value={noOfBags}
                                                     onChange={(e) => setNoOfBags(e.target.value)}
@@ -699,7 +704,7 @@ export default function AddBundlePage() {
                                                     <TableRow>
                                                         <TableHead className="w-[100px]">#</TableHead>
                                                         <TableHead>Weight</TableHead>
-                                                        <TableHead>No of Bags</TableHead>
+                                                        <TableHead>{quantityLabel}</TableHead>
                                                         <TableHead>Barcode</TableHead>
                                                         <TableHead className="text-right">Action</TableHead>
                                                     </TableRow>
@@ -789,10 +794,10 @@ export default function AddBundlePage() {
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="non-complete-bags">No of Bags</Label>
+                                                <Label htmlFor="non-complete-bags">{quantityLabel}</Label>
                                                 <Input
                                                     id="non-complete-bags"
-                                                    placeholder="No of Bags"
+                                                    placeholder={quantityLabel}
                                                     className="mt-1"
                                                     value={nonCompleteBags}
                                                     onChange={(e) => setNonCompleteBags(e.target.value)}
@@ -815,7 +820,7 @@ export default function AddBundlePage() {
                                                     <TableRow>
                                                         <TableHead className="w-[100px]">#</TableHead>
                                                         <TableHead>Weight</TableHead>
-                                                        <TableHead>No of Bags</TableHead>
+                                                        <TableHead>{quantityLabel}</TableHead>
                                                         <TableHead>Barcode</TableHead>
                                                         <TableHead className="text-right">Action</TableHead>
                                                     </TableRow>
