@@ -263,7 +263,7 @@ export default function ViewSheetingInfo() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>#</TableHead>
-                                            <TableHead>No of Bags</TableHead>
+                                            <TableHead>No of Sheets</TableHead>
                                             <TableHead>Weight</TableHead>
                                             <TableHead>Wastage</TableHead>
                                             <TableHead>Date</TableHead>

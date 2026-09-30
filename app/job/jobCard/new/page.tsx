@@ -123,6 +123,7 @@ export default function JobCardTable() {
 
     // Printing section
     const [printingCylinderSize, setPrintingCylinderSize] = React.useState<string>("");
+    const [printingQtyUnit, setPrintingQtyUnit] = React.useState<"bags" | "sheets">("bags");
     const [printingNumberOfBags, setPrintingNumberOfBags] = React.useState<string>("");
     const [printingColourType, setPrintingColourType] = React.useState<string>("");
     const [printingBlockSize, setPrintingBlockSize] = React.useState<string>("");
@@ -289,6 +290,7 @@ export default function JobCardTable() {
             printing: {
                 active: printing,
                 cylinder_size: printing ? printingCylinderSize : null,
+                qty_unit: printing ? printingQtyUnit : null,
                 number_of_bags: printing ? printingNumberOfBags : null,
                 colour_type: printing ? printingColourType : null,
                 block_size: printing ? printingBlockSize : null,
@@ -594,7 +596,24 @@ export default function JobCardTable() {
                                         </Select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Number Of Bags/Sheets</label>
+                                        <label className="text-sm font-medium">Unit</label>
+                                        <Select
+                                            onValueChange={(value) =>
+                                                setPrintingQtyUnit(value === "sheets" ? "sheets" : "bags")
+                                            }
+                                            value={printingQtyUnit}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Unit" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="bags">Bags</SelectItem>
+                                                <SelectItem value="sheets">Sheets</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <label className="text-sm font-medium">
+                                            {printingQtyUnit === "sheets" ? "Number of Sheets" : "Number of Bags"}
+                                        </label>
                                         <Input
                                             value={printingNumberOfBags}
                                             onChange={(e) => setPrintingNumberOfBags(e.target.value)}

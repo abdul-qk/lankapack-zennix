@@ -1,12 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
+import { pickBundlePrice } from "@/lib/sales/resolveBundlePrice";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const barcode = searchParams.get("barcode");
+    const barcode = searchParams.get("barcode")?.trim();
 
     if (!barcode) {
       return new Response(JSON.stringify({ error: "Barcode is required" }), {
@@ -14,20 +15,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Check if barcode exists in complete_item table
+    // Check if barcode exists in complete_item table (already sold / on a DO)
     const completeItem = await prisma.hps_complete_item.findFirst({
       where: {
         complete_item_barcode: barcode,
         del_ind: 0,
-      },
-    });
-
-    const bundlePrice = await prisma.hps_bag_type.findFirst({
-      where: {
-        bag_type: completeItem?.bundle_type,
-      },
-      select: {
-        bag_price: true,
       },
     });
 
@@ -41,6 +33,19 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const [bagType, sheetType] = await Promise.all([
+      prisma.hps_bag_type.findFirst({
+        where: { bag_type: completeItem.bundle_type },
+        select: { bag_price: true },
+      }),
+      prisma.hps_sheet_type.findFirst({
+        where: { sheet_type: completeItem.bundle_type },
+        select: { sheet_price: true },
+      }),
+    ]);
+
+    const price = pickBundlePrice(bagType?.bag_price, sheetType?.sheet_price);
+
     // Check if this item has already been returned
     const existingReturnItem = await prisma.hps_return_item.findFirst({
       where: {
@@ -50,7 +55,6 @@ export async function GET(req: NextRequest) {
     });
 
     if (existingReturnItem) {
-      // If we found a return item, check if the associated return_info is active
       const returnInfo = await prisma.hps_return_info.findUnique({
         where: {
           return_info_id: existingReturnItem.return_info_id,
@@ -68,7 +72,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Get additional item details
     return new Response(
       JSON.stringify({
         success: true,
@@ -76,8 +79,8 @@ export async function GET(req: NextRequest) {
           complete_item_id: completeItem.complete_item_id,
           bundle_type: completeItem.bundle_type,
           weight: parseFloat(completeItem.complete_item_weight),
-          bags: parseInt(completeItem.complete_item_bags),
-          price: bundlePrice?.bag_price,
+          bags: parseInt(completeItem.complete_item_bags, 10),
+          price,
         },
       }),
       { status: 200 }

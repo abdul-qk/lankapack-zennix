@@ -72,6 +72,7 @@ interface JobCardData {
     printing_color_name: string;
     formattedColorNames: string;
     printing_no_of_bag: string;
+    printing_qty_unit?: string | null;
     printing_remark: string;
     block_size: string;
     cutting_type: string;
@@ -390,7 +391,10 @@ export default function JobCardTable() {
                                         <InfoRow label="Cylinder Size" value={data.print_size ? data.print_size.print_size : "Not specified"} />
                                         <InfoRow label="Color Type" value={data.printing_color_type ? data.printing_color_type + ' Colour(s)' : "Not specified"} />
                                         <InfoRow label="Color Name(s)" value={data.formattedColorNames || data.printing_color_name || "Not specified"} />
-                                        <InfoRow label="No. of Bags" value={data.printing_no_of_bag || "Not specified"} />
+                                        <InfoRow
+                                            label={data.printing_qty_unit === "sheets" ? "No. of Sheets" : "No. of Bags"}
+                                            value={data.printing_no_of_bag || "Not specified"}
+                                        />
                                         <InfoRow label="Remark" value={data.printing_remark || "Not specified"} />
                                         <InfoRow label="Block Size" value={data.block_size || "Not specified"} />
                                     </CardContent>

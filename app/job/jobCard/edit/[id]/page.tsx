@@ -106,6 +106,7 @@ interface JobCardData {
     printing_color_type: string | null;
     printing_color_name: string | null;
     printing_no_of_bag: string | null;
+    printing_qty_unit: string | null;
     printing_remark: string | null;
     block_size: string | null;
     cutting_type: number | null;
@@ -156,6 +157,7 @@ export default function EditJobCard() {
 
     // Printing section
     const [printingCylinderSize, setPrintingCylinderSize] = React.useState<string>("");
+    const [printingQtyUnit, setPrintingQtyUnit] = React.useState<"bags" | "sheets">("bags");
     const [printingNumberOfBags, setPrintingNumberOfBags] = React.useState<string>("");
     const [printingBlockSize, setPrintingBlockSize] = React.useState<string>("");
     const [printingRemark, setPrintingRemark] = React.useState<string>("");
@@ -278,6 +280,7 @@ export default function EditJobCard() {
         if (jobCard.printing_no_of_bag) {
             setPrintingNumberOfBags(jobCard.printing_no_of_bag);
         }
+        setPrintingQtyUnit(jobCard.printing_qty_unit === "sheets" ? "sheets" : "bags");
         if (jobCard.printing_color_type) {
             setNumberOfColors(jobCard.printing_color_type);
         }
@@ -418,6 +421,7 @@ export default function EditJobCard() {
             printing: {
                 active: printing,
                 cylinder_size: printing ? printingCylinderSize : null,
+                qty_unit: printing ? printingQtyUnit : null,
                 number_of_bags: printing ? printingNumberOfBags : null,
                 block_size: printing ? printingBlockSize : null,
                 remark: printing ? printingRemark : null,
@@ -726,7 +730,24 @@ export default function EditJobCard() {
                                         </Select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Number of Bags/Sheets</label>
+                                        <label className="text-sm font-medium">Unit</label>
+                                        <Select
+                                            onValueChange={(value) =>
+                                                setPrintingQtyUnit(value === "sheets" ? "sheets" : "bags")
+                                            }
+                                            value={printingQtyUnit}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Unit" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="bags">Bags</SelectItem>
+                                                <SelectItem value="sheets">Sheets</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <label className="text-sm font-medium">
+                                            {printingQtyUnit === "sheets" ? "Number of Sheets" : "Number of Bags"}
+                                        </label>
                                         <Input
                                             value={printingNumberOfBags}
                                             onChange={(e) => setPrintingNumberOfBags(e.target.value)}

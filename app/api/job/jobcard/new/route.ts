@@ -110,6 +110,11 @@ export async function POST(req: Request) {
                 .join(",")
             : null,
         printing_no_of_bag: printing.active ? printing.number_of_bags : null,
+        printing_qty_unit: printing.active
+          ? printing.qty_unit === "sheets"
+            ? "sheets"
+            : "bags"
+          : null,
         printing_remark: printing.active ? printing.remark : "",
         block_size:
           printing.active && printing.block_size ? printing.block_size : "",

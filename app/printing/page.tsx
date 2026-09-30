@@ -38,6 +38,7 @@ type JobCardInfo = {
     customer: CustomerInfo;
     particular: ParticularInfo;
     printing_no_of_bag: string;
+    printing_qty_unit?: string | null;
     add_date: string;
     updated_date: string;
     card_printting: number;
@@ -116,7 +117,12 @@ export default function SlitingTable() {
         },
         {
             accessorKey: "printing_no_of_bag",
-            header: "No of Bags",
+            header: "Bags/Sheets",
+            cell: ({ row }) => {
+                const qty = row.original.printing_no_of_bag || "—";
+                const unit = row.original.printing_qty_unit === "sheets" ? "Sheets" : "Bags";
+                return `${qty} (${unit})`;
+            },
         },
         {
             accessorKey: "add_date",

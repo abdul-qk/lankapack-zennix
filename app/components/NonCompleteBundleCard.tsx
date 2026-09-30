@@ -37,6 +37,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
     const quantityLabel = rollData.source === "sheeting" ? "No of Sheets" : "No of Bags";
+    const qtyFieldLabel = rollData.source === "sheeting" ? "Sheets" : "Bags";
 
     const { toast } = useToast();
 
@@ -193,7 +194,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                 <tr><td><strong>Bundle ID:</strong></td><td>${item.non_complete_id}</td></tr>
                                 <tr><td><strong>Type:</strong></td><td>${bundleType || 'N/A'}</td></tr>
                                 <tr><td><strong>Weight:</strong></td><td>${item.non_complete_weight}</td></tr>
-                                <tr><td><strong>Bags:</strong></td><td>${item.non_complete_bags}</td></tr>
+                                <tr><td><strong>${qtyFieldLabel}:</strong></td><td>${item.non_complete_bags}</td></tr>
                             </table>
                         </div>
                     </div>
@@ -487,7 +488,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                                             <div className="font-semibold bg-gray-100 p-2 rounded-l">Weight</div>
                                                             <div className="p-2 border rounded-r">{item.non_complete_weight}</div>
 
-                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">Bags</div>
+                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">{qtyFieldLabel}</div>
                                                             <div className="p-2 border rounded-r">{item.non_complete_bags}</div>
                                                         </div>
                                                     </div>
@@ -515,7 +516,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                                                             <tr><td><strong>Bundle ID:</strong></td><td>${item.non_complete_id}</td></tr>
                                                                             <tr><td><strong>Type:</strong></td><td>${bundleType}</td></tr>
                                                                             <tr><td><strong>Weight:</strong></td><td>${item.non_complete_weight}</td></tr>
-                                                                            <tr><td><strong>Bags:</strong></td><td>${item.non_complete_bags}</td></tr>
+                                                                            <tr><td><strong>${qtyFieldLabel}:</strong></td><td>${item.non_complete_bags}</td></tr>
                                                                         </table>
                                                                     </div>
                                                                 `;

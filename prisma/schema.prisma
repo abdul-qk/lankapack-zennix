@@ -197,6 +197,7 @@ model hps_jobcard {
   printing_color_type String?  @db.VarChar(120)
   printing_color_name String?  @db.VarChar(420)
   printing_no_of_bag  String?  @db.VarChar(240)
+  printing_qty_unit   String?  @db.VarChar(20)
   printing_remark     String   @db.VarChar(240)
   block_size          String   @db.VarChar(120)
   cutting_type        Int

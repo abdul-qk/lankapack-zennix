@@ -44,6 +44,7 @@ interface JobCardData {
     printing_color_type: string;
     printing_color_name: string;
     printing_no_of_bag: string;
+    printing_qty_unit?: string | null;
     printing_remark: string;
     block_size: string;
     formattedColorNames: string;
@@ -220,7 +221,10 @@ export default function ViewSlittingInfo() {
                             <CardContent>
                                 {/* <InfoRow label="Roll Type" value={data.slitting_roll_type} /> */}
                                 <InfoRow label="Cylinder Size" value={data.print_size.print_size || "Not specified"} />
-                                <InfoRow label="Numbar Of Bags" value={data.printing_no_of_bag || "Not specified"} />
+                                <InfoRow
+                                    label={data.printing_qty_unit === "sheets" ? "Number of Sheets" : "Number of Bags"}
+                                    value={data.printing_no_of_bag || "Not specified"}
+                                />
                                 <InfoRow label="Color type" value={data.printing_color_type + " Colour(s)" || "Not specified"} />
                                 {/* <InfoRow label="Color" value={colorNames.map((color) => color.split(" ")[0]).join(", ") || "Not specified"} /> */}
                                 <InfoRow label="Color" value={data.formattedColorNames} />

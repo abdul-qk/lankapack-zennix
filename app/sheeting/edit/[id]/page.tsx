@@ -312,7 +312,7 @@ export default function ViewSlittingInfo() {
         if (!bagWeight) {
             toast({
                 title: "Error",
-                description: "Bag weight is required",
+                description: "Sheet weight is required",
                 variant: "destructive",
             });
             return;
@@ -321,7 +321,7 @@ export default function ViewSlittingInfo() {
         if (!noOfBags) {
             toast({
                 title: "Error",
-                description: "Number of bags is required",
+                description: "Number of sheets is required",
                 variant: "destructive",
             });
             return;
@@ -636,7 +636,7 @@ export default function ViewSlittingInfo() {
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                        Bag Weight
+                                                        Sheet Weight
                                                     </label>
                                                     <input
                                                         value={bagWeight}
@@ -644,12 +644,12 @@ export default function ViewSlittingInfo() {
                                                         type="text"
                                                         disabled={!selectedSheetingId}
                                                         className="p-2 border border-gray-300 rounded-md w-full"
-                                                        placeholder="Enter bag weight"
+                                                        placeholder="Enter sheet weight"
                                                     />
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                        No of Bags
+                                                        No of Sheets
                                                     </label>
                                                     <input
                                                         value={noOfBags}
@@ -657,7 +657,7 @@ export default function ViewSlittingInfo() {
                                                         type="number"
                                                         disabled={!selectedSheetingId}
                                                         className="p-2 border border-gray-300 rounded-md w-full"
-                                                        placeholder="Enter number of bags"
+                                                        placeholder="Enter number of sheets"
                                                     />
                                                 </div>
                                                 <div>
@@ -691,8 +691,8 @@ export default function ViewSlittingInfo() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>ID</TableHead>
-                                            <TableHead>No of Bags</TableHead>
-                                            <TableHead>Bag Weight</TableHead>
+                                            <TableHead>No of Sheets</TableHead>
+                                            <TableHead>Sheet Weight</TableHead>
                                             <TableHead>Wastage</TableHead>
                                             <TableHead>Date</TableHead>
                                             <TableHead>Action</TableHead>
