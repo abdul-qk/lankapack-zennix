@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { bundleData, completeItemIds, nonCompleteItemIds } = body;
 
@@ -14,9 +20,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add current date to bundle data
+    // Add current date and session user; never trust client user_id
+    const { user_id: _ignoredUserId, ...safeBundleData } = bundleData;
     const bundleWithDate = {
-      ...bundleData,
+      ...safeBundleData,
+      user_id: userId,
       bundle_date: new Date(),
     };
 
@@ -37,6 +45,7 @@ export async function POST(request: NextRequest) {
           },
           data: {
             complete_item_info: bundleInfo.bundle_info_id,
+            user_id: userId,
           },
         });
       }
@@ -51,6 +60,7 @@ export async function POST(request: NextRequest) {
           },
           data: {
             non_complete_info: bundleInfo.bundle_info_id,
+            user_id: userId,
           },
         });
       }

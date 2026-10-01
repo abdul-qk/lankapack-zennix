@@ -1,9 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from 'next/server';
 import { runWithTimeout } from "@/lib/requestTimeout";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { material_supplier, itemIds } = await req.json();
 
     if (!material_supplier || !itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
@@ -47,7 +53,7 @@ export async function POST(req: Request) {
           total_net_weight: total_net_weight,
           total_gross_weight: total_gross_weight,
           add_date: new Date(),
-          user_id: 1, // Assuming user ID 1
+          user_id: userId,
           material_info_status: 1, // Assuming status 1
         },
       });

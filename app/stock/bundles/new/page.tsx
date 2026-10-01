@@ -235,7 +235,6 @@ export default function AddBundlePage() {
                     bundle_type: rollData.bag_type,
                     complete_item_weight: bundleWeight,
                     complete_item_bags: noOfBags,
-                    user_id: 1 // Default user ID
                 }),
             });
 
@@ -328,7 +327,6 @@ export default function AddBundlePage() {
                     non_complete_info: 1, // Default user ID
                     non_complete_weight: nonCompleteWeight,
                     non_complete_bags: nonCompleteBags,
-                    user_id: 1, // Default user ID
                     del_ind: 1
                 }),
             });
@@ -473,7 +471,6 @@ export default function AddBundlePage() {
                     bundle_sheeting_wastage: processWastage,
                     bundle_info_wastage_bags: wastage_bags,
                     bundle_info_wastage_weight: wastage_weight,
-                    user_id: 1,
                     bundle_info_status: 1,
                 }
                 : {
@@ -490,7 +487,6 @@ export default function AddBundlePage() {
                     bundle_sheeting_wastage: "0",
                     bundle_info_wastage_bags: wastage_bags,
                     bundle_info_wastage_weight: wastage_weight,
-                    user_id: 1,
                     bundle_info_status: 1,
                 };
 

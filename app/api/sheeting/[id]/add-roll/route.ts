@@ -1,12 +1,18 @@
 // /app/api/sheeting/[id]/add-roll/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const jobCardId = parseInt(params.id);
     const { sheeting_id, sheeting_roll_weight, no_of_bags, sheeting_wastage } =
       await request.json();
@@ -61,7 +67,7 @@ export async function POST(
         sheeting_wastage,
         sheeting_barcode: sheetingBarcode,
         add_date: new Date(),
-        user_id: 1, // Replace with actual user ID from your auth system
+        user_id: userId,
         del_ind: 1,
       },
     });

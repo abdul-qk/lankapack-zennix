@@ -342,7 +342,6 @@ export default function EditBundlePage() {
                     bundle_sheeting_wastage: processWastage,
                     bundle_info_wastage_bags: wastage_bags,
                     bundle_info_wastage_weight: wastage_weight,
-                    user_id: 1,
                     bundle_info_status: bundleData.bundle_info_status,
                 }
                 : {
@@ -360,7 +359,6 @@ export default function EditBundlePage() {
                     bundle_sheeting_wastage: "0",
                     bundle_info_wastage_bags: wastage_bags,
                     bundle_info_wastage_weight: wastage_weight,
-                    user_id: 1,
                     bundle_info_status: bundleData.bundle_info_status,
                 };
 

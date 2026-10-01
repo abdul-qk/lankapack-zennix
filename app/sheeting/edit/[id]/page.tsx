@@ -182,7 +182,6 @@ export default function ViewSlittingInfo() {
                     jobCardId: Number(id),
                     barcode: newBarcode,
                     weight: newWeight,
-                    userId: 1, // Replace with actual user ID from your auth system
                 }),
             });
 

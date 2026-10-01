@@ -93,7 +93,6 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                     non_complete_info: parseInt(bundleId),
                     non_complete_weight: nonCompleteWeight,
                     non_complete_bags: nonCompleteBags,
-                    user_id: 1, // Default user ID
                     del_ind: 1
                 }),
             });

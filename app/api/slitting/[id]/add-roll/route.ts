@@ -1,10 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const jobCardId = parseInt(params.id);
     const { slitting_id, slitting_roll_weight, slitting_roll_width, selectedBarcode } =
       await req.json();
@@ -88,7 +94,7 @@ export async function POST(
         slitting_roll_width: slitting_roll_width.toString(),
         slitting_barcode: slittingBarcode,
         add_date: new Date(),
-        user_id: 1, // Replace with actual user ID from your auth system
+        user_id: userId,
         del_ind: 0,
       },
     });

@@ -117,7 +117,7 @@ export default function BundlesTable() {
         },
         {
             accessorKey: "bundle_info_bags",
-            header: "Total Bags",
+            header: "Total Bags/Sheets",
         },
         {
             accessorKey: "bundle_info_weight",

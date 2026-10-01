@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(
   req: Request,
@@ -80,6 +81,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const jobCardId = parseInt(params.id);
     const {
       customer_id,
@@ -170,6 +178,7 @@ export async function PUT(
         updated_date: formattedUpdatedDate,
         add_date: formattedJobCardDate || undefined,
         delivery_date: parsedDeliveryDate ? parsedDeliveryDate.toISOString() : undefined,
+        user_id: userId,
       },
     });
 

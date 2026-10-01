@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(req: Request) {
   try {
@@ -18,6 +19,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const {
       customer_full_name,
       contact_person,
@@ -48,7 +56,7 @@ export async function POST(req: Request) {
         customer_mobile: customer_mobile,
         customer_add_date: new Date(),
         customer_email_address: customer_email_address,
-        hps_user_id: 0,
+        hps_user_id: userId,
         del_ind: 1,
       },
     });

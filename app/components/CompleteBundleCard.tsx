@@ -92,7 +92,6 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                     complete_item_weight: bundleWeight,
                     complete_item_bags: noOfBags,
                     complete_item_info: bundleId,
-                    user_id: 1 // Default user ID
                 }),
             });
 

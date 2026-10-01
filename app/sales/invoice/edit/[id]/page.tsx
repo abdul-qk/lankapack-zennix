@@ -405,7 +405,6 @@ export default function EditInvoice() {
           total: item.total,
           doNumber: item.doNumber,
         })),
-        userId: invoiceInfo?.user_id || 1,
       };
 
       console.log("Submitting updated invoice data:", requestData);

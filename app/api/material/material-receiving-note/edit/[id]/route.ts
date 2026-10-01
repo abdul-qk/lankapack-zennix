@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(
   req: Request,
@@ -82,6 +83,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const materialId = parseInt(params.id, 10);
     const { materialInfo } = await req.json();
 
@@ -144,7 +152,7 @@ export async function PUT(
               material_item_gross_weight: item.material_item_gross_weight,
               material_item_barcode: "00000000",
               added_date: new Date(),
-              user_id: 1,
+              user_id: userId,
               material_status: 1,
             },
           });

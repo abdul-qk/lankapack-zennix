@@ -1,8 +1,17 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     
     // Validate required fields
@@ -43,7 +52,7 @@ export async function POST(req: NextRequest) {
         bill_do: body.doId.toString(), // Use the DO ID (sales_info_id) as the bill_do
         bill_total: total.toFixed(2),
         add_date: new Date(),
-        user_id: body.userId || 1, // Default to 1 if not provided
+        user_id: userId,
         del_ind: 1, // Not deleted
       },
     });
@@ -58,7 +67,7 @@ export async function POST(req: NextRequest) {
           bundel_qty: item.quantity.toString(),
           item_price: item.price,
           item_total: item.total,
-          user_id: body.userId || 1, // Default to 1 if not provided
+          user_id: userId,
           del_ind: 1, // Not deleted
         },
       })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 // GET: Fetch all non-complete items
 export async function GET() {
@@ -29,6 +30,11 @@ export async function GET() {
 // POST: Create a new non-complete item
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Validate required fields
@@ -55,7 +61,7 @@ export async function POST(request: NextRequest) {
         non_complete_info: body.non_complete_info || 1,
         non_complete_weight: body.non_complete_weight,
         non_complete_bags: body.non_complete_bags,
-        user_id: body.user_id || 1,
+        user_id: userId,
         del_ind: body.del_ind || 1,
         // We'll update the barcode after we know the ID
         non_complete_barcode: "temp",

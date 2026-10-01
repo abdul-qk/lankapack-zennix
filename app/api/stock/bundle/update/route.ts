@@ -1,9 +1,15 @@
 // File: /app/api/stock/bundle/update/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function PUT(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { bundleData, completeItemIds, nonCompleteItemIds } =
       await request.json();
 
@@ -43,7 +49,7 @@ export async function PUT(request: NextRequest) {
         bundle_cutting_wastage: bundleData.bundle_cutting_wastage ?? "0",
         bundle_sheeting_wastage: bundleData.bundle_sheeting_wastage ?? "0",
         bundle_date: new Date(), // Update the date to current
-        user_id: bundleData.user_id,
+        user_id: userId,
         bundle_info_status: bundleData.bundle_info_status,
       },
     });
@@ -58,7 +64,7 @@ export async function PUT(request: NextRequest) {
         },
         data: {
           complete_item_info: bundleData.bundle_info_id,
-          user_id: bundleData.user_id,
+          user_id: userId,
         },
       });
     }
@@ -73,7 +79,7 @@ export async function PUT(request: NextRequest) {
         },
         data: {
           non_complete_info: bundleData.bundle_info_id,
-          user_id: bundleData.user_id,
+          user_id: userId,
         },
       });
     }

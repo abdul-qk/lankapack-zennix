@@ -1,8 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from 'next/server';
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { item } = await req.json();
 
     // Use transaction to handle both material item creation and material info update
@@ -21,7 +27,7 @@ export async function POST(req: Request) {
           material_colour: item.material_colour,
           material_item_barcode: "", // Initialize barcode as empty
           added_date: new Date(),
-          user_id: 1, // Assuming user ID 1 for now
+          user_id: userId,
           material_status: 1, // Assuming status 1 for active
         },
       });

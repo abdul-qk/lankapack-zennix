@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { safeParseInt } from "@/lib/validation";
 import { sanitizeString } from "@/lib/sanitize";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(req: Request) {
   //   Get all customers from hps_customer table
@@ -34,6 +35,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const body = await req.json();
     const {
       customer_id,
@@ -151,7 +159,7 @@ export async function POST(req: Request) {
           : "",
 
         // Status indicators
-        user_id: 1, // Default user ID, modify as needed
+        user_id: userId,
         card_slitting: 0,
         card_printting: 0,
         card_cutting: 0,
