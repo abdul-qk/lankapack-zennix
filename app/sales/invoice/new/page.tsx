@@ -283,7 +283,6 @@ export default function NewInvoice() {
           bagTypeId: Number(item.bagTypeId),
           quantity: item.quantity.toString(),
         })),
-        userId: 1, // Default user ID
       };
 
       console.log("Submitting request data:", requestData);

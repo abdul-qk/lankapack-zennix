@@ -86,6 +86,12 @@ interface BagTypeInfo {
     bags_select: string;
 }
 
+interface SheetTypeInfo {
+    sheet_id: number;
+    sheet_type: string;
+    sheet_price: string;
+}
+
 interface JobCardData {
     jobcard_id: number;
     customer_id: number;
@@ -100,6 +106,7 @@ interface JobCardData {
     printing_color_type: string | null;
     printing_color_name: string | null;
     printing_no_of_bag: string | null;
+    printing_qty_unit: string | null;
     printing_remark: string | null;
     block_size: string | null;
     cutting_type: number | null;
@@ -109,6 +116,8 @@ interface JobCardData {
     cuting_no_of_bag: string | null;
     cuting_remark: string | null;
     cutting_fold: string | null;
+    sheeting_barcode?: string | null;
+    sheeting_weight?: string | null;
     add_date: string;
     updated_date: string;
     delivery_date: string;
@@ -128,6 +137,7 @@ export default function EditJobCard() {
     const [slitting, setSlitting] = React.useState(false);
     const [cutting, setCutting] = React.useState(false);
     const [printing, setPrinting] = React.useState(false);
+    const [sheeting, setSheeting] = React.useState(false);
     const [jobCardDate, setJobCardDate] = React.useState<Date | undefined>(undefined);
     const [deliveryDate, setDeliveryDate] = React.useState<Date | undefined>(undefined);
     const [selectedPaperRollId, setSelectedPaperRollId] = React.useState<string>("");
@@ -147,6 +157,7 @@ export default function EditJobCard() {
 
     // Printing section
     const [printingCylinderSize, setPrintingCylinderSize] = React.useState<string>("");
+    const [printingQtyUnit, setPrintingQtyUnit] = React.useState<"bags" | "sheets">("bags");
     const [printingNumberOfBags, setPrintingNumberOfBags] = React.useState<string>("");
     const [printingBlockSize, setPrintingBlockSize] = React.useState<string>("");
     const [printingRemark, setPrintingRemark] = React.useState<string>("");
@@ -162,9 +173,15 @@ export default function EditJobCard() {
     const [cuttingFold, setCuttingFold] = React.useState<string>("");
     const [cuttingRemark, setCuttingRemark] = React.useState<string>("");
 
+    // Sheeting section
+    const [sheetTypes, setSheetTypes] = React.useState<SheetTypeInfo[]>([]);
+    const [sheetingSheetTypeId, setSheetingSheetTypeId] = React.useState<string>("");
+    const [sheetingNoOfSheets, setSheetingNoOfSheets] = React.useState<string>("");
+
     React.useEffect(() => {
         fetchJobCardData();
         fetchBagTypeData();
+        fetchSheetTypeData();
     }, [jobCardId]);
 
     const fetchJobCardData = async () => {
@@ -212,6 +229,19 @@ export default function EditJobCard() {
         }
     };
 
+    const fetchSheetTypeData = async () => {
+        try {
+            const response = await fetch(`/api/job/sheettype/`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setSheetTypes(data.data || []);
+        } catch (error) {
+            console.error("Error fetching sheet type data:", error);
+        }
+    };
+
     const populateFormData = (jobCard: JobCardData) => {
         // Set basic info
         setSelectedCustomer(jobCard.customer_id.toString());
@@ -233,6 +263,7 @@ export default function EditJobCard() {
         setSlitting(sectionList.includes('1'));
         setPrinting(sectionList.includes('2'));
         setCutting(sectionList.includes('3'));
+        setSheeting(sectionList.includes('4'));
 
         // Slitting section
         if (jobCard.slitting_size) {
@@ -249,6 +280,7 @@ export default function EditJobCard() {
         if (jobCard.printing_no_of_bag) {
             setPrintingNumberOfBags(jobCard.printing_no_of_bag);
         }
+        setPrintingQtyUnit(jobCard.printing_qty_unit === "sheets" ? "sheets" : "bags");
         if (jobCard.printing_color_type) {
             setNumberOfColors(jobCard.printing_color_type);
         }
@@ -286,6 +318,14 @@ export default function EditJobCard() {
         }
         if (jobCard.cuting_remark) {
             setCuttingRemark(jobCard.cuting_remark);
+        }
+
+        // Sheeting section
+        if (jobCard.sheeting_barcode) {
+            setSheetingSheetTypeId(jobCard.sheeting_barcode);
+        }
+        if (jobCard.sheeting_weight) {
+            setSheetingNoOfSheets(jobCard.sheeting_weight);
         }
     };
 
@@ -381,6 +421,7 @@ export default function EditJobCard() {
             printing: {
                 active: printing,
                 cylinder_size: printing ? printingCylinderSize : null,
+                qty_unit: printing ? printingQtyUnit : null,
                 number_of_bags: printing ? printingNumberOfBags : null,
                 block_size: printing ? printingBlockSize : null,
                 remark: printing ? printingRemark : null,
@@ -396,6 +437,11 @@ export default function EditJobCard() {
                 print_name: cutting ? cuttingPrintName : null,
                 fold: cutting ? cuttingFold : null,
                 remark: cutting ? cuttingRemark : null,
+            },
+            sheeting: {
+                active: sheeting,
+                sheet_type_id: sheeting ? sheetingSheetTypeId : null,
+                no_of_sheets: sheeting ? sheetingNoOfSheets : null,
             },
         };
 
@@ -620,6 +666,13 @@ export default function EditJobCard() {
                                         />
                                         <label className="text-sm font-medium">Cutting</label>
                                     </div>
+                                    <div className="flex gap-2 items-center">
+                                        <Checkbox
+                                            checked={sheeting}
+                                            onCheckedChange={() => setSheeting(!sheeting)}
+                                        />
+                                        <label className="text-sm font-medium">Sheeting</label>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -677,7 +730,24 @@ export default function EditJobCard() {
                                         </Select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Number of Bags</label>
+                                        <label className="text-sm font-medium">Unit</label>
+                                        <Select
+                                            onValueChange={(value) =>
+                                                setPrintingQtyUnit(value === "sheets" ? "sheets" : "bags")
+                                            }
+                                            value={printingQtyUnit}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Unit" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="bags">Bags</SelectItem>
+                                                <SelectItem value="sheets">Sheets</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <label className="text-sm font-medium">
+                                            {printingQtyUnit === "sheets" ? "Number of Sheets" : "Number of Bags"}
+                                        </label>
                                         <Input
                                             value={printingNumberOfBags}
                                             onChange={(e) => setPrintingNumberOfBags(e.target.value)}
@@ -841,6 +911,48 @@ export default function EditJobCard() {
                                         value={cuttingRemark}
                                         onChange={(e) => setCuttingRemark(e.target.value)}
                                     />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Sheeting Section */}
+                    {sheeting && (
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <h2 className="text-xl font-semibold">Sheeting</h2>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">Sheet Type</label>
+                                        <Select
+                                            value={sheetingSheetTypeId}
+                                            onValueChange={setSheetingSheetTypeId}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Sheet Type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {sheetTypes.map((sheetType) => (
+                                                    <SelectItem
+                                                        key={sheetType.sheet_id}
+                                                        value={sheetType.sheet_id.toString()}
+                                                    >
+                                                        {sheetType.sheet_type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">No of sheets</label>
+                                        <Input
+                                            value={sheetingNoOfSheets}
+                                            onChange={(e) => setSheetingNoOfSheets(e.target.value)}
+                                            placeholder="Enter number of sheets"
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

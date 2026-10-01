@@ -1,13 +1,19 @@
 // /app/api/cutting/add-barcode/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { jobCardId, barcode, weight, userId } = await request.json();
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { jobCardId, barcode, weight } = await request.json();
 
     // Validate inputs
-    if (!jobCardId || !barcode || !weight || !userId) {
+    if (!jobCardId || !barcode || !weight) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

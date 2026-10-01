@@ -1,9 +1,15 @@
 // File: /app/api/stock/bundle/update/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function PUT(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { bundleData, completeItemIds, nonCompleteItemIds } =
       await request.json();
 
@@ -18,7 +24,19 @@ export async function PUT(request: NextRequest) {
         bundle_info_id: bundleData.bundle_info_id,
       },
       data: {
-        bundle_barcode: bundleData.bundle_barcode,
+        bundle_barcode:
+          bundleData.bundle_barcode === null || bundleData.bundle_barcode === undefined
+            ? null
+            : typeof bundleData.bundle_barcode === "string"
+              ? parseInt(bundleData.bundle_barcode, 10)
+              : bundleData.bundle_barcode,
+        sheeting_roll_id:
+          bundleData.sheeting_roll_id === null ||
+          bundleData.sheeting_roll_id === undefined
+            ? null
+            : typeof bundleData.sheeting_roll_id === "string"
+              ? parseInt(bundleData.sheeting_roll_id, 10)
+              : bundleData.sheeting_roll_id,
         bundle_type: bundleData.bundle_type,
         bundle_info_weight: bundleData.bundle_info_weight,
         bundle_info_bags: bundleData.bundle_info_bags,
@@ -28,9 +46,10 @@ export async function PUT(request: NextRequest) {
         bundle_qty: bundleData.bundle_qty,
         bundle_slitt_wastage: bundleData.bundle_slitt_wastage,
         bundle_print_wastage: bundleData.bundle_print_wastage,
-        bundle_cutting_wastage: bundleData.bundle_cutting_wastage,
+        bundle_cutting_wastage: bundleData.bundle_cutting_wastage ?? "0",
+        bundle_sheeting_wastage: bundleData.bundle_sheeting_wastage ?? "0",
         bundle_date: new Date(), // Update the date to current
-        user_id: bundleData.user_id,
+        user_id: userId,
         bundle_info_status: bundleData.bundle_info_status,
       },
     });
@@ -45,7 +64,7 @@ export async function PUT(request: NextRequest) {
         },
         data: {
           complete_item_info: bundleData.bundle_info_id,
-          user_id: bundleData.user_id,
+          user_id: userId,
         },
       });
     }
@@ -60,7 +79,7 @@ export async function PUT(request: NextRequest) {
         },
         data: {
           non_complete_info: bundleData.bundle_info_id,
-          user_id: bundleData.user_id,
+          user_id: userId,
         },
       });
     }

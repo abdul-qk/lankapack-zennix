@@ -19,6 +19,7 @@ import {
   Settings2,
   SquareActivity,
   SquareTerminal,
+  Layers,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -91,6 +92,10 @@ const data = {
           url: "/job/bagType",
         },
         {
+          title: "Sheet Types",
+          url: "/job/sheetType",
+        },
+        {
           title: "Print Sizes",
           url: "/job/printSizes",
         },
@@ -122,6 +127,11 @@ const data = {
       title: "Cutting",
       url: "/cutting",
       icon: Scissors,
+    },
+    {
+      title: "Sheeting",
+      url: "/sheeting",
+      icon: Layers,
     },
     {
       title: "Stock Management",

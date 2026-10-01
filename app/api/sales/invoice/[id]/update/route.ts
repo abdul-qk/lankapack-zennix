@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -6,6 +7,14 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const invoiceId = parseInt(params.id);
     const body = await req.json();
 
@@ -56,7 +65,7 @@ export async function PUT(
         customer_name: parseInt(body.customerId),
         bill_do: body.doId.toString(), // Use the DO ID (sales_info_id) as the bill_do
         bill_total: total.toFixed(2),
-        user_id: body.userId || 1, // Default to 1 if not provided
+        user_id: userId,
       },
     });
 
@@ -77,7 +86,7 @@ export async function PUT(
           bundel_qty: item.quantity.toString(),
           item_price: item.price,
           item_total: item.total,
-          user_id: body.userId || 1, // Default to 1 if not provided
+          user_id: userId,
           del_ind: 1, // Not deleted
         },
       })

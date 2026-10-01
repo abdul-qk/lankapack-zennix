@@ -40,9 +40,15 @@ type JobCardInfo = {
     customer: CustomerInfo;
     add_date: string;
     updated_date: string;
+    section_list: string;
     card_slitting: number;
     card_printting: number;
     card_cutting: number;
+    card_sheeting: number;
+    cut_bag_types?: {
+        bag_type: string;
+    } | null;
+    sheetTypeName?: string | null;
 };
 
 export default function JobCardTable() {
@@ -83,14 +89,16 @@ export default function JobCardTable() {
     // Filter data based on the debounced search input
     const filteredData = React.useMemo(() => {
         if (!debouncedSearch) return data;
+        const query = debouncedSearch.toLowerCase();
         return data.filter(
             (item) =>
-                // Add Supplier Name Search
-                item.customer.customer_full_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                item.customer.customer_full_name.toLowerCase().includes(query) ||
                 item.job_card_id.toString().includes(debouncedSearch) ||
                 item.updated_date.toString().includes(debouncedSearch) ||
                 new Date(item.add_date).toLocaleDateString().includes(debouncedSearch) ||
-                new Date(item.updated_date).toLocaleDateString().includes(debouncedSearch)
+                new Date(item.updated_date).toLocaleDateString().includes(debouncedSearch) ||
+                (item.cut_bag_types?.bag_type?.toLowerCase().includes(query) ?? false) ||
+                (item.sheetTypeName?.toLowerCase().includes(query) ?? false)
         );
     }, [data, debouncedSearch]);
 
@@ -102,6 +110,25 @@ export default function JobCardTable() {
         {
             accessorKey: "customer.customer_full_name",
             header: "Customer Name",
+        },
+        {
+            id: "bag_type",
+            header: "Bag Type",
+            cell: ({ row }) => {
+                const item = row.original;
+                const hasCutting = item.section_list?.split(",").includes("3");
+                const bagType = item.cut_bag_types?.bag_type;
+                return hasCutting && bagType ? bagType : null;
+            },
+        },
+        {
+            id: "sheet_type",
+            header: "Sheet Type",
+            cell: ({ row }) => {
+                const item = row.original;
+                const hasSheeting = item.section_list?.split(",").includes("4");
+                return hasSheeting && item.sheetTypeName ? item.sheetTypeName : null;
+            },
         },
         {
             accessorKey: "add_date",
@@ -143,6 +170,18 @@ export default function JobCardTable() {
             cell: ({ row }) => {
                 const item = row.original;
                 return item.card_cutting === 1 ? (
+                    <Button className="bg-green-800 text-white" variant="outline" size="sm">
+                        Completed
+                    </Button>
+                ) : null;
+            }
+        },
+        {
+            accessorKey: "card_sheeting",
+            header: "Sheeting",
+            cell: ({ row }) => {
+                const item = row.original;
+                return item.card_sheeting === 1 ? (
                     <Button className="bg-green-800 text-white" variant="outline" size="sm">
                         Completed
                     </Button>

@@ -159,7 +159,7 @@ export default function FinishingGoodsTable() {
         },
         {
             accessorKey: "complete_item_bags",
-            header: "No of Bags",
+            header: "No of Bags/Sheets",
         },
         {
             id: "complete_item_date",

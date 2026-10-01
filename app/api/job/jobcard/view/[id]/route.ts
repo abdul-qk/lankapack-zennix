@@ -75,9 +75,21 @@ export async function GET(
     }
 
     // Add the formatted color names to the response
+    let sheetTypeName: string | null = null;
+    if (finalJobCardInfo.sheeting_barcode) {
+      const sheetTypeId = parseInt(finalJobCardInfo.sheeting_barcode, 10);
+      if (!isNaN(sheetTypeId)) {
+        const sheetType = await prisma.hps_sheet_type.findUnique({
+          where: { sheet_id: sheetTypeId },
+        });
+        sheetTypeName = sheetType?.sheet_type || null;
+      }
+    }
+
     const responseData = {
       ...finalJobCardInfo,
       formattedColorNames: colorNames,
+      sheetTypeName,
       printSizes,
       cuttingTypes,
     };

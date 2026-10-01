@@ -86,6 +86,12 @@ interface BagTypeInfo {
     bags_select: string;
 }
 
+interface SheetTypeInfo {
+    sheet_id: number;
+    sheet_type: string;
+    sheet_price: string;
+}
+
 export default function JobCardTable() {
     const [loading, setLoading] = React.useState(true);
     const [customer, setCustomer] = React.useState<CustomerInfo[]>();
@@ -97,6 +103,7 @@ export default function JobCardTable() {
     const [slitting, setSlitting] = React.useState(false);
     const [cutting, setCutting] = React.useState(false);
     const [printing, setPrinting] = React.useState(false);
+    const [sheeting, setSheeting] = React.useState(false);
     const [jobCardDate, setJobCardDate] = React.useState<Date>();
     const [deliveryDate, setDeliveryDate] = React.useState<Date>();
     const [selectedPaperRollId, setSelectedPaperRollId] = React.useState<null | string>(null);
@@ -116,6 +123,7 @@ export default function JobCardTable() {
 
     // Printing section
     const [printingCylinderSize, setPrintingCylinderSize] = React.useState<string>("");
+    const [printingQtyUnit, setPrintingQtyUnit] = React.useState<"bags" | "sheets">("bags");
     const [printingNumberOfBags, setPrintingNumberOfBags] = React.useState<string>("");
     const [printingColourType, setPrintingColourType] = React.useState<string>("");
     const [printingBlockSize, setPrintingBlockSize] = React.useState<string>("");
@@ -133,9 +141,15 @@ export default function JobCardTable() {
     const [cuttingFold, setCuttingFold] = React.useState<string>("");
     const [cuttingRemark, setCuttingRemark] = React.useState<string>("");
 
+    // Sheeting section
+    const [sheetTypes, setSheetTypes] = React.useState<SheetTypeInfo[]>([]);
+    const [sheetingSheetTypeId, setSheetingSheetTypeId] = React.useState<string>("");
+    const [sheetingNoOfSheets, setSheetingNoOfSheets] = React.useState<string>("");
+
     React.useEffect(() => {
         fetchData();
         fetchBagTypeData();
+        fetchSheetTypeData();
     }, []);
 
     const fetchData = async () => {
@@ -166,6 +180,19 @@ export default function JobCardTable() {
         } catch (error) {
             console.error("Error fetching bag type data:", error);
             return [];
+        }
+    };
+
+    const fetchSheetTypeData = async () => {
+        try {
+            const response = await fetch(`/api/job/sheettype/`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setSheetTypes(data.data || []);
+        } catch (error) {
+            console.error("Error fetching sheet type data:", error);
         }
     };
 
@@ -263,6 +290,7 @@ export default function JobCardTable() {
             printing: {
                 active: printing,
                 cylinder_size: printing ? printingCylinderSize : null,
+                qty_unit: printing ? printingQtyUnit : null,
                 number_of_bags: printing ? printingNumberOfBags : null,
                 colour_type: printing ? printingColourType : null,
                 block_size: printing ? printingBlockSize : null,
@@ -279,6 +307,11 @@ export default function JobCardTable() {
                 print_name: cutting ? cuttingPrintName : null,
                 fold: cutting ? cuttingFold : null,
                 remark: cutting ? cuttingRemark : null,
+            },
+            sheeting: {
+                active: sheeting,
+                sheet_type_id: sheeting ? sheetingSheetTypeId : null,
+                no_of_sheets: sheeting ? sheetingNoOfSheets : null,
             },
         };
 
@@ -496,6 +529,13 @@ export default function JobCardTable() {
                                         />
                                         <label className="text-sm font-medium">Cutting</label>
                                     </div>
+                                    <div className="flex gap-2 items-center">
+                                        <Checkbox
+                                            checked={sheeting}
+                                            onCheckedChange={() => setSheeting(!sheeting)}
+                                        />
+                                        <label className="text-sm font-medium">Sheeting</label>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -556,7 +596,24 @@ export default function JobCardTable() {
                                         </Select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium">Number Of Bags</label>
+                                        <label className="text-sm font-medium">Unit</label>
+                                        <Select
+                                            onValueChange={(value) =>
+                                                setPrintingQtyUnit(value === "sheets" ? "sheets" : "bags")
+                                            }
+                                            value={printingQtyUnit}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Unit" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="bags">Bags</SelectItem>
+                                                <SelectItem value="sheets">Sheets</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <label className="text-sm font-medium">
+                                            {printingQtyUnit === "sheets" ? "Number of Sheets" : "Number of Bags"}
+                                        </label>
                                         <Input
                                             value={printingNumberOfBags}
                                             onChange={(e) => setPrintingNumberOfBags(e.target.value)}
@@ -721,6 +778,47 @@ export default function JobCardTable() {
                                         <Textarea
                                             value={cuttingRemark}
                                             onChange={(e) => setCuttingRemark(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {/* Sheeting Section */}
+                    {sheeting && (
+                        <Card className="mb-6">
+                            <CardHeader>
+                                <h2 className="text-xl font-semibold">Sheeting</h2>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">Sheet Type</label>
+                                        <Select
+                                            value={sheetingSheetTypeId}
+                                            onValueChange={setSheetingSheetTypeId}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Sheet Type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {sheetTypes.map((sheetType) => (
+                                                    <SelectItem
+                                                        key={sheetType.sheet_id}
+                                                        value={sheetType.sheet_id.toString()}
+                                                    >
+                                                        {sheetType.sheet_type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium">No of sheets</label>
+                                        <Input
+                                            value={sheetingNoOfSheets}
+                                            onChange={(e) => setSheetingNoOfSheets(e.target.value)}
+                                            placeholder="Enter number of sheets"
                                         />
                                     </div>
                                 </div>

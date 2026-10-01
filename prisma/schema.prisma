@@ -17,6 +17,12 @@ model hps_bag_type {
   jobcard                hps_jobcard[]
 }
 
+model hps_sheet_type {
+  sheet_id    Int    @id @default(autoincrement())
+  sheet_type  String @db.VarChar(120)
+  sheet_price String @default("0") @db.VarChar(12)
+}
+
 model hps_bill_info {
   bill_info_id  Int      @id @default(autoincrement())
   customer_name Int
@@ -41,7 +47,8 @@ model hps_bill_item {
 
 model hps_bundle_info {
   bundle_info_id             Int       @id @default(autoincrement())
-  bundle_barcode             Int       // Changed from String @db.VarChar(120) to Int
+  bundle_barcode             Int?      // Cutting roll id when source is cutting; null when sheeting
+  sheeting_roll_id           Int?
   bundle_type                String    @db.VarChar(120)
   bundle_info_weight         String    @db.VarChar(120)
   bundle_info_bags           String    @db.VarChar(120)
@@ -52,11 +59,13 @@ model hps_bundle_info {
   bundle_slitt_wastage       String    @db.VarChar(120)
   bundle_print_wastage       String    @db.VarChar(120)
   bundle_cutting_wastage     String    @db.VarChar(120)
+  bundle_sheeting_wastage    String    @default("0") @db.VarChar(120)
   bundle_date                DateTime? @db.Date
   user_id                    Int
   bundle_info_status         Int
   
   cutting_roll               hps_cutting_roll? @relation(fields: [bundle_barcode], references: [cutting_roll_id])
+  sheeting_roll              hps_sheeting_roll? @relation(fields: [sheeting_roll_id], references: [sheeting_roll_id])
 }
 
 model hps_colour {
@@ -78,12 +87,12 @@ model hps_complete_item {
 
 model hps_customer {
   customer_id            Int      @id @default(autoincrement())
-  customer_full_name     String   @db.VarChar(220)
-  contact_person         String   @db.VarChar(240)
-  customer_address       String   @db.VarChar(300)
-  customer_tel           String   @db.VarChar(15)
-  customer_mobile        String?  @db.VarChar(15)
-  customer_email_address String?  @db.VarChar(300)
+  customer_full_name     String
+  contact_person         String
+  customer_address       String
+  customer_tel           String
+  customer_mobile        String?
+  customer_email_address String?
   customer_add_date      DateTime @db.Date
   hps_user_id            Int
   del_ind                Int
@@ -136,6 +145,44 @@ model hps_cutting_wastage {
   del_ind            Int
 }
 
+model hps_sheeting {
+  sheeting_id      Int       @id @default(autoincrement())
+  job_card_id      Int
+  roll_barcode_no  String    @db.VarChar(120)
+  sheeting_weight  String    @db.VarChar(120)
+  number_of_roll   Int
+  wastage          String    @db.VarChar(12)
+  added_date       DateTime  @db.Date
+  update_date      DateTime? @db.Date
+  user_id          Int
+  del_ind          Int
+}
+
+model hps_sheeting_roll {
+  sheeting_roll_id     Int      @id @default(autoincrement())
+  job_card_id          Int
+  sheeting_id          Int
+  sheeting_roll_weight String   @db.VarChar(12)
+  no_of_bags           Int
+  sheeting_wastage     String   @db.VarChar(120)
+  sheeting_barcode     String?  @db.VarChar(120)
+  add_date             DateTime @db.Date
+  user_id              Int
+  del_ind              Int
+
+  bundles              hps_bundle_info[]
+}
+
+model hps_sheeting_wastage {
+  sheeting_wastage_id Int      @id @default(autoincrement())
+  job_card_id         Int
+  sheeting_id         Int
+  sheeting_wastage    String   @db.VarChar(120)
+  added_date          DateTime @db.Date
+  user_id             Int
+  del_ind             Int
+}
+
 model hps_jobcard {
   job_card_id         Int      @id @default(autoincrement())
   customer_id         Int
@@ -150,6 +197,7 @@ model hps_jobcard {
   printing_color_type String?  @db.VarChar(120)
   printing_color_name String?  @db.VarChar(420)
   printing_no_of_bag  String?  @db.VarChar(240)
+  printing_qty_unit   String?  @db.VarChar(20)
   printing_remark     String   @db.VarChar(240)
   block_size          String   @db.VarChar(120)
   cutting_type        Int
@@ -159,6 +207,8 @@ model hps_jobcard {
   cuting_no_of_bag    String?  @db.VarChar(240)
   cuting_remark       String   @db.VarChar(250)
   cutting_fold        String   @db.VarChar(240)
+  sheeting_barcode    String?  @db.VarChar(120)
+  sheeting_weight     String?  @db.VarChar(120)
   add_date            DateTime @db.Date
   updated_date        DateTime @db.Date
   delivery_date       String   @db.VarChar(100)
@@ -166,6 +216,7 @@ model hps_jobcard {
   card_slitting       Int
   card_printting      Int
   card_cutting        Int
+  card_sheeting       Int      @default(0)
   del_ind             Int
 
   customer            hps_customer     @relation(fields: [customer_id], references: [customer_id])
@@ -308,8 +359,8 @@ model hps_return_item {
   return_info_id   Int
   complete_item_id Int
   barcode_no       String @db.VarChar(255)
-  bundle_type      String @db.VarChar(30)
-  n_weight         Float  @db.Real
+  bundle_type      String @db.VarChar(255)
+  n_weight         Float
   no_of_bags       Int
   item_price       String @db.VarChar(12)
   item_total       String @db.VarChar(12)
@@ -340,13 +391,42 @@ model hps_sales_item {
   sales_info_id    Int
   complete_item_id Int
   barcode_no       String @db.VarChar(255)
-  bundle_type      String @db.VarChar(30)
-  n_weight         Float  @db.Real
+  bundle_type      String @db.VarChar(255)
+  n_weight         Float
   no_of_bags       Int
-  item_price       String @db.VarChar(12)
-  item_total       String @db.VarChar(12)
+  item_price       String @db.VarChar(24)
+  item_total       String @db.VarChar(24)
   user_id          Int
   sales_status     Int
+}
+
+model hps_sheet_info {
+  sheet_info_id      Int     @id @default(autoincrement())
+  sheet_supplier     Int
+  total_item         Int
+  total_net_weight   Float
+  total_gross_weight String  @db.VarChar(12)
+  hps_sheetroll      Int
+  add_date           String  @db.VarChar(255)
+  user_id            Int
+  sheet_info_status  Int
+}
+
+model hps_sheet_item {
+  sheet_item_id           Int       @id @default(autoincrement())
+  sheet_info_id           Int
+  sheet_item_no           String    @db.VarChar(255)
+  sheet_item_color        String    @db.VarChar(100)
+  sheet_item_particular   String    @db.VarChar(255)
+  sheet_item_variety      String    @db.VarChar(255)
+  sheet_item_gsm          String    @db.VarChar(255)
+  sheet_item_size         String    @db.VarChar(255)
+  sheet_item_net_weight   String    @db.VarChar(255)
+  sheet_item_gross_weight String    @db.VarChar(12)
+  sheet_item_barcode      String    @db.VarChar(15)
+  added_date              DateTime?
+  user_id                 Int
+  sheet_status            Int
 }
 
 model hps_slitting {

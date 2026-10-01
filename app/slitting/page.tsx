@@ -20,7 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, PlusCircle, EyeIcon, PencilIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, EyeIcon, PencilIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -93,6 +93,42 @@ export default function SlitingTable() {
         setLoading(false);
     };
 
+    const handleReopen = async (jobCardId: number) => {
+        const confirmed = window.confirm(
+            "Are you sure you want to reopen this slitting process?"
+        );
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`/api/slitting/${jobCardId}/reopen`, {
+                method: "POST",
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast({
+                    title: "Error",
+                    description: result.error || "Failed to reopen slitting",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            toast({
+                title: "Success",
+                description: "Slitting process reopened",
+            });
+            await fetchData();
+        } catch (error) {
+            console.error("Error reopening slitting:", error);
+            toast({
+                title: "Error",
+                description: "Failed to reopen slitting",
+                variant: "destructive",
+            });
+        }
+    };
+
     // Filter data based on the debounced search input
     const filteredData = React.useMemo(() => {
         if (!debouncedSearch) return data;
@@ -150,6 +186,16 @@ export default function SlitingTable() {
                                 <PencilIcon size={16} />
                             </Button>
                         </Link>
+                        {item.card_slitting === 1 && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                title="Reopen"
+                                onClick={() => handleReopen(item.job_card_id)}
+                            >
+                                <RotateCcw size={16} />
+                            </Button>
+                        )}
                     </div>
                 );
             },

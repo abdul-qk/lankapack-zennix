@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(
   req: Request,
@@ -80,6 +81,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const jobCardId = parseInt(params.id);
     const {
       customer_id,
@@ -92,6 +100,7 @@ export async function PUT(
       slitting,
       printing,
       cutting,
+      sheeting,
     } = await req.json();
 
     // Parse and format dates properly
@@ -109,6 +118,7 @@ export async function PUT(
           slitting.active ? "1" : null,
           printing.active ? "2" : null,
           cutting.active ? "3" : null,
+          sheeting?.active ? "4" : null,
         ]
           .filter(Boolean)
           .join(","),
@@ -132,6 +142,11 @@ export async function PUT(
                 .join(",")
             : null,
         printing_no_of_bag: printing.active ? printing.number_of_bags : null,
+        printing_qty_unit: printing.active
+          ? printing.qty_unit === "sheets"
+            ? "sheets"
+            : "bags"
+          : null,
         printing_remark: printing.active ? printing.remark : "",
         block_size:
           printing.active && printing.block_size ? printing.block_size : "",
@@ -151,10 +166,19 @@ export async function PUT(
         cuting_remark: cutting.active ? cutting.remark : "",
         cutting_fold: cutting.active && cutting.fold ? cutting.fold : "",
 
+        // Sheeting data — sheeting_barcode stores sheet_type_id; sheeting_weight stores no_of_sheets
+        sheeting_barcode: sheeting?.active
+          ? sheeting.sheet_type_id || sheeting.barcode || null
+          : null,
+        sheeting_weight: sheeting?.active
+          ? sheeting.no_of_sheets || sheeting.weight || null
+          : null,
+
         // Dates
         updated_date: formattedUpdatedDate,
         add_date: formattedJobCardDate || undefined,
         delivery_date: parsedDeliveryDate ? parsedDeliveryDate.toISOString() : undefined,
+        user_id: userId,
       },
     });
 

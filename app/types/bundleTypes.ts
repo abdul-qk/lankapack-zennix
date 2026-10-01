@@ -3,6 +3,11 @@
 export interface BarcodeOption {
   cutting_roll_id: number;
   cutting_barcode: string;
+  roll_id?: number;
+  barcode?: string;
+  source?: "cutting" | "sheeting";
+  sheeting_roll_id?: number;
+  sheeting_barcode?: string;
 }
 
 export interface RollData {
@@ -11,6 +16,9 @@ export interface RollData {
   slitting_wastage: string;
   print_wastage: string;
   cutting_wastage: string;
+  sheeting_wastage?: string;
+  source?: "cutting" | "sheeting";
+  roll_id?: number;
 }
 
 export interface CompleteItem {
@@ -32,7 +40,8 @@ export interface NonCompleteItem {
 
 export interface BundleData {
   bundle_info_id: number;
-  bundle_barcode: string;
+  bundle_barcode: string | number | null;
+  sheeting_roll_id?: number | null;
   bundle_type: string;
   bundle_info_weight: string;
   bundle_info_bags: string;
@@ -43,8 +52,17 @@ export interface BundleData {
   bundle_slitt_wastage: string;
   bundle_print_wastage: string;
   bundle_cutting_wastage: string;
+  bundle_sheeting_wastage?: string;
   bundle_date?: string;
   bundle_info_status: number;
+  cutting_roll?: {
+    cutting_roll_id: number;
+    cutting_barcode: string | null;
+  } | null;
+  sheeting_roll?: {
+    sheeting_roll_id: number;
+    sheeting_barcode: string | null;
+  } | null;
 }
 
 export interface TotalsData {

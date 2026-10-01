@@ -20,7 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, PlusCircle, EyeIcon, PencilIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { Pencil, Trash2, PlusCircle, EyeIcon, PencilIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -38,6 +38,7 @@ type JobCardInfo = {
     customer: CustomerInfo;
     particular: ParticularInfo;
     printing_no_of_bag: string;
+    printing_qty_unit?: string | null;
     add_date: string;
     updated_date: string;
     card_printting: number;
@@ -89,6 +90,42 @@ export default function SlitingTable() {
         setLoading(false);
     };
 
+    const handleReopen = async (jobCardId: number) => {
+        const confirmed = window.confirm(
+            "Are you sure you want to reopen this printing process?"
+        );
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`/api/printing/${jobCardId}/reopen`, {
+                method: "POST",
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                toast({
+                    title: "Error",
+                    description: result.error || "Failed to reopen printing",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            toast({
+                title: "Success",
+                description: "Printing process reopened",
+            });
+            await fetchData();
+        } catch (error) {
+            console.error("Error reopening printing:", error);
+            toast({
+                title: "Error",
+                description: "Failed to reopen printing",
+                variant: "destructive",
+            });
+        }
+    };
+
     // Filter data based on the debounced search input
     const filteredData = React.useMemo(() => {
         if (!debouncedSearch) return data;
@@ -116,7 +153,12 @@ export default function SlitingTable() {
         },
         {
             accessorKey: "printing_no_of_bag",
-            header: "No of Bags",
+            header: "Bags/Sheets",
+            cell: ({ row }) => {
+                const qty = row.original.printing_no_of_bag || "—";
+                const unit = row.original.printing_qty_unit === "sheets" ? "Sheets" : "Bags";
+                return `${qty} (${unit})`;
+            },
         },
         {
             accessorKey: "add_date",
@@ -146,6 +188,16 @@ export default function SlitingTable() {
                                 <PencilIcon size={16} />
                             </Button>
                         </Link>
+                        {item.card_printting === 1 && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                title="Reopen"
+                                onClick={() => handleReopen(item.job_card_id)}
+                            >
+                                <RotateCcw size={16} />
+                            </Button>
+                        )}
                     </div>
                 );
             },

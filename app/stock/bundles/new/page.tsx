@@ -28,6 +28,11 @@ const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
 interface BarcodeOption {
     cutting_roll_id: number;
     cutting_barcode: string;
+    source?: "cutting" | "sheeting";
+    roll_id?: number;
+    barcode?: string;
+    sheeting_roll_id?: number;
+    sheeting_barcode?: string;
 }
 
 interface RollData {
@@ -36,6 +41,9 @@ interface RollData {
     slitting_wastage: string;
     print_wastage: string;
     cutting_wastage: string;
+    sheeting_wastage?: string;
+    source?: "cutting" | "sheeting";
+    roll_id?: number;
 }
 
 interface CompleteItem {
@@ -78,6 +86,8 @@ export default function AddBundlePage() {
     const [isSubmittingNonComplete, setIsSubmittingNonComplete] = React.useState(false);
 
     const { toast } = useToast();
+    const quantityLabel = rollData?.source === "sheeting" ? "No of Sheets" : "No of Bags";
+    const quantityInfoLabel = rollData?.source === "sheeting" ? "Number of Sheets" : "Number of Bags";
 
     // React.useEffect(() => {
     //     const fetchJobCards = async () => {
@@ -207,7 +217,7 @@ export default function AddBundlePage() {
         if (!bundleWeight || !noOfBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -225,7 +235,6 @@ export default function AddBundlePage() {
                     bundle_type: rollData.bag_type,
                     complete_item_weight: bundleWeight,
                     complete_item_bags: noOfBags,
-                    user_id: 1 // Default user ID
                 }),
             });
 
@@ -300,7 +309,7 @@ export default function AddBundlePage() {
         if (!nonCompleteWeight || !nonCompleteBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -318,7 +327,6 @@ export default function AddBundlePage() {
                     non_complete_info: 1, // Default user ID
                     non_complete_weight: nonCompleteWeight,
                     non_complete_bags: nonCompleteBags,
-                    user_id: 1, // Default user ID
                     del_ind: 1
                 }),
             });
@@ -431,33 +439,56 @@ export default function AddBundlePage() {
                 ? ((totals.totalWeight / totals.totalBags) * 1000).toFixed(2)
                 : "0";
 
-            // Calculate wastage bags: 1000/average * cutting_wastage
-            const wastage_weight = rollData.cutting_wastage || "0";
+            // Calculate wastage bags from process wastage (cutting or sheeting)
+            const processWastage =
+                rollData.source === "sheeting"
+                    ? rollData.sheeting_wastage || "0"
+                    : rollData.cutting_wastage || "0";
+            const wastage_weight = processWastage;
             const wastage_bags = average !== "0"
                 ? ((1000 / parseFloat(average)) * parseFloat(wastage_weight)).toFixed(2)
                 : "0";
 
-            // Use the cutting_roll_id from the selected barcode
-            const barcode = selectedBarcodeData?.cutting_roll_id || 0;
-            console.log(selectedBarcodeData);
-            console.log(barcode);
+            const isSheeting = selectedBarcodeData?.source === "sheeting" || rollData.source === "sheeting";
+            const rollId =
+                selectedBarcodeData?.roll_id ||
+                selectedBarcodeData?.cutting_roll_id ||
+                rollData.roll_id ||
+                0;
 
-            const bundleData = {
-                bundle_barcode: barcode,
-                bundle_type: rollData.bag_type,
-                bundle_qty: totals.totalBags,
-                bundle_info_weight: totals.totalWeight.toString(),
-                bundle_info_bags: totals.totalBags.toString(),
-                // bundle_info_bags: rollData.no_of_bags.toString(),
-                bundle_info_average: average,
-                bundle_slitt_wastage: rollData.slitting_wastage || "0",
-                bundle_print_wastage: rollData.print_wastage || "0",
-                bundle_cutting_wastage: rollData.cutting_wastage || "0",
-                bundle_info_wastage_bags: wastage_bags,
-                bundle_info_wastage_weight: wastage_weight,
-                user_id: 1, // Default user ID
-                bundle_info_status: 1 // Active status
-            };
+            const bundleData = isSheeting
+                ? {
+                    bundle_barcode: null,
+                    sheeting_roll_id: rollId,
+                    bundle_type: rollData.bag_type,
+                    bundle_qty: totals.totalBags,
+                    bundle_info_weight: totals.totalWeight.toString(),
+                    bundle_info_bags: totals.totalBags.toString(),
+                    bundle_info_average: average,
+                    bundle_slitt_wastage: rollData.slitting_wastage || "0",
+                    bundle_print_wastage: rollData.print_wastage || "0",
+                    bundle_cutting_wastage: "0",
+                    bundle_sheeting_wastage: processWastage,
+                    bundle_info_wastage_bags: wastage_bags,
+                    bundle_info_wastage_weight: wastage_weight,
+                    bundle_info_status: 1,
+                }
+                : {
+                    bundle_barcode: rollId,
+                    sheeting_roll_id: null,
+                    bundle_type: rollData.bag_type,
+                    bundle_qty: totals.totalBags,
+                    bundle_info_weight: totals.totalWeight.toString(),
+                    bundle_info_bags: totals.totalBags.toString(),
+                    bundle_info_average: average,
+                    bundle_slitt_wastage: rollData.slitting_wastage || "0",
+                    bundle_print_wastage: rollData.print_wastage || "0",
+                    bundle_cutting_wastage: processWastage,
+                    bundle_sheeting_wastage: "0",
+                    bundle_info_wastage_bags: wastage_bags,
+                    bundle_info_wastage_weight: wastage_weight,
+                    bundle_info_status: 1,
+                };
 
             // Get all item IDs to update later
             const completeItemIds = completeItems.map(item => item.complete_item_id);
@@ -551,7 +582,7 @@ export default function AddBundlePage() {
                                     </Select>
                                 </div> */}
                                 <div className="mb-6 w-full">
-                                    <Label htmlFor="barcode-select" className="mb-2 block">Cutting Roll Barcode</Label>
+                                    <Label htmlFor="barcode-select" className="mb-2 block">Cutting / Sheeting Roll Barcode</Label>
                                     <Select value={selectedBarcode} onValueChange={handleBarcodeChange}>
                                         <SelectTrigger id="barcode-select" className="w-full">
                                             <SelectValue placeholder="Select a barcode" />
@@ -596,11 +627,21 @@ export default function AddBundlePage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <InfoBox label="Bag Type" value={rollData.bag_type} />
-                                <InfoBox label="Number of Bags" value={rollData.no_of_bags} />
+                                <InfoBox
+                                    label={rollData.source === "sheeting" ? "Sheeting Type" : "Bag Type"}
+                                    value={rollData.bag_type}
+                                />
+                                <InfoBox label={quantityInfoLabel} value={rollData.no_of_bags} />
                                 <InfoBox label="Slitting Wastage" value={rollData.slitting_wastage} />
                                 <InfoBox label="Printing Wastage" value={rollData.print_wastage} />
-                                <InfoBox label="Cutting Wastage" value={rollData.cutting_wastage} />
+                                <InfoBox
+                                    label={rollData.source === "sheeting" ? "Sheeting Wastage" : "Cutting Wastage"}
+                                    value={
+                                        rollData.source === "sheeting"
+                                            ? rollData.sheeting_wastage || "0"
+                                            : rollData.cutting_wastage
+                                    }
+                                />
                             </CardContent>
                         </Card>
                     ) : selectedBarcode ? (
@@ -633,10 +674,10 @@ export default function AddBundlePage() {
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="no-of-bags">No of Bags</Label>
+                                                <Label htmlFor="no-of-bags">{quantityLabel}</Label>
                                                 <Input
                                                     id="no-of-bags"
-                                                    placeholder="No of Bags"
+                                                    placeholder={quantityLabel}
                                                     className="mt-1"
                                                     value={noOfBags}
                                                     onChange={(e) => setNoOfBags(e.target.value)}
@@ -659,7 +700,7 @@ export default function AddBundlePage() {
                                                     <TableRow>
                                                         <TableHead className="w-[100px]">#</TableHead>
                                                         <TableHead>Weight</TableHead>
-                                                        <TableHead>No of Bags</TableHead>
+                                                        <TableHead>{quantityLabel}</TableHead>
                                                         <TableHead>Barcode</TableHead>
                                                         <TableHead className="text-right">Action</TableHead>
                                                     </TableRow>
@@ -749,10 +790,10 @@ export default function AddBundlePage() {
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="non-complete-bags">No of Bags</Label>
+                                                <Label htmlFor="non-complete-bags">{quantityLabel}</Label>
                                                 <Input
                                                     id="non-complete-bags"
-                                                    placeholder="No of Bags"
+                                                    placeholder={quantityLabel}
                                                     className="mt-1"
                                                     value={nonCompleteBags}
                                                     onChange={(e) => setNonCompleteBags(e.target.value)}
@@ -775,7 +816,7 @@ export default function AddBundlePage() {
                                                     <TableRow>
                                                         <TableHead className="w-[100px]">#</TableHead>
                                                         <TableHead>Weight</TableHead>
-                                                        <TableHead>No of Bags</TableHead>
+                                                        <TableHead>{quantityLabel}</TableHead>
                                                         <TableHead>Barcode</TableHead>
                                                         <TableHead className="text-right">Action</TableHead>
                                                     </TableRow>

@@ -1,10 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const jobCardId = parseInt(params.id);
     const { print_id, print_pack_weight, selectedBarcode } = await req.json();
 
@@ -76,7 +82,7 @@ export async function POST(
         print_pack_weight: print_pack_weight.toString(),
         print_barcode: formattedTimestamp, // Temporary barcode, will update
         add_date: now,
-        user_id: 1, // Replace with actual user ID from your auth system
+        user_id: userId,
         del_ind: 0, // Not deleted
       },
     });

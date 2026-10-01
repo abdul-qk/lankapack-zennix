@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 import { NextRequest } from "next/server";
 
 // GET: Fetch customers for dropdown
@@ -34,6 +35,13 @@ export async function GET() {
 // POST: Create a new return note
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const body = await req.json();
     const { customerId, items, totalBags } = body;
 
@@ -75,7 +83,7 @@ export async function POST(req: NextRequest) {
         customer_contact: customer.customer_mobile || "",
         return_no_bags: totalBags.toString(),
         add_date: new Date(),
-        user_id: 1, // Replace with actual user ID from session
+        user_id: userId,
         del_ind: 1,
       },
     });
@@ -93,7 +101,7 @@ export async function POST(req: NextRequest) {
             no_of_bags: parseInt(item.bags),
             item_price: item.price.toString(),
             item_total: item.total.toString(),
-            user_id: 1, // Replace with actual user ID from session
+            user_id: userId,
             return_status: 0,
           },
         })

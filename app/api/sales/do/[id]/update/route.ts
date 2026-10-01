@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 import { NextRequest } from "next/server";
 
 // PUT: Update an existing delivery order
@@ -7,6 +8,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const body = await req.json();
     const { customerId, items, totalBags } = body;
     const salesInfoId = parseInt(params.id);
@@ -66,7 +74,7 @@ export async function PUT(
         customer_contact: customer.customer_mobile || "0",
         sales_no_bags: totalBags.toString(),
         // Don't update add_date as we want to keep the original creation date
-        user_id: 1, // Replace with actual user ID from session
+        user_id: userId,
       },
     });
 
@@ -140,7 +148,7 @@ export async function PUT(
           no_of_bags: parseInt(item.bags.toString()),
           item_price: item.price.toString(),
           item_total: item.total.toString(),
-          user_id: 1, // Replace with actual user ID from session
+          user_id: userId,
           sales_status: 0,
         };
 

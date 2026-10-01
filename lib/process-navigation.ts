@@ -7,18 +7,21 @@ export async function checkRelatedProcesses(jobCardId: number): Promise<{
   hasSlitting: boolean;
   hasCutting: boolean;
   hasPrinting: boolean;
+  hasSheeting: boolean;
 }> {
   const results = {
     hasSlitting: false,
     hasCutting: false,
     hasPrinting: false,
+    hasSheeting: false,
   };
 
   // Check all processes in parallel
-  const [slittingResult, cuttingResult, printingResult] = await Promise.allSettled([
+  const [slittingResult, cuttingResult, printingResult, sheetingResult] = await Promise.allSettled([
     fetch(`/api/slitting/${jobCardId}`),
     fetch(`/api/cutting/${jobCardId}`),
     fetch(`/api/printing/${jobCardId}`),
+    fetch(`/api/sheeting/${jobCardId}`),
   ]);
 
   // Check slitting
@@ -34,6 +37,11 @@ export async function checkRelatedProcesses(jobCardId: number): Promise<{
   // Check printing
   if (printingResult.status === 'fulfilled' && printingResult.value.ok) {
     results.hasPrinting = true;
+  }
+
+  // Check sheeting
+  if (sheetingResult.status === 'fulfilled' && sheetingResult.value.ok) {
+    results.hasSheeting = true;
   }
 
   return results;

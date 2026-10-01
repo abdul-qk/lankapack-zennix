@@ -35,12 +35,26 @@ type BundleInfo = {
     bundle_type: string;
     bundle_info_bags: string;
     bundle_info_weight: string;
-    cutting_roll: BarcodeInfo;
+    cutting_roll: BarcodeInfo | null;
+    sheeting_roll: SheetingBarcodeInfo | null;
 };
 
 type BarcodeInfo = {
     cutting_roll_id: number;
     cutting_barcode: string;
+};
+
+type SheetingBarcodeInfo = {
+    sheeting_roll_id: number;
+    sheeting_barcode: string | null;
+};
+
+function getBundleBarcode(item: BundleInfo): string {
+    return (
+        item.cutting_roll?.cutting_barcode ||
+        item.sheeting_roll?.sheeting_barcode ||
+        "-"
+    );
 }
 
 export default function BundlesTable() {
@@ -95,8 +109,7 @@ export default function BundlesTable() {
         {
             accessorKey: "cutting_roll.cutting_barcode",
             header: "Barcode",
-            // Handle empty values
-            cell: ({ row }) => row.original.cutting_roll ? row.original.cutting_roll.cutting_barcode : "-",
+            cell: ({ row }) => getBundleBarcode(row.original),
         },
         {
             accessorKey: "bundle_type",
@@ -104,7 +117,7 @@ export default function BundlesTable() {
         },
         {
             accessorKey: "bundle_info_bags",
-            header: "Total Bags",
+            header: "Total Bags/Sheets",
         },
         {
             accessorKey: "bundle_info_weight",

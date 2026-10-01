@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { safeParseInt } from "@/lib/validation";
 import { sanitizeString } from "@/lib/sanitize";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET(req: Request) {
   //   Get all customers from hps_customer table
@@ -34,6 +35,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
     const body = await req.json();
     const {
       customer_id,
@@ -44,6 +52,7 @@ export async function POST(req: Request) {
       slitting,
       printing,
       cutting,
+      sheeting,
     } = body;
     const job_card_date = sanitizeString(body.job_card_date ?? "");
     const delivery_date = sanitizeString(body.delivery_date ?? "");
@@ -85,6 +94,7 @@ export async function POST(req: Request) {
           slitting.active ? "1" : null,
           printing.active ? "2" : null,
           cutting.active ? "3" : null,
+          sheeting?.active ? "4" : null,
         ]
           .filter(Boolean)
           .join(","),
@@ -108,6 +118,11 @@ export async function POST(req: Request) {
                 .join(",")
             : null,
         printing_no_of_bag: printing.active ? printing.number_of_bags : null,
+        printing_qty_unit: printing.active
+          ? printing.qty_unit === "sheets"
+            ? "sheets"
+            : "bags"
+          : null,
         printing_remark: printing.active ? printing.remark : "",
         block_size:
           printing.active && printing.block_size ? printing.block_size : "",
@@ -125,6 +140,14 @@ export async function POST(req: Request) {
         cuting_remark: cutting.active ? cutting.remark : "",
         cutting_fold: cutting.active && cutting.fold ? cutting.fold : "",
 
+        // Sheeting data — sheeting_barcode stores sheet_type_id; sheeting_weight stores no_of_sheets
+        sheeting_barcode: sheeting?.active
+          ? sheeting.sheet_type_id || sheeting.barcode || null
+          : null,
+        sheeting_weight: sheeting?.active
+          ? sheeting.no_of_sheets || sheeting.weight || null
+          : null,
+
         // Dates
         add_date: formattedAddDate,
         updated_date: formattedUpdatedDate,
@@ -136,10 +159,11 @@ export async function POST(req: Request) {
           : "",
 
         // Status indicators
-        user_id: 1, // Default user ID, modify as needed
+        user_id: userId,
         card_slitting: 0,
         card_printting: 0,
         card_cutting: 0,
+        card_sheeting: 0,
         del_ind: 0, // Not deleted
       },
     });

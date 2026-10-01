@@ -21,6 +21,10 @@ import Loading from "@/components/layouts/loading";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import {
+    getDoItemColumnLabels,
+    type SalesItemKind,
+} from "@/lib/sales/resolveBundlePrice";
 
 type SalesInfo = {
     sales_info_id: number;
@@ -52,6 +56,7 @@ type SalesItem = {
     item_total: string;
     user_id: number;
     del_ind: number;
+    item_kind?: SalesItemKind;
 };
 
 type SalesData = {
@@ -194,6 +199,9 @@ export default function DOView() {
     }
 
     const { salesInfo, customer, salesItems, totalAmount } = data;
+    const { typeLabel, qtyLabel, totalQtyLabel } = getDoItemColumnLabels(
+        salesItems.map((item) => item.item_kind || "bag")
+    );
     const formattedDate = salesInfo.add_date
         ? format(new Date(salesInfo.add_date), "dd/MM/yyyy")
         : "N/A";
@@ -249,7 +257,7 @@ export default function DOView() {
                                 <div className="text-right">
                                     <p><strong>DO No:</strong> {salesInfo.sales_info_id}</p>
                                     <p><strong>Date:</strong> {formattedDate}</p>
-                                    <p><strong>Total Bags:</strong> {salesInfo.sales_no_bags}</p>
+                                    <p><strong>{totalQtyLabel}:</strong> {salesInfo.sales_no_bags}</p>
                                 </div>
                             </div>
 
@@ -258,9 +266,9 @@ export default function DOView() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Barcode No</TableHead>
-                                        <TableHead>Bag Type</TableHead>
+                                        <TableHead>{typeLabel}</TableHead>
                                         <TableHead className="text-right">N/Weight</TableHead>
-                                        <TableHead className="text-right">No of Bags</TableHead>
+                                        <TableHead className="text-right">{qtyLabel}</TableHead>
                                         <TableHead className="text-right">Item Price</TableHead>
                                         <TableHead className="text-right">Item Total</TableHead>
                                     </TableRow>

@@ -72,6 +72,7 @@ interface JobCardData {
     printing_color_name: string;
     formattedColorNames: string;
     printing_no_of_bag: string;
+    printing_qty_unit?: string | null;
     printing_remark: string;
     block_size: string;
     cutting_type: string;
@@ -81,6 +82,9 @@ interface JobCardData {
     cuting_no_of_bag: string;
     cuting_remark: string;
     cutting_fold: string;
+    sheeting_barcode?: string | null;
+    sheeting_weight?: string | null;
+    sheetTypeName?: string | null;
     add_date: string;
     updated_date: string;
     delivery_date: string;
@@ -88,6 +92,7 @@ interface JobCardData {
     card_slitting: number;
     card_printting: number;
     card_cutting: number;
+    card_sheeting?: number;
     del_ind: number;
     customer: CustomerInfo;
 }
@@ -349,6 +354,9 @@ export default function JobCardTable() {
                                                 <div className={`status-item ${data.section_list.includes('3') ? 'status-yes' : 'status-no'}`}>
                                                     Cutting: {data.section_list.includes('3') ? 'Yes' : 'No'}
                                                 </div>
+                                                <div className={`status-item ${data.section_list.includes('4') ? 'status-yes' : 'status-no'}`}>
+                                                    Sheeting: {data.section_list.includes('4') ? 'Yes' : 'No'}
+                                                </div>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -356,7 +364,7 @@ export default function JobCardTable() {
                             </Card>
                             {/* Apply similar structure (PrintInfoRow, print-specific classes) to other cards */}
                             {/* Slitting Information Card */}
-                            {data && (
+                            {data && data.section_list.includes('1') && (
                                 <Card className="shadow-md info-card">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-green-600 info-card-title">
@@ -372,7 +380,7 @@ export default function JobCardTable() {
                             )}
 
                             {/* Printing Information Card */}
-                            {data && (
+                            {data && data.section_list.includes('2') && (
                                 <Card className="shadow-md info-card">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-purple-600 info-card-title">
@@ -383,7 +391,10 @@ export default function JobCardTable() {
                                         <InfoRow label="Cylinder Size" value={data.print_size ? data.print_size.print_size : "Not specified"} />
                                         <InfoRow label="Color Type" value={data.printing_color_type ? data.printing_color_type + ' Colour(s)' : "Not specified"} />
                                         <InfoRow label="Color Name(s)" value={data.formattedColorNames || data.printing_color_name || "Not specified"} />
-                                        <InfoRow label="No. of Bags" value={data.printing_no_of_bag || "Not specified"} />
+                                        <InfoRow
+                                            label={data.printing_qty_unit === "sheets" ? "No. of Sheets" : "No. of Bags"}
+                                            value={data.printing_no_of_bag || "Not specified"}
+                                        />
                                         <InfoRow label="Remark" value={data.printing_remark || "Not specified"} />
                                         <InfoRow label="Block Size" value={data.block_size || "Not specified"} />
                                     </CardContent>
@@ -391,7 +402,7 @@ export default function JobCardTable() {
                             )}
 
                             {/* Cutting Information Card */}
-                            {data && (
+                            {data && data.section_list.includes('3') && (
                                 <Card className="shadow-md info-card">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-semibold text-blue-600 info-card-title">
@@ -406,6 +417,21 @@ export default function JobCardTable() {
                                         <InfoRow label="Print Name" value={data.cutting_print_name || "Not specified"} />
                                         <InfoRow label="Fold" value={data.cutting_fold || "Not specified"} />
                                         <InfoRow label="Remark" value={data.cuting_remark || "Not specified"} />
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Sheeting Information Card */}
+                            {data && data.section_list.includes('4') && (
+                                <Card className="shadow-md info-card">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg font-semibold text-orange-600 info-card-title">
+                                            Sheeting Information
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="info-card-content">
+                                        <InfoRow label="Sheet Type" value={data.sheetTypeName || data.sheeting_barcode || "Not specified"} />
+                                        <InfoRow label="No of sheets" value={data.sheeting_weight || "Not specified"} />
                                     </CardContent>
                                 </Card>
                             )}

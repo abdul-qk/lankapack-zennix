@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { sanitizeString } from "@/lib/sanitize";
+import { getSessionUserId } from "@/lib/auth";
 import Papa from 'papaparse';
 import { Readable } from 'stream';
 
@@ -16,6 +17,11 @@ async function streamToString(stream: Readable): Promise<string> {
 
 export async function POST(req: NextRequest) {
     try {
+        const userId = await getSessionUserId();
+        if (!userId) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        }
+
         const formData = await req.formData();
         const supplierId = formData.get('supplierId') as string;
         const file = formData.get('file') as File | null;
@@ -135,7 +141,7 @@ export async function POST(req: NextRequest) {
                 // Default values or values not in CSV
                 material_item_barcode: '0', // Example default
                 added_date: new Date(),
-                user_id: 1, // TODO: Get actual user ID from session/auth
+                user_id: userId, // from session
                 material_status: 0, // Example default
             };
 
@@ -168,7 +174,7 @@ export async function POST(req: NextRequest) {
                     total_net_weight: totalNetWeight,
                     total_gross_weight: totalGrossWeight,
                     add_date: new Date(),
-                    user_id: 1, // TODO: Get actual user ID
+                    user_id: userId,
                     material_info_status: 1,
                     material_items: {
                         create: itemsToCreate as Array<{

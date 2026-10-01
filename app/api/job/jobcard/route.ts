@@ -6,13 +6,30 @@ export async function GET(req: Request) {
     const materialInfo = await prisma.hps_jobcard.findMany({
       include: {
         customer: true,
+        cut_bag_types: {
+          select: {
+            bag_type: true,
+          },
+        },
       },
       orderBy: {
         job_card_id: "asc",
       },
     });
 
-    return new Response(JSON.stringify({ data: materialInfo }), {
+    const sheetTypes = await prisma.hps_sheet_type.findMany();
+    const sheetTypeMap = new Map(
+      sheetTypes.map((st) => [st.sheet_id.toString(), st.sheet_type])
+    );
+
+    const data = materialInfo.map((item) => ({
+      ...item,
+      sheetTypeName: item.sheeting_barcode
+        ? sheetTypeMap.get(item.sheeting_barcode) || null
+        : null,
+    }));
+
+    return new Response(JSON.stringify({ data }), {
       status: 200,
     });
   } catch (error) {

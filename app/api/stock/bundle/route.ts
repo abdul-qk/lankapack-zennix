@@ -7,6 +7,7 @@ export async function GET(req: Request) {
     const bundleInfo = await prisma.hps_bundle_info.findMany({
       include: {
         cutting_roll: true,
+        sheeting_roll: true,
       },
       orderBy: {
         bundle_info_id: "desc",

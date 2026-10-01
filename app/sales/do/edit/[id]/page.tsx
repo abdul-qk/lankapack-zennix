@@ -38,6 +38,10 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import {
+    getDoItemColumnLabels,
+    type SalesItemKind,
+} from "@/lib/sales/resolveBundlePrice";
 
 type Customer = {
     customer_id: number;
@@ -54,6 +58,7 @@ type SalesItem = {
     price: number;
     total: number;
     complete_item_id?: number;
+    item_kind?: SalesItemKind;
 };
 
 type DoDetails = {
@@ -130,7 +135,8 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
                     bags: item.no_of_bags,
                     price: parseFloat(item.item_price),
                     total: parseFloat(item.item_total),
-                    complete_item_id: item.complete_item_id
+                    complete_item_id: item.complete_item_id,
+                    item_kind: item.item_kind === "sheet" ? "sheet" : "bag",
                 }));
 
                 setSalesItems(items);
@@ -152,6 +158,9 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
     // Calculate total
     const totalItems = salesItems.reduce((sum, item) => sum + item.total, 0);
     const totalBags = salesItems.reduce((sum, item) => sum + item.bags, 0);
+    const { typeLabel, qtyLabel } = getDoItemColumnLabels(
+        salesItems.map((item) => item.item_kind || "bag")
+    );
 
     // Validate barcode and add item
     const handleAddItem = async () => {
@@ -225,7 +234,8 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
                 bags: itemData.bags,
                 price: priceValue,
                 total: total,
-                complete_item_id: itemData.complete_item_id
+                complete_item_id: itemData.complete_item_id,
+                item_kind: itemData.item_kind === "sheet" ? "sheet" : "bag",
             };
 
             setSalesItems([...salesItems, newItem]);
@@ -404,9 +414,9 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
                                 <TableRow>
                                     <TableHead className="w-[50px]">#</TableHead>
                                     <TableHead>Barcode No</TableHead>
-                                    <TableHead>Bag Type</TableHead>
+                                    <TableHead>{typeLabel}</TableHead>
                                     <TableHead className="text-right">N/Weight</TableHead>
-                                    <TableHead className="text-right">No of Bags</TableHead>
+                                    <TableHead className="text-right">{qtyLabel}</TableHead>
                                     <TableHead className="text-right">Item Price</TableHead>
                                     <TableHead className="text-right">Item Total</TableHead>
                                     <TableHead className="w-[50px]">#</TableHead>

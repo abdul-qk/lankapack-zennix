@@ -34,6 +34,8 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
     const [noOfBags, setNoOfBags] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+    const quantityLabel = rollData.source === "sheeting" ? "No of Sheets" : "No of Bags";
+    const qtyFieldLabel = rollData.source === "sheeting" ? "Sheets" : "Bags";
 
     const { toast } = useToast();
 
@@ -71,7 +73,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
         if (!bundleWeight || !noOfBags) {
             toast({
                 title: "Missing information",
-                description: "Please enter both Bundle Weight and No of Bags",
+                description: `Please enter both Bundle Weight and ${quantityLabel}`,
                 variant: "destructive",
             });
             return;
@@ -90,7 +92,6 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                     complete_item_weight: bundleWeight,
                     complete_item_bags: noOfBags,
                     complete_item_info: bundleId,
-                    user_id: 1 // Default user ID
                 }),
             });
 
@@ -190,7 +191,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                 <tr><td><strong>Bundle ID:</strong></td><td>${item.complete_item_id}</td></tr>
                                 <tr><td><strong>Type:</strong></td><td>${item.bundle_type || 'N/A'}</td></tr>
                                 <tr><td><strong>Weight:</strong></td><td>${item.complete_item_weight}</td></tr>
-                                <tr><td><strong>Bags:</strong></td><td>${item.complete_item_bags}</td></tr>
+                                <tr><td><strong>${qtyFieldLabel}:</strong></td><td>${item.complete_item_bags}</td></tr>
                             </table>
                         </div>
                     </div>
@@ -360,10 +361,10 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                             />
                         </div>
                         <div>
-                            <Label htmlFor="no-of-bags">No of Bags</Label>
+                            <Label htmlFor="no-of-bags">{quantityLabel}</Label>
                             <Input
                                 id="no-of-bags"
-                                placeholder="No of Bags"
+                                placeholder={quantityLabel}
                                 className="mt-1"
                                 value={noOfBags}
                                 onChange={(e) => setNoOfBags(e.target.value)}
@@ -425,7 +426,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                         </TableHead>
                                         <TableHead className="w-[100px]">#</TableHead>
                                         <TableHead>Weight</TableHead>
-                                        <TableHead>No of Bags</TableHead>
+                                        <TableHead>{quantityLabel}</TableHead>
                                         <TableHead>Barcode</TableHead>
                                         <TableHead className="text-right">Action</TableHead>
                                     </TableRow>
@@ -484,7 +485,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                             <div className="font-semibold bg-gray-100 p-2 rounded-l">Weight</div>
                                                             <div className="p-2 border rounded-r">{item.complete_item_weight}</div>
 
-                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">Bags</div>
+                                                            <div className="font-semibold bg-gray-100 p-2 rounded-l">{qtyFieldLabel}</div>
                                                             <div className="p-2 border rounded-r">{item.complete_item_bags}</div>
                                                         </div>
                                                     </div>
@@ -512,7 +513,7 @@ const CompleteBundleCard: React.FC<CompleteBundleCardProps> = ({
                                                                             <tr><td><strong>Bundle ID:</strong></td><td>${item.complete_item_id}</td></tr>
                                                                             <tr><td><strong>Type:</strong></td><td>${item.bundle_type}</td></tr>
                                                                             <tr><td><strong>Weight:</strong></td><td>${item.complete_item_weight}</td></tr>
-                                                                            <tr><td><strong>Bags:</strong></td><td>${item.complete_item_bags}</td></tr>
+                                                                            <tr><td><strong>${qtyFieldLabel}:</strong></td><td>${item.complete_item_bags}</td></tr>
                                                                         </table>
                                                                     </div>
                                                                 `;
