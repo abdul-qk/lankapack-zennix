@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
@@ -100,6 +102,8 @@ export default function EditSlittingInfo() {
     const [slittingData, setSlittingData] = React.useState<SlittingInfo[]>();
     const [slittingRollData, setSlittingRollData] = React.useState<SlittingRollInfo[]>();
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
 
     React.useEffect(() => {
         if (id) fetchData(Number(id));
@@ -364,55 +368,49 @@ export default function EditSlittingInfo() {
         }
     };
 
-    const handleDeleteRoll = async (rollId: number, barcode: string) => {
-        // Confirm deletion with user
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this roll? This action cannot be undone."
+    const handleDeleteRoll = (rollId: number, barcode: string) => {
+        requestConfirm(
+            "Delete this roll?",
+            "This action cannot be undone. Are you sure you want to delete this roll?",
+            async () => {
+                try {
+                    setLoading(true);
+                    const response = await fetch(`/api/slitting/${id}/delete-roll`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ roll_id: rollId, barcode }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        toast({
+                            title: "Error",
+                            description: data.message || data.error || "Failed to delete roll",
+                            variant: "destructive",
+                        });
+                    } else {
+                        toast({
+                            title: "Success",
+                            description: "Roll deleted successfully",
+                        });
+                        fetchData(Number(id));
+                    }
+                } catch (error) {
+                    console.error("Error deleting roll:", error);
+                    toast({
+                        title: "Error",
+                        description: "An unexpected error occurred. Please try again.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            },
+            "Delete"
         );
-
-        if (!confirmDelete) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/slitting/${id}/delete-roll`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ roll_id: rollId, barcode }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle error responses
-                toast({
-                    title: "Error",
-                    description: data.error || "Failed to delete roll",
-                    variant: "destructive",
-                });
-            } else {
-                // Success case
-                toast({
-                    title: "Success",
-                    description: "Roll deleted successfully",
-                });
-
-                // Refresh data
-                fetchData(Number(id));
-            }
-        } catch (error) {
-            console.error("Error deleting roll:", error);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
     };
 
     const formatDate = (dateString: string) => {
@@ -428,55 +426,49 @@ export default function EditSlittingInfo() {
         </div>
     );
 
-    const handleDeleteBarcode = async (slittingId: number) => {
-        // Confirm deletion with user
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this roll? This action cannot be undone."
+    const handleDeleteBarcode = (slittingId: number) => {
+        requestConfirm(
+            "Delete this roll?",
+            "This action cannot be undone. Are you sure you want to delete this roll?",
+            async () => {
+                try {
+                    setLoading(true);
+                    const response = await fetch(`/api/slitting/${id}/add-barcode`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ slitting_id: slittingId }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        toast({
+                            title: "Error",
+                            description: data.message || data.error || "Failed to delete roll",
+                            variant: "destructive",
+                        });
+                    } else {
+                        toast({
+                            title: "Success",
+                            description: "Roll deleted successfully",
+                        });
+                        fetchData(Number(id));
+                    }
+                } catch (error) {
+                    console.error("Error deleting roll:", error);
+                    toast({
+                        title: "Error",
+                        description: "An unexpected error occurred. Please try again.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            },
+            "Delete"
         );
-
-        if (!confirmDelete) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/slitting/${id}/add-barcode`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ slitting_id: slittingId }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle error responses
-                toast({
-                    title: "Error",
-                    description: data.error || "Failed to delete roll",
-                    variant: "destructive",
-                });
-            } else {
-                // Success case
-                toast({
-                    title: "Success",
-                    description: "Roll deleted successfully",
-                });
-
-                // Refresh data
-                fetchData(Number(id));
-            }
-        } catch (error) {
-            console.error("Error deleting roll:", error);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
     };
 
     const handleComplete = async () => {
@@ -639,6 +631,7 @@ export default function EditSlittingInfo() {
                                                 <TableCell>{item.wastage}</TableCell>
                                                 <TableCell>{item.wastage_width}</TableCell>
                                                 <TableCell>
+                                                    {isAdmin && (
                                                     <Trash2
                                                         className="cursor-pointer"
                                                         color="red"
@@ -648,6 +641,7 @@ export default function EditSlittingInfo() {
                                                             handleDeleteBarcode(item.slitting_id);
                                                         }}
                                                     />
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -831,6 +825,7 @@ export default function EditSlittingInfo() {
                                                                 </DialogHeader>
                                                             </DialogContent>
                                                         </Dialog>
+                                                        {isAdmin && (
                                                         <Trash2
                                                             className="cursor-pointer"
                                                             color="red"
@@ -840,6 +835,7 @@ export default function EditSlittingInfo() {
                                                                 handleDeleteRoll(item.roll_id, item.slitting_barcode);
                                                             }}
                                                         />
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -873,6 +869,7 @@ export default function EditSlittingInfo() {
                     </div>
                 </div>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 }

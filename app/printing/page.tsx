@@ -26,6 +26,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -61,6 +63,8 @@ export default function SlitingTable() {
     const [debouncedSearch, setDebouncedSearch] = React.useState("");  // Debounced search state
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
 
     // Debounce search input to optimize filtering
     React.useEffect(() => {
@@ -90,40 +94,42 @@ export default function SlitingTable() {
         setLoading(false);
     };
 
-    const handleReopen = async (jobCardId: number) => {
-        const confirmed = window.confirm(
-            "Are you sure you want to reopen this printing process?"
+    const handleReopen = (jobCardId: number) => {
+        requestConfirm(
+            "Reopen this printing process?",
+            "This will reopen the completed process so it can be edited again.",
+            async () => {
+                try {
+                    const response = await fetch(`/api/printing/${jobCardId}/reopen`, {
+                        method: "POST",
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        toast({
+                            title: "Error",
+                            description: result.message || result.error || "Failed to reopen printing",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+
+                    toast({
+                        title: "Success",
+                        description: "Printing process reopened",
+                    });
+                    await fetchData();
+                } catch (error) {
+                    console.error("Error reopening printing:", error);
+                    toast({
+                        title: "Error",
+                        description: "Failed to reopen printing",
+                        variant: "destructive",
+                    });
+                }
+            },
+            "Reopen"
         );
-        if (!confirmed) return;
-
-        try {
-            const response = await fetch(`/api/printing/${jobCardId}/reopen`, {
-                method: "POST",
-            });
-            const result = await response.json();
-
-            if (!response.ok) {
-                toast({
-                    title: "Error",
-                    description: result.error || "Failed to reopen printing",
-                    variant: "destructive",
-                });
-                return;
-            }
-
-            toast({
-                title: "Success",
-                description: "Printing process reopened",
-            });
-            await fetchData();
-        } catch (error) {
-            console.error("Error reopening printing:", error);
-            toast({
-                title: "Error",
-                description: "Failed to reopen printing",
-                variant: "destructive",
-            });
-        }
     };
 
     // Filter data based on the debounced search input
@@ -188,7 +194,7 @@ export default function SlitingTable() {
                                 <PencilIcon size={16} />
                             </Button>
                         </Link>
-                        {item.card_printting === 1 && (
+                        {item.card_printting === 1 && isAdmin && (
                             <Button
                                 variant="secondary"
                                 size="sm"
@@ -330,6 +336,7 @@ export default function SlitingTable() {
                     </div>
                 </div>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 }

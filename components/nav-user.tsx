@@ -30,6 +30,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 
 export function NavUser({
   user,
@@ -42,14 +43,14 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const router = useRouter();
+  const { refresh } = useAuth();
 
   const handleLogout = async () => {
     try {
       await fetch('/api/logout', {
         method: 'POST',
       });
-
-      // Redirect to login page
+      await refresh();
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);

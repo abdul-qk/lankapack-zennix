@@ -24,6 +24,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import Loading from "@/components/layouts/loading";
 import { Trash } from "lucide-react";
 import {
@@ -83,6 +84,7 @@ type DoDetails = {
 export default function EditDoPage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -435,6 +437,7 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
                                                 <TableCell className="text-right">{item.price.toFixed(2)}</TableCell>
                                                 <TableCell className="text-right">{item.total.toFixed(2)}</TableCell>
                                                 <TableCell>
+                                                    {isAdmin && (
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
                                                             <Button
@@ -464,6 +467,7 @@ export default function EditDoPage({ params }: { params: { id: string } }) {
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
                                                     </AlertDialog>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

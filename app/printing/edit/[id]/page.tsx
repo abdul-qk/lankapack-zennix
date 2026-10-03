@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
@@ -103,6 +105,8 @@ export default function EditPrintingInfo() {
     const [printingPackData, setPrintingPackData] = React.useState<PrintingPackInfo[]>();
     const [colorNames, setColorNames] = React.useState<string[]>([]);
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
 
     // Selection and form state
     const [selectedPrintId, setSelectedPrintId] = React.useState<number | null>(null);
@@ -227,112 +231,100 @@ export default function EditPrintingInfo() {
         }
     };
 
-    const handleDeleteBarcode = async (printId: number) => {
-        // Confirm deletion with user
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this print record? This action cannot be undone."
-        );
+    const handleDeleteBarcode = (printId: number) => {
+        requestConfirm(
+            "Delete this print record?",
+            "This action cannot be undone. Are you sure you want to delete this print record?",
+            async () => {
+                try {
+                    setLoading(true);
+                    const response = await fetch(`/api/printing/${id}/add-barcode`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ print_id: printId }),
+                    });
 
-        if (!confirmDelete) {
-            return;
-        }
+                    const data = await response.json();
 
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/printing/${id}/add-barcode`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ print_id: printId }),
-            });
+                    if (!response.ok) {
+                        toast({
+                            title: "Error",
+                            description: data.message || data.error || "Failed to delete print record",
+                            variant: "destructive",
+                        });
+                    } else {
+                        toast({
+                            title: "Success",
+                            description: "Print record deleted successfully",
+                        });
 
-            const data = await response.json();
+                        fetchData(Number(id));
 
-            if (!response.ok) {
-                // Handle error responses
-                toast({
-                    title: "Error",
-                    description: data.error || "Failed to delete print record",
-                    variant: "destructive",
-                });
-            } else {
-                // Success case
-                toast({
-                    title: "Success",
-                    description: "Print record deleted successfully",
-                });
-
-                // Refresh data
-                fetchData(Number(id));
-
-                // Clear selection if the deleted item was selected
-                if (selectedPrintId === printId) {
-                    setSelectedPrintId(null);
-                    clearFormFields();
+                        if (selectedPrintId === printId) {
+                            setSelectedPrintId(null);
+                            clearFormFields();
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error deleting print record:", error);
+                    toast({
+                        title: "Error",
+                        description: "An unexpected error occurred. Please try again.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    setLoading(false);
                 }
-            }
-        } catch (error) {
-            console.error("Error deleting print record:", error);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
+            },
+            "Delete"
+        );
     };
 
-    const handleDeletePrintPack = async (packId: number) => {
-        // Confirm deletion with user
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this print pack record? This action cannot be undone."
+    const handleDeletePrintPack = (packId: number) => {
+        requestConfirm(
+            "Delete this print pack?",
+            "This action cannot be undone. Are you sure you want to delete this print pack record?",
+            async () => {
+                try {
+                    setLoading(true);
+                    const response = await fetch(`/api/printing/${id}/delete-pack`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ pack_id: packId }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        toast({
+                            title: "Error",
+                            description: data.message || data.error || "Failed to delete print pack record",
+                            variant: "destructive",
+                        });
+                    } else {
+                        toast({
+                            title: "Success",
+                            description: "Print pack record deleted successfully",
+                        });
+                        fetchData(Number(id));
+                    }
+                } catch (error) {
+                    console.error("Error deleting print pack record:", error);
+                    toast({
+                        title: "Error",
+                        description: "An unexpected error occurred. Please try again.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            },
+            "Delete"
         );
-
-        if (!confirmDelete) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/printing/${id}/delete-pack`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ pack_id: packId }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle error responses
-                toast({
-                    title: "Error",
-                    description: data.error || "Failed to delete print pack record",
-                    variant: "destructive",
-                });
-            } else {
-                // Success case
-                toast({
-                    title: "Success",
-                    description: "Print pack record deleted successfully",
-                });
-
-                // Refresh data
-                fetchData(Number(id));
-            }
-        } catch (error) {
-            console.error("Error deleting print pack record:", error);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
     };
 
     // Function to handle selecting a print record
@@ -691,6 +683,7 @@ export default function EditPrintingInfo() {
                                                 <TableCell>{item.balance_width}</TableCell>
                                                 <TableCell>{item.print_wastage}</TableCell>
                                                 <TableCell>
+                                                    {isAdmin && (
                                                     <Trash2
                                                         className="cursor-pointer"
                                                         color="red"
@@ -700,6 +693,7 @@ export default function EditPrintingInfo() {
                                                             handleDeleteBarcode(item.print_id);
                                                         }}
                                                     />
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -882,6 +876,7 @@ export default function EditPrintingInfo() {
                                                                     </DialogHeader>
                                                                 </DialogContent>
                                                             </Dialog>
+                                                            {isAdmin && (
                                                             <Trash2
                                                                 className="cursor-pointer"
                                                                 color="red"
@@ -891,6 +886,7 @@ export default function EditPrintingInfo() {
                                                                     handleDeletePrintPack(item.pack_id);
                                                                 }}
                                                             />
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -921,6 +917,7 @@ export default function EditPrintingInfo() {
                     </div>
                 </div>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 };

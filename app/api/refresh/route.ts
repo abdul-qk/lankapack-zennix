@@ -1,14 +1,15 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import * as jose from "jose";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
     // Get the refresh token from cookies
     const refreshToken = cookies().get("refreshToken")?.value;
-    
+
     // Get the original path the user was trying to access
     const originalPath = cookies().get("originalPath")?.value || "/";
 
@@ -28,11 +29,36 @@ export async function GET(request: Request) {
         throw new Error("Invalid token type");
       }
 
-      // Create a new access token
+      const userId =
+        typeof payload.userId === "number"
+          ? payload.userId
+          : typeof payload.userId === "string"
+            ? Number(payload.userId)
+            : NaN;
+
+      if (!Number.isFinite(userId)) {
+        throw new Error("Invalid user id");
+      }
+
+      const dbUser = await prisma.hps_login.findUnique({
+        where: { he_user_id: userId },
+        select: {
+          he_user_id: true,
+          he_username: true,
+          user_level: true,
+        },
+      });
+
+      if (!dbUser) {
+        throw new Error("User not found");
+      }
+
+      // Create a new access token with fresh role from DB
       const newAccessToken = await new jose.SignJWT({
-        userId: payload.userId,
-        username: payload.username,
-        type: "access"
+        userId: dbUser.he_user_id,
+        username: dbUser.he_username,
+        userLevel: dbUser.user_level,
+        type: "access",
       })
         .setProtectedHeader({ alg: "HS256" })
         .setExpirationTime("15m")
@@ -40,7 +66,7 @@ export async function GET(request: Request) {
 
       // Create a response that redirects to the original path
       const response = NextResponse.redirect(new URL(originalPath, request.url));
-      
+
       // Set the new access token cookie on the response
       response.cookies.set({
         name: "token",
@@ -50,7 +76,7 @@ export async function GET(request: Request) {
         sameSite: "lax",
         path: "/",
       });
-      
+
       // Clear the originalPath cookie since we've used it
       response.cookies.set({
         name: "originalPath",
@@ -62,15 +88,15 @@ export async function GET(request: Request) {
       return response;
     } catch (error) {
       console.error("Token verification failed:", error);
-      
+
       // Redirect to login on verification failure
       const response = NextResponse.redirect(new URL("/login", request.url));
-      
+
       // Clear both tokens on verification failure
       response.cookies.delete("token");
       response.cookies.delete("refreshToken");
       response.cookies.delete("originalPath");
-      
+
       return response;
     }
   } catch (error) {

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 const BAG_TYPE_MAX_LENGTH = 120;
 const BAG_PRICE_MAX_LENGTH = 12;
@@ -119,6 +120,9 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const { id } = await req.json();
 
     if (!id) {

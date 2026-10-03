@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
-import { getSessionUserId } from "@/lib/auth";
+import {getSessionUserId, requireAdmin} from "@/lib/auth";
 
 export async function GET(req: Request) {
   try {
@@ -115,6 +115,9 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const { id } = await req.json();
 
     if (!id) {

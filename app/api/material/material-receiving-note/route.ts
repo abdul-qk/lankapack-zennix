@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET(req: Request) {
   try {
@@ -30,6 +31,9 @@ export async function GET(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const { id } = await req.json();
 
     // Use a transaction to ensure both operations complete or neither does

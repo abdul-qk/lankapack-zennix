@@ -26,6 +26,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { useAuth } from "@/hooks/use-auth"
 import {
   Sidebar,
   SidebarContent,
@@ -36,11 +37,6 @@ import {
 
 // This is sample data.
 const data = {
-  user: {
-    name: "Admin",
-    email: "user@lankapack.com",
-    avatar: "/logo.png",
-  },
   teams:
   {
     name: "Lankapack",
@@ -196,6 +192,14 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  const displayUser = {
+    name: user?.fullName || user?.username || "User",
+    email: user?.email || user?.userLevel || "",
+    avatar: "/logo.png",
+  }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -206,7 +210,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={displayUser} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

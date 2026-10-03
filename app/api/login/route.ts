@@ -36,7 +36,8 @@ export async function POST(request: Request) {
     const accessToken = await new jose.SignJWT({
       userId: user.he_user_id,
       username: user.he_username,
-      type: "access"
+      userLevel: user.user_level,
+      type: "access",
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("15m")
@@ -46,7 +47,8 @@ export async function POST(request: Request) {
     const refreshToken = await new jose.SignJWT({
       userId: user.he_user_id,
       username: user.he_username,
-      type: "refresh"
+      userLevel: user.user_level,
+      type: "refresh",
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("7d")
@@ -79,6 +81,7 @@ export async function POST(request: Request) {
         username: user.he_username,
         email: user.he_email,
         fullName: user.he_full_name,
+        userLevel: user.user_level,
       },
     });
   } catch (error) {

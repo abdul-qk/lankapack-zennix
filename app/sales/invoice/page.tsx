@@ -35,6 +35,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
 import Link from "next/link";
@@ -59,6 +60,7 @@ export default function InvoiceTable() {
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<number | null>(null);
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
 
     // Debounce search input
     React.useEffect(() => {
@@ -185,9 +187,11 @@ export default function InvoiceTable() {
                                 </Button>
                             </Link>
                         </Button>
+                        {isAdmin && (
                         <Button variant="destructive" size="sm" onClick={() => confirmDelete(billInfo.bill_info_id)}>
                             <Trash2 size={16} />
                         </Button>
+                        )}
                     </div>
                 );
             },
@@ -328,6 +332,7 @@ export default function InvoiceTable() {
             </SidebarInset>
 
             {/* Delete Confirmation Dialog */}
+            {isAdmin && (
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -344,6 +349,7 @@ export default function InvoiceTable() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            )}
         </SidebarProvider>
     );
 }

@@ -16,6 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Barcode, Printer, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import Loading from "@/components/layouts/loading";
 
 const ReactBarcode = dynamic(() => import('react-barcode'), { ssr: false });
@@ -68,6 +70,8 @@ export default function EditMaterialReceivingNotePage() {
     const id = params.id;
 
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [materialInfo, setMaterialInfo] = useState<MaterialInfo | null>(null);
@@ -216,27 +220,34 @@ export default function EditMaterialReceivingNotePage() {
         }
     };
 
-    const handleDeleteItem = async (itemId: number) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
-        if (!confirmDelete) return;
+    const handleDeleteItem = (itemId: number) => {
+        requestConfirm(
+            "Delete this item?",
+            "This action cannot be undone. Are you sure you want to delete this item?",
+            async () => {
+                try {
+                    const response = await fetch(`/api/material/material-receiving-note/item/${itemId}`, {
+                        method: "DELETE",
+                    });
 
-        try {
-            const response = await fetch(`/api/material/material-receiving-note/item/${itemId}`, {
-                method: "DELETE",
-            });
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        toast({
+                            description: errorData.message || errorData.error || "Failed to delete item",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || "Failed to delete item");
-            }
-
-            setItems(items.filter(item => item.material_item_id !== itemId));
-            toast({ description: "Item deleted successfully!" });
-
-        } catch (error: any) {
-            console.error("Error deleting item:", error);
-            toast({ description: error.message || "Failed to delete item", variant: "destructive" });
-        }
+                    setItems(items.filter(item => item.material_item_id !== itemId));
+                    toast({ description: "Item deleted successfully!" });
+                } catch (error: any) {
+                    console.error("Error deleting item:", error);
+                    toast({ description: error.message || "Failed to delete item", variant: "destructive" });
+                }
+            },
+            "Delete"
+        );
     };
 
 
@@ -874,9 +885,11 @@ export default function EditMaterialReceivingNotePage() {
                                                                 </div>
                                                             </DialogContent>
                                                         </Dialog>
+                                                        {isAdmin && (
                                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteItem(item.material_item_id)}>
                                                             <Trash2 color="red" className="h-4 w-4 cursor-pointer" />
                                                         </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -897,6 +910,7 @@ export default function EditMaterialReceivingNotePage() {
                     </div>
                 </main>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 }

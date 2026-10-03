@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import dynamic from "next/dynamic";
 import { NonCompleteItem, RollData } from '../types/bundleTypes';
 
@@ -40,33 +42,44 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
     const qtyFieldLabel = rollData.source === "sheeting" ? "Sheets" : "Bags";
 
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
 
-    const handleDeleteItem = async (id: number) => {
-        try {
-            const response = await fetch(`/api/stock/bundle/non-complete/${id}`, {
-                method: 'DELETE',
-            });
+    const handleDeleteItem = (id: number) => {
+        requestConfirm(
+            "Delete this item?",
+            "This action cannot be undone. Are you sure you want to delete this item?",
+            async () => {
+                try {
+                    const response = await fetch(`/api/stock/bundle/non-complete/${id}`, {
+                        method: 'DELETE',
+                    });
 
-            if (response.ok) {
-                toast({
-                    title: "Success",
-                    description: "Non-complete item deleted successfully",
-                });
-
-                // Update parent component state
-                onDeleteItem(id);
-            } else {
-                const result = await response.json();
-                throw new Error(result.message || "Failed to delete item");
-            }
-        } catch (error) {
-            console.error("Error deleting item:", error);
-            toast({
-                title: "Error",
-                description: String(error),
-                variant: "destructive",
-            });
-        }
+                    if (response.ok) {
+                        toast({
+                            title: "Success",
+                            description: "Non-complete item deleted successfully",
+                        });
+                        onDeleteItem(id);
+                    } else {
+                        const result = await response.json().catch(() => ({}));
+                        toast({
+                            title: "Error",
+                            description: result.message || result.error || "Failed to delete item",
+                            variant: "destructive",
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error deleting item:", error);
+                    toast({
+                        title: "Error",
+                        description: String(error),
+                        variant: "destructive",
+                    });
+                }
+            },
+            "Delete"
+        );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -640,6 +653,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                             </Dialog>
                                         </TableCell>
                                         <TableCell className="text-right">
+                                            {isAdmin && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -648,6 +662,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -675,6 +690,7 @@ const NonCompleteBundleCard: React.FC<NonCompleteBundleCardProps> = ({
                     </div>
                 )}
             </CardContent>
+            {dialog}
         </Card>
     );
 };

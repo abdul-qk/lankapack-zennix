@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getSessionUserId } from "@/lib/auth";
+import {getSessionUserId, requireAdmin} from "@/lib/auth";
 import { NextRequest } from "next/server";
 import { safeParseInt, safeParseFloat } from "@/lib/validation";
 import { sanitizeString } from "@/lib/sanitize";
@@ -173,6 +173,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

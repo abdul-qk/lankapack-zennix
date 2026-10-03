@@ -12,6 +12,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { set } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Barcode, DeleteIcon, Printer, ScanBarcode, Trash2 } from "lucide-react";
@@ -69,6 +71,8 @@ export default function AddMaterialReceivingNotePage() {
     const id = params.id;
     // Add toast
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
     const router = useRouter();
 
     // const [materialInfo, setMaterialInfo] = useState<MaterialInfo | null>(null);
@@ -208,28 +212,34 @@ export default function AddMaterialReceivingNotePage() {
         }
     };
 
-    const handleDeleteItem = async (idToDelete: number) => {
-        const confirmDelete = window.confirm("Are you sure you want to remove this item from the list?");
+    const handleDeleteItem = (idToDelete: number) => {
+        requestConfirm(
+            "Remove this item?",
+            "This action cannot be undone. Are you sure you want to remove this item from the list?",
+            async () => {
+                setItems(items.filter(item => item.material_item_id !== idToDelete));
+                setAddedItemIds(addedItemIds.filter(id => id !== idToDelete));
 
-        if (!confirmDelete) return;
-
-        // First update the UI
-        setItems(items.filter(item => item.material_item_id !== idToDelete));
-        setAddedItemIds(addedItemIds.filter(id => id !== idToDelete));
-
-        // Then delete from database
-        try {
-            const response = await fetch(`/api/material/material-receiving-note/delete-item/${idToDelete}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error('Failed to delete item from DB');
-            toast({ description: "Item removed successfully." });
-        } catch (error: any) {
-            console.error("Error deleting item:", error);
-            toast({ description: `Failed to remove item: ${error.message}`, variant: "destructive" });
-            // Note: We don't re-add the item to the UI since it's already been removed
-            // The user can refresh the page to see the current state from the database
-        }
+                try {
+                    const response = await fetch(`/api/material/material-receiving-note/delete-item/${idToDelete}`, {
+                        method: 'DELETE',
+                    });
+                    if (!response.ok) {
+                        const data = await response.json().catch(() => ({}));
+                        toast({
+                            description: data.message || data.error || "Failed to delete item from DB",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                    toast({ description: "Item removed successfully." });
+                } catch (error: any) {
+                    console.error("Error deleting item:", error);
+                    toast({ description: `Failed to remove item: ${error.message}`, variant: "destructive" });
+                }
+            },
+            "Delete"
+        );
     };
 
 
@@ -510,7 +520,9 @@ export default function AddMaterialReceivingNotePage() {
                                                             </div>
                                                         </DialogContent>
                                                     </Dialog>
-                                                    <Trash2 color="red" className="h-4 w-4" onClick={() => handleDeleteItem(item.material_item_id)} />
+                                                    {isAdmin && (
+                                                    <Trash2 color="red" className="h-4 w-4 cursor-pointer" onClick={() => handleDeleteItem(item.material_item_id)} />
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -525,6 +537,7 @@ export default function AddMaterialReceivingNotePage() {
                     </Button>
                 </div>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 }

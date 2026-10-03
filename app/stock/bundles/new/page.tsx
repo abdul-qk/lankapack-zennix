@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Loading from "@/components/layouts/loading";
@@ -86,6 +88,8 @@ export default function AddBundlePage() {
     const [isSubmittingNonComplete, setIsSubmittingNonComplete] = React.useState(false);
 
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
     const quantityLabel = rollData?.source === "sheeting" ? "No of Sheets" : "No of Bags";
     const quantityInfoLabel = rollData?.source === "sheeting" ? "Number of Sheets" : "Number of Bags";
 
@@ -266,32 +270,41 @@ export default function AddBundlePage() {
         }
     };
 
-    const handleDeleteComplete = async (id: number) => {
-        try {
-            const response = await fetch(`/api/stock/bundle/complete/${id}`, {
-                method: 'DELETE',
-            });
+    const handleDeleteComplete = (id: number) => {
+        requestConfirm(
+            "Delete this item?",
+            "This action cannot be undone. Are you sure you want to delete this item?",
+            async () => {
+                try {
+                    const response = await fetch(`/api/stock/bundle/complete/${id}`, {
+                        method: 'DELETE',
+                    });
 
-            if (response.ok) {
-                toast({
-                    title: "Success",
-                    description: "Item deleted successfully",
-                });
-
-                // Remove the item from state
-                setCompleteItems(prevItems => prevItems.filter(item => item.complete_item_id !== id));
-            } else {
-                const result = await response.json();
-                throw new Error(result.message || "Failed to delete item");
-            }
-        } catch (error) {
-            console.error("Error deleting item:", error);
-            toast({
-                title: "Error",
-                description: String(error),
-                variant: "destructive",
-            });
-        }
+                    if (response.ok) {
+                        toast({
+                            title: "Success",
+                            description: "Item deleted successfully",
+                        });
+                        setCompleteItems(prevItems => prevItems.filter(item => item.complete_item_id !== id));
+                    } else {
+                        const result = await response.json().catch(() => ({}));
+                        toast({
+                            title: "Error",
+                            description: result.message || result.error || "Failed to delete item",
+                            variant: "destructive",
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error deleting item:", error);
+                    toast({
+                        title: "Error",
+                        description: String(error),
+                        variant: "destructive",
+                    });
+                }
+            },
+            "Delete"
+        );
     };
 
     const handleSubmitNonComplete = async (e: React.FormEvent) => {
@@ -362,32 +375,41 @@ export default function AddBundlePage() {
         }
     };
 
-    const handleDeleteNonComplete = async (id: number) => {
-        try {
-            const response = await fetch(`/api/stock/bundle/non-complete/${id}`, {
-                method: 'DELETE',
-            });
+    const handleDeleteNonComplete = (id: number) => {
+        requestConfirm(
+            "Delete this item?",
+            "This action cannot be undone. Are you sure you want to delete this item?",
+            async () => {
+                try {
+                    const response = await fetch(`/api/stock/bundle/non-complete/${id}`, {
+                        method: 'DELETE',
+                    });
 
-            if (response.ok) {
-                toast({
-                    title: "Success",
-                    description: "Non-complete item deleted successfully",
-                });
-
-                // Remove the item from state
-                setNonCompleteItems(prevItems => prevItems.filter(item => item.non_complete_id !== id));
-            } else {
-                const result = await response.json();
-                throw new Error(result.message || "Failed to delete non-complete item");
-            }
-        } catch (error) {
-            console.error("Error deleting non-complete item:", error);
-            toast({
-                title: "Error",
-                description: String(error),
-                variant: "destructive",
-            });
-        }
+                    if (response.ok) {
+                        toast({
+                            title: "Success",
+                            description: "Non-complete item deleted successfully",
+                        });
+                        setNonCompleteItems(prevItems => prevItems.filter(item => item.non_complete_id !== id));
+                    } else {
+                        const result = await response.json().catch(() => ({}));
+                        toast({
+                            title: "Error",
+                            description: result.message || result.error || "Failed to delete non-complete item",
+                            variant: "destructive",
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error deleting non-complete item:", error);
+                    toast({
+                        title: "Error",
+                        description: String(error),
+                        variant: "destructive",
+                    });
+                }
+            },
+            "Delete"
+        );
     };
 
     const InfoBox = ({ label, value }: { label: string; value: string | number }) => (
@@ -732,6 +754,7 @@ export default function AddBundlePage() {
                                                                 </Dialog>
                                                             </TableCell>
                                                             <TableCell className="text-right">
+                                                                {isAdmin && (
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
@@ -740,6 +763,7 @@ export default function AddBundlePage() {
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
+                                                                )}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}
@@ -848,6 +872,7 @@ export default function AddBundlePage() {
                                                                 </Dialog>
                                                             </TableCell>
                                                             <TableCell className="text-right">
+                                                                {isAdmin && (
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
@@ -856,6 +881,7 @@ export default function AddBundlePage() {
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
+                                                                )}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}
@@ -898,6 +924,7 @@ export default function AddBundlePage() {
                     )}
                 </div>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 }

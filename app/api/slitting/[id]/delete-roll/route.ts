@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const jobCardId = parseInt(params.id); // jobCardId is available but not explicitly used in the core logic below, consider if it's needed for hps_stock deletion or other parts.
     const { roll_id, barcode } = await req.json();
 

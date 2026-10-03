@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getSessionUserId } from "@/lib/auth";
+import {getSessionUserId, requireAdmin} from "@/lib/auth";
 
 export async function POST(
   req: Request,
@@ -109,6 +109,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const jobCardId = parseInt(params.id);
     const { print_id } = await req.json();
 

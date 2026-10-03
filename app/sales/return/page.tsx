@@ -42,6 +42,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
 import Link from "next/link";
@@ -65,6 +66,7 @@ export default function ReturnTable() {
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [itemToDelete, setItemToDelete] = React.useState<number | null>(null);
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
 
     // Debounce search input
     React.useEffect(() => {
@@ -191,12 +193,14 @@ export default function ReturnTable() {
                                 </Button>
                             </Link>
                         </Button>
+                        {isAdmin && (
                         <Button
                             variant="destructive" size="sm"
                             onClick={() => confirmDelete(returnInfo.return_info_id)}
                         >
                             <Trash2 size={16} />
                         </Button>
+                        )}
                     </div>
                 );
             },
@@ -337,6 +341,7 @@ export default function ReturnTable() {
             </SidebarInset>
 
             {/* Delete Confirmation Dialog */}
+            {isAdmin && (
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -353,6 +358,7 @@ export default function ReturnTable() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            )}
         </SidebarProvider>
     );
 }

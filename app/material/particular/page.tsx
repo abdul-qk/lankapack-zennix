@@ -28,6 +28,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import Loading from "@/components/layouts/loading";
 
 type Particular = {
@@ -50,7 +52,10 @@ export default function ParticularTable() {
     const [new_particular_name, setAddNewParticularName] = React.useState("");
     const { toast } = useToast();
 
-    // Debounce search input by 300ms
+    
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
+// Debounce search input by 300ms
     React.useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search); // Update the debounced state after 300ms
@@ -131,19 +136,33 @@ export default function ParticularTable() {
         setLoading(false);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this particular? This action cannot be undone.")) return;
-        try {
-            await fetch(`/api/material/particular`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
-            });
-            fetchData();
-        } catch (error) {
-            console.error("Error deleting particular:", error);
-            alert("Failed to delete particular");
-        }
+    const handleDelete = (id: number) => {
+        requestConfirm(
+            "Delete this particular?",
+            "This action cannot be undone. Are you sure you want to delete this record?",
+            async () => {
+                try {
+                    const res = await fetch(`/api/material/particular`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id }),
+                    });
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        toast({
+                            description: data.message || data.error || "Failed to delete particular",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                    toast({ description: "Particular deleted successfully!" });
+                    fetchData();
+                } catch {
+                    toast({ description: "Failed to delete particular", variant: "destructive" });
+                }
+            },
+            "Delete"
+        );
     };
 
     const openPopup = (particular?: Particular) => {
@@ -217,9 +236,11 @@ export default function ParticularTable() {
                         <Button variant="outline" size="sm" onClick={() => openPopup(item)}>
                             <Pencil size={16} />
                         </Button>
+                        {isAdmin && (
                         <Button variant="destructive" size="sm" onClick={() => handleDelete(item.particular_id)}>
                             <Trash2 size={16} />
                         </Button>
+                        )}
                     </div>
                 );
             },
@@ -396,6 +417,7 @@ export default function ParticularTable() {
                     </Dialog>
                 </div>
             </SidebarInset>
+                    {dialog}
         </SidebarProvider>
     );
 }

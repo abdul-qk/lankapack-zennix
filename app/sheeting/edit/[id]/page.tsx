@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
@@ -126,6 +127,7 @@ export default function ViewSlittingInfo() {
     const [sheetingData, setSheetingData] = React.useState<SheetingInfo[]>();
     const [sheetingRollData, setSheetingRollData] = React.useState<SheetingRollInfo[]>();
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
 
     const [newBarcode, setNewBarcode] = React.useState("");
     const [selectedBarcode, setSelectedBarcode] = React.useState<string>("");
@@ -239,6 +241,13 @@ export default function ViewSlittingInfo() {
                     variant: "default",
                 })
                 fetchData(Number(id));
+            } else {
+                const data = await response.json().catch(() => ({}));
+                toast({
+                    title: "Error deleting roll",
+                    description: data.message || data.error || "An error occurred while deleting the roll.",
+                    variant: "destructive",
+                });
             }
         } catch (error) {
             console.error("Error deleting roll:", error);
@@ -266,6 +275,13 @@ export default function ViewSlittingInfo() {
                     variant: "default",
                 })
                 fetchData(Number(id));
+            } else {
+                const data = await response.json().catch(() => ({}));
+                toast({
+                    title: "Error deleting barcode",
+                    description: data.message || data.error || "An error occurred while deleting the barcode.",
+                    variant: "destructive",
+                });
             }
         } catch (error) {
             console.error("Error deleting barcode:", error);
@@ -567,6 +583,7 @@ export default function ViewSlittingInfo() {
                                                 </TableCell>
                                                 <TableCell>{item.sheeting_weight}</TableCell>
                                                 <TableCell>
+                                                    {isAdmin && (
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
                                                             <Trash2 size={20} color="red" className="cursor-pointer" onClick={(e) => e.stopPropagation()} />
@@ -592,6 +609,7 @@ export default function ViewSlittingInfo() {
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
                                                     </AlertDialog>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -744,6 +762,7 @@ export default function ViewSlittingInfo() {
                                                                 </DialogHeader>
                                                             </DialogContent>
                                                         </Dialog>
+                                                        {isAdmin && (
                                                         <AlertDialog>
                                                             <AlertDialogTrigger asChild>
                                                                 <Trash2 size={20} color="red" className="cursor-pointer" onClick={(e) => e.stopPropagation()} />
@@ -769,6 +788,7 @@ export default function ViewSlittingInfo() {
                                                                 </AlertDialogFooter>
                                                             </AlertDialogContent>
                                                         </AlertDialog>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

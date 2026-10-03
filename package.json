@@ -8,7 +8,8 @@
         "start": "next start",
         "lint": "next lint",
         "test": "vitest",
-        "test:run": "vitest run"
+        "test:run": "vitest run",
+        "ensure-users": "npx tsx scripts/ensure-users.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.0.1",

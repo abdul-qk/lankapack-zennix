@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     await prisma.hps_material_item.delete({
       where: { material_item_id: parseInt(params.id) },
     });

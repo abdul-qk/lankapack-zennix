@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function DELETE(
   req: Request,
   { params }: { params: { item_id: string } }
 ) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const itemId = parseInt(params.item_id, 10);
 
     // Find material item with its info and related stock record

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET() {
   try {
@@ -60,6 +61,9 @@ export async function GET() {
 // Delete handler
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 

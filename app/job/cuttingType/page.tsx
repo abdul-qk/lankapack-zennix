@@ -26,6 +26,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -44,7 +46,10 @@ export default function CuttingTypeTable() {
     const [new_cutting_type, setNewCuttingType] = React.useState("");
     const { toast } = useToast();
 
-    // Debounce search input to optimize filtering
+    
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
+// Debounce search input to optimize filtering
     React.useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search);  // Update the debounced state after 300ms
@@ -118,9 +123,11 @@ export default function CuttingTypeTable() {
                                 </Button>
                             </DialogContent>
                         </Dialog>
+                        {isAdmin && (
                         <Button variant="destructive" size="sm" onClick={() => handleDelete(item.cutting_id)}>
                             <Trash2 size={16} />
                         </Button>
+                        )}
                     </div>
                 );
             },
@@ -154,20 +161,33 @@ export default function CuttingTypeTable() {
         return pageNumbers;
     }, [currentPage, totalPages]);
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this entry?")) return;
-
-        try {
-            await fetch(`/api/job/cuttingtype/`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
-            });
-            toast({ description: "Entry deleted successfully!" });
-            fetchData(); // Refresh data
-        } catch (error) {
-            toast({ description: "Failed to delete entry", variant: "destructive" });
-        }
+    const handleDelete = (id: number) => {
+        requestConfirm(
+            "Delete this entry?",
+            "This action cannot be undone. Are you sure you want to delete this record?",
+            async () => {
+                try {
+                    const res = await fetch(`/api/job/cuttingtype/`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id }),
+                    });
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        toast({
+                            description: data.message || data.error || "Failed to delete entry",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                    toast({ description: "Entry deleted successfully!" });
+                    fetchData();
+                } catch {
+                    toast({ description: "Failed to delete entry", variant: "destructive" });
+                }
+            },
+            "Delete"
+        );
     };
 
     const handleEdit = async (id: number, cutting_type: string) => {
@@ -319,6 +339,7 @@ export default function CuttingTypeTable() {
                     </div>
                 </div>
             </SidebarInset>
+                    {dialog}
         </SidebarProvider>
     );
 }

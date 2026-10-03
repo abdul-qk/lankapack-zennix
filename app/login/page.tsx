@@ -10,9 +10,11 @@ import Image from 'next/image';
 import LoginImage from '../../public/login.jpg';
 import Logo from '../../public/logo.png';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginPage() {
     const router = useRouter();
+    const { refresh } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -37,7 +39,7 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (response.ok) {
-                // Successfully logged in, redirect to home
+                await refresh();
                 router.push('/');
             } else {
                 setError(data.message || 'Login failed');

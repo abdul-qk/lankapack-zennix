@@ -26,6 +26,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmAction } from "@/components/confirm-action-dialog";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import Loading from "@/components/layouts/loading";
 import {
@@ -77,6 +79,8 @@ export default function MaterialInfoTable() {
     const [debouncedSearch, setDebouncedSearch] = React.useState("");  // Debounced search state
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const { toast } = useToast();
+    const { isAdmin } = useAuth();
+    const { requestConfirm, dialog } = useConfirmAction();
 
     // State for import dialog
     const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
@@ -186,9 +190,11 @@ export default function MaterialInfoTable() {
                                 <Pencil size={16} />
                             </Button>
                         </Link>
+                        {isAdmin && (
                         <Button variant="destructive" size="sm" onClick={() => handleDelete(item.material_info_id)}>
                             <Trash2 size={16} />
                         </Button>
+                        )}
                     </div>
                 );
             },
@@ -207,20 +213,33 @@ export default function MaterialInfoTable() {
         getSortedRowModel: getSortedRowModel(),
     });
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this entry?")) return;
-
-        try {
-            await fetch(`/api/material/material-receiving-note`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
-            });
-            toast({ description: "Entry deleted successfully!" });
-            fetchData(); // Refresh data
-        } catch (error) {
-            toast({ description: "Failed to delete entry", variant: "destructive" });
-        }
+    const handleDelete = (id: number) => {
+        requestConfirm(
+            "Delete this entry?",
+            "This action cannot be undone. Are you sure you want to delete this record?",
+            async () => {
+                try {
+                    const res = await fetch(`/api/material/material-receiving-note`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id }),
+                    });
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        toast({
+                            description: data.message || data.error || "Failed to delete entry",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                    toast({ description: "Entry deleted successfully!" });
+                    fetchData();
+                } catch {
+                    toast({ description: "Failed to delete entry", variant: "destructive" });
+                }
+            },
+            "Delete"
+        );
     };
 
     // Handle file selection
@@ -455,6 +474,7 @@ export default function MaterialInfoTable() {
                     </div>
                 </div>
             </SidebarInset>
+            {dialog}
         </SidebarProvider>
     );
 }

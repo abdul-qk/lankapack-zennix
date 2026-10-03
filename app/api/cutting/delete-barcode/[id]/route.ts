@@ -1,12 +1,16 @@
 // /app/api/cutting/delete-barcode/[cuttingId]/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
     console.log("Input cuttingId:", params.id);
     const cuttingId = parseInt(params.id);
     console.log("Received cuttingId:", cuttingId);
